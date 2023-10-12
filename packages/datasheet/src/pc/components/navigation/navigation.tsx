@@ -234,13 +234,13 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
       key: NavKey.Org,
       domId: NAV_ID.ICON_ADDRESS,
     },
-    {
-      routeAddress: '/template' + search,
-      icon: PlanetOutlined,
-      text: t(Strings.nav_templates),
-      key: NavKey.Template,
-      domId: NAV_ID.ICON_TEMPLATE,
-    },
+    // {
+    //   routeAddress: '/template' + search,
+    //   icon: PlanetOutlined,
+    //   text: t(Strings.nav_templates),
+    //   key: NavKey.Template,
+    //   domId: NAV_ID.ICON_TEMPLATE,
+    // },
     {
       routeAddress: '/management' + search,
       icon: Setting2Outlined,
@@ -410,7 +410,7 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
             </Popup>
           </ComponentDisplay>
         </div>
-        {env.IS_ENTERPRISE && (
+{/*         {env.IS_ENTERPRISE && (
           <Tooltip title={t(Strings.contact_us)} placement="right">
             <div className={styles.iconWrap} onClick={() => contactUs()}>
               <LivechatFilled className={styles.icon} size={32} />
@@ -421,7 +421,7 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
           <div className={styles.iconWrap} onClick={() => expandSearch()}>
             <SearchOutlined className={styles.icon} size={24} />
           </div>
-        </Tooltip>
+        </Tooltip> */}
         <Tooltip title={t(Strings.notification_center)} placement="right" key="notification_center">
           <span className={styles.notification}>
             {NotificationNav}
