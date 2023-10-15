@@ -428,11 +428,11 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
             <span id={NAV_ID.ICON_NOTIFICATION} className={styles.noticeAnimate} />
           </span>
         </Tooltip>
-        {!inSocialApp?.() && !isMobileApp() && (
+        {/* {!inSocialApp?.() && !isMobileApp() && (
           <div className={styles.help}>
             <Help templateActived={templateActive} />
           </div>
-        )}
+        )} */}
         <div className={styles.userIcon}>
           <User />
         </div>
