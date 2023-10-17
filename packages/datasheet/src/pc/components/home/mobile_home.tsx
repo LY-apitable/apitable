@@ -23,7 +23,7 @@ import { Space, ThemeName, useTheme } from '@apitable/components';
 import { integrateCdnHost, IReduxState, t, Strings } from '@apitable/core';
 import { getEnvVariables } from 'pc/utils/env';
 import { ForgetPassword } from './components/forget_password';
-import { GithubButton } from './components/github_button';
+// import { GithubButton } from './components/github_button';
 import { Login } from './components/login';
 import { NavBar } from './components/nav_bar';
 import { SignUp } from './components/sign_up';
@@ -96,10 +96,10 @@ export const MobileHome: React.FC<React.PropsWithChildren<unknown>> = () => {
         <h3 className={styles.title}>{getTitle(action)}</h3>
       )}
       <div className={styles.content}>{homeModal(action)}</div>
-      <Space size={41} vertical>
+      {/* <Space size={41} vertical>
         <GithubButton />
         <NavBar />
-      </Space>
+      </Space> */}
     </div>
   );
 };

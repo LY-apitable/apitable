@@ -18,29 +18,30 @@
 
 import { Typography, useThemeColors, Box, ThemeName, useTheme } from '@apitable/components';
 import { integrateCdnHost } from '@apitable/core';
-import { TwitterOutlined, LinkedinOutlined, EmailfeedbackOutlined } from '@apitable/icons';
+// import { TwitterOutlined, LinkedinOutlined, EmailfeedbackOutlined } from '@apitable/icons';
 import { getEnvVariables } from 'pc/utils/env';
-import { GithubButton } from './components/github_button';
+// TODO GithubButton 待删除
+// import { GithubButton } from './components/github_button';
 import { NavBar } from './components/nav_bar';
 import styles from './style.module.less';
 
 export const HomeWrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const colors = useThemeColors();
 
-  const linkIcons = [
-    {
-      icon: <TwitterOutlined color={colors.textCommonPrimary} size={32} />,
-      link: 'https://twitter.com/apitable_com',
-    },
-    {
-      icon: <LinkedinOutlined color={colors.textCommonPrimary} size={32} />,
-      link: 'https://www.linkedin.com/company/APITable',
-    },
-    {
-      icon: <EmailfeedbackOutlined color={colors.textCommonPrimary} size={32} />,
-      link: 'mailto:support@apitable.com',
-    },
-  ];
+  // const linkIcons = [
+  //   {
+  //     icon: <TwitterOutlined color={colors.textCommonPrimary} size={32} />,
+  //     link: 'https://twitter.com/apitable_com',
+  //   },
+  //   {
+  //     icon: <LinkedinOutlined color={colors.textCommonPrimary} size={32} />,
+  //     link: 'https://www.linkedin.com/company/APITable',
+  //   },
+  //   {
+  //     icon: <EmailfeedbackOutlined color={colors.textCommonPrimary} size={32} />,
+  //     link: 'mailto:support@apitable.com',
+  //   },
+  // ];
 
   let socialIconsContent;
   const disableLoginSocialIcons = getEnvVariables().LOGIN_SOCIAL_ICONS_DISABLE;
@@ -49,7 +50,7 @@ export const HomeWrapper: React.FC<React.PropsWithChildren<unknown>> = ({ childr
   } else {
     socialIconsContent = (
       <div className={styles.iconContent}>
-        <div className={styles.linkLine}>
+        {/* <div className={styles.linkLine}>
           {linkIcons.map(({ icon, link }) => {
             return (
               <a key={link} href={link} target="_blank" rel="noreferrer">
@@ -60,7 +61,7 @@ export const HomeWrapper: React.FC<React.PropsWithChildren<unknown>> = ({ childr
         </div>
         <Box marginLeft={24}>
           <GithubButton />
-        </Box>
+        </Box> */}
       </div>
     );
   }
