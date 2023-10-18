@@ -391,11 +391,11 @@ export const WorkbenchSide: FC<React.PropsWithChildren<unknown>> = () => {
               </div>
             </Tooltip>
           )}
-          <Tooltip title={t(Strings.workbench_side_space_template)}>
+          {/* <Tooltip title={t(Strings.workbench_side_space_template)}>
             <div className={styles.groupItem} onClick={jumpSpaceTemplate} id={WORKBENCH_SIDE_ID.TO_SPACE_TEMPLATE}>
               <PlanetOutlined color={colors.rc02} />
             </div>
-          </Tooltip>
+          </Tooltip> */}
           {inviteStatus && !isIdassPrivateDeployment() && (
             <Tooltip title={t(Strings.invite_friends)}>
               <div
