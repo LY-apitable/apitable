@@ -2,7 +2,7 @@ ARG IMAGE_TAG=latest
 
 FROM apitable/backend-server:${IMAGE_TAG} as backend-server
 FROM apitable/room-server:${IMAGE_TAG} as room-server
-FROM apitable/web-server:${IMAGE_TAG} as web-server
+FROM registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:${IMAGE_TAG} as web-server
 FROM apitable/init-db:${IMAGE_TAG} as init-db
 
 FROM apitable/databus-server:latest as databus-server
@@ -19,12 +19,12 @@ COPY --from=imageproxy-server /app/ /app/imageproxy-server/
 COPY --from=init-db /liquibase/changelog/ /liquibase/changelog/
 COPY --from=init-appdata /app/ /app/init-appdata/
 
-RUN set -euxo pipefail; \
-  curl -LjO https://github.com/Automattic/node-canvas/releases/download/v2.9.1/canvas-v2.9.1-node-v93-linux-glibc-x64.tar.gz; \
-  tar -xzf canvas-v2.9.1-node-v93-linux-glibc-x64.tar.gz; \
-  rm -rf /app/web-server/node_modules/canvas/build/Release; \
-  mv Release /app/web-server/node_modules/canvas/build/; \
-  rm -f canvas-v2.9.1-node-v93-linux-glibc-x64.tar.gz
+# RUN set -euxo pipefail; \
+  # curl -LjO https://github.com/Automattic/node-canvas/releases/download/v2.9.1/canvas-v2.9.1-node-v93-linux-glibc-x64.tar.gz; \
+  # tar -xzf canvas-v2.9.1-node-v93-linux-glibc-x64.tar.gz; \
+  # rm -rf /app/web-server/node_modules/canvas/build/Release; \
+  # mv Release /app/web-server/node_modules/canvas/build/; \
+  # rm -f canvas-v2.9.1-node-v93-linux-glibc-x64.tar.gz
 
 COPY gateway/conf.d/ /etc/nginx/conf.d/
 
