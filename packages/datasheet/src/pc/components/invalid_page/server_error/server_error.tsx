@@ -45,9 +45,9 @@ export const ServerError: FC<React.PropsWithChildren<unknown>> = () => {
               <Button color="primary" size="large" block onClick={refresh}>
                 {t(Strings.refresh)}
               </Button>
-              <Button variant="jelly" color="primary" block onClick={() => contactUs()}>
+              {/* <Button variant="jelly" color="primary" block onClick={() => contactUs()}>
                 {t(Strings.contact_us)}
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
@@ -64,9 +64,9 @@ export const ServerError: FC<React.PropsWithChildren<unknown>> = () => {
               <Button color="primary" size="middle" block onClick={refresh}>
                 {t(Strings.refresh)}
               </Button>
-              <Button variant="jelly" color="primary" block onClick={() => contactUs()}>
+              {/* <Button variant="jelly" color="primary" block onClick={() => contactUs()}>
                 {t(Strings.contact_us)}
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
