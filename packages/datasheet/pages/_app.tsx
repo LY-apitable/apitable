@@ -514,13 +514,12 @@ function MyAppMain({ Component, pageProps, envVars }: AppProps & { envVars: stri
                 className={classNames('script-loading-wrap-default', { 'script-loading-wrap': loading !== LoadingStatus.Complete || userLoading })}
               >
                 {(loading !== LoadingStatus.Complete || userLoading) && (
-                  <div className="main-img-wrap" style={{ height: 'auto' }}>
-                    {/* <img src={integrateCdnHost(getEnvVariables().LOGO!)} className="script-loading-logo-img"
+                  <div className="main-img-wrap" style={{ height: '0' }}>
+                    <img src={integrateCdnHost(getEnvVariables().LOGO!)} className="script-loading-logo-img"
                       alt="logo"/>
                     <img src={integrateCdnHost(getEnvVariables().LOGO_TEXT_LIGHT!)}
                       className="script-loading-logo-text-img" alt="logo_text_dark"/>
-                  </div> */}
-                  加载中
+                  </div>
                 )}
               </div>
             }

@@ -240,7 +240,7 @@ export const WidgetCenterModal: React.FC<React.PropsWithChildren<IWidgetCenterMo
         >
           <TabPane tab={t(Strings.widget_center_tab_official)} key={WidgetReleaseType.Global}>
             <ScrollBar style={{ width: '100%', height: '100%' }}>
-              <TabItemIntroduction introduction={t(Strings.widget_center_official_introduction)} />
+              {/* <TabItemIntroduction introduction={t(Strings.widget_center_official_introduction)} /> */}
               {loading ? (
                 <div className={styles.skeletonWrap}>
                   <Skeleton count={1} width="38%" />
@@ -258,7 +258,7 @@ export const WidgetCenterModal: React.FC<React.PropsWithChildren<IWidgetCenterMo
               )}
             </ScrollBar>
           </TabPane>
-          {getEnvVariables().CUSTOM_WIDGET_VISIBLE && (
+          {/* {getEnvVariables().CUSTOM_WIDGET_VISIBLE && (
             <TabPane tab={<WidgetBeta text={t(Strings.widget_center_tab_space)} />} key={WidgetReleaseType.Space}>
               <Scrollbars renderThumbVertical={renderThumb} style={{ width: '100%', height: '100%' }}>
                 {(packageListMap?.[WidgetReleaseType.Space]?.length || loading) && (
@@ -297,7 +297,7 @@ export const WidgetCenterModal: React.FC<React.PropsWithChildren<IWidgetCenterMo
                 )}
               </Scrollbars>
             </TabPane>
-          )}
+          )} */}
 
           {showPreview && (
             <TabPane key={WidgetReleaseType.Preview} tab={'Preview'}>
