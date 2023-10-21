@@ -34,7 +34,7 @@ services:
     env_file:
       - "${ENV_FILE:-.env}"
     expose:
-      - "8881"
+      - "8081"
     environment:
       - TZ=${TIMEZONE}
       - DEFAULT_TIME_ZONE=${TIMEZONE}
@@ -44,7 +44,7 @@ services:
       init-db:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD-SHELL", "curl -sS 'http://localhost:8881' || exit 1"]
+      test: ["CMD-SHELL", "curl -sS 'http://localhost:8081' || exit 1"]
       interval: 5s
       timeout: 5s
       start_period: 30s

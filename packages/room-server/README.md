@@ -106,7 +106,7 @@ enum: 'development' | 'production'
 
 ### backend-server(JAVA) service api address
 `process.env.BACKEND_BASE_URL`
-default: <http://localhost:8881/api/v1/>
+default: <http://localhost:8081/api/v1/>
 
 ### redis configuration
 redis host
