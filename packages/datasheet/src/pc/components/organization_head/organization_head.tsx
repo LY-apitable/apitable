@@ -31,13 +31,15 @@ export const OrganizationHead: React.FC<React.PropsWithChildren<IOrganizationHea
   const spaceName = useSelector((state) => state.space.curSpaceInfo?.spaceName);
   return (
     <div className={classnames(styles.organization, className)}>
-      {hideTooltip ? (
+      <h2 className={styles.orgName}>个人工作台</h2>
+
+      {/* {hideTooltip ? (
         <h2 className={styles.orgName}>{spaceName}</h2>
       ) : (
         <Tooltip title={spaceName} textEllipsis>
           <h2 className={styles.orgName}>{spaceName}</h2>
         </Tooltip>
-      )}
+      )} */}
     </div>
   );
 };

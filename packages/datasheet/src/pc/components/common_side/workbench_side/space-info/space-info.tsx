@@ -35,7 +35,7 @@ const Content: FC<React.PropsWithChildren<unknown>> = () => {
 
   return (
     <>
-      <div className={styles.logo}>{logo}</div>
+      {/* <div className={styles.logo}>{logo}</div> */}
       <OrganizationHead className={styles.spaceName} hideTooltip />
     </>
   );
