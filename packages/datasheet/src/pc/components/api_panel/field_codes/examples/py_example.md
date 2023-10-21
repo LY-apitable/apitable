@@ -3,7 +3,7 @@
 ```python
 from vika import Vika
 vika = Vika("{{ apiToken }}")
-# 通过 datasheetId 来指定要从哪张维格表操作数据。
+# 通过 datasheetId 来指定要从哪张多维表操作数据。
 datasheet = vika.datasheet("{{ datasheetId }}", field_key="{{ fieldKey }}")
 ```
 

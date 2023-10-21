@@ -200,7 +200,7 @@ export const Login: React.FC<React.PropsWithChildren<ILoginProps>> = (props) => 
             />
           </WithTipWrapper>
         </div>
-        <Box textAlign={'right'}>
+        {/* <Box textAlign={'right'}>
           <Typography
             className={styles.forgetPassword}
             variant="body2"
@@ -209,18 +209,18 @@ export const Login: React.FC<React.PropsWithChildren<ILoginProps>> = (props) => 
           >
             {t(Strings.apitable_forget_password_button)}
           </Typography>
-        </Box>
+        </Box> */}
       </Form>
 
       <Button className={styles.loginBtn} color="primary" size="large" block loading={loading} onClick={handleSubmit}>
         {t(Strings.apitable_sign_in)}
       </Button>
-      <div className={styles.switchContent}>
+      {/* <div className={styles.switchContent}>
         <p>{t(Strings.apitable_no_account)}</p>
         <LinkButton underline={false} component="button" onClick={() => switchClick(ActionType.SignUp)} style={{ paddingRight: 0 }}>
           {t(Strings.apitable_sign_up)}
         </LinkButton>
-      </div>
+      </div> */}
     </div>
   );
 };

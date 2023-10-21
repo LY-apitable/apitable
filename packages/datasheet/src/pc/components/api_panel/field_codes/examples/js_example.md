@@ -6,7 +6,7 @@
 import { Vika } from "@vikadata/vika";
 
 const vika = new Vika({ token: "{{ apiToken }}", fieldKey: "{{ fieldKey }}" });
-// 通过 datasheetId 来指定要从哪张维格表操作数据。
+// 通过 datasheetId 来指定要从哪张多维表操作数据。
 const datasheet = vika.datasheet("{{ datasheetId }}");
 ```
 
@@ -62,11 +62,11 @@ new Vika({
 // 获取记录
 datasheet.record.query({
   /**
-   * （选填）视图ID。默认为维格表中第一个视图。请求会返回视图中经过视图中筛选/排序后的结果，可以搭配使用fields参数过滤不需要的字段数据
+   * （选填）视图ID。默认为多维表中第一个视图。请求会返回视图中经过视图中筛选/排序后的结果，可以搭配使用fields参数过滤不需要的字段数据
    */
   viewId: 'viewId1',
   /**
-   * （选填）对指定维格表的记录进行排序。由多个“排序对象”组成的数组。支持顺序：'asc' 和 逆序：'desc'。注：此参数指定的排序条件将会覆盖视图里的排序条件。
+   * （选填）对指定多维表的记录进行排序。由多个“排序对象”组成的数组。支持顺序：'asc' 和 逆序：'desc'。注：此参数指定的排序条件将会覆盖视图里的排序条件。
    */
   sort: [{ field: 'field1': order: 'asc' }],
   /**

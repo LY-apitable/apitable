@@ -82,7 +82,10 @@ export const PcHome: React.FC<React.PropsWithChildren<unknown>> = () => {
             <p>{`"${inviteLinkInfo?.data.spaceName || inviteEmailInfo?.data.spaceName}"`}</p>
           </div>
         ) : (
-          <h3 className={styles.title}>{getTitle(action)}</h3>
+          <h3 className={styles.title}>
+            {/* {getTitle(action)} */}
+            个人体验版
+          </h3>
         )}
         <div className={styles.bgBox1} />
         <div className={styles.bgBox2} />

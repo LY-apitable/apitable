@@ -199,10 +199,10 @@ export const nodePermissionMap = new Map<NodeType, { [key: string]: string }>([
   [
     NodeType.AI,
     {
-      [permission.manager]: '在「只可阅读」基础上，还可以编辑小程序和分享仪表盘',
-      [permission.editor]: '在「只可阅读」基础上，还可以编辑小程序和分享仪表盘',
-      [permission.reader]: '在「只可阅读」基础上，还可以编辑小程序和分享仪表盘',
-      [permission.updater]: '在「只可阅读」基础上，还可以编辑小程序和分享仪表盘',
+      [permission.manager]: '在「只可阅读」基础上，还可以编辑图表和分享仪表盘',
+      [permission.editor]: '在「只可阅读」基础上，还可以编辑图表和分享仪表盘',
+      [permission.reader]: '在「只可阅读」基础上，还可以编辑图表和分享仪表盘',
+      [permission.updater]: '在「只可阅读」基础上，还可以编辑图表和分享仪表盘',
     },
   ],
 ]);

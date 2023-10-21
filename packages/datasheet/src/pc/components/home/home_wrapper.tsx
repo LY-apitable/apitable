@@ -75,17 +75,18 @@ export const HomeWrapper: React.FC<React.PropsWithChildren<unknown>> = ({ childr
     <div className={styles.pcHome}>
       <div className={styles.header}>
         <div className={styles.brand}>
-          <img src={integrateCdnHost(logo)} width={132} alt="logo" />
+          <h3>WeTable</h3>
+          {/* <img src={integrateCdnHost(logo)} width={132} alt="logo" />
           <Typography variant={'h7'} color={colors.textCommonSecondary}>
             {getEnvVariables().LOGIN_MOTTO || "let's make the world more productive!"}
-          </Typography>
+          </Typography> */}
         </div>
         {socialIconsContent}
       </div>
       <div className={styles.main}>{children}</div>
-      <div className={styles.footer}>
+      {/* <div className={styles.footer}>
         <NavBar />
-      </div>
+      </div> */}
     </div>
   );
 };

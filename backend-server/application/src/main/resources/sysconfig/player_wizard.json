@@ -119,7 +119,7 @@
         "21": {
             "completeIndex": -1,
             "manualActions": [
-                "open_vikaby({\n\"visible\": true,\n\"defaultExpandDialog\": true,\n\"dialogConfig\": {\n\"title\": \"维格表首届模板征集大赛\",\n\"description\":\"分享你的模板，免费获得200G空间赠礼，并有机会获得20人版6个月白银空间站！\",\n\"btnText\":\"查看详情\",\n\"btnUrl\": \"https://u.vika.cn/3pkza\",\n\"wizardId\": 21\n}\n}\n )"
+                "open_vikaby({\n\"visible\": true,\n\"defaultExpandDialog\": true,\n\"dialogConfig\": {\n\"title\": \"多维表首届模板征集大赛\",\n\"description\":\"分享你的模板，免费获得200G空间赠礼，并有机会获得20人版6个月白银空间站！\",\n\"btnText\":\"查看详情\",\n\"btnUrl\": \"https://u.vika.cn/3pkza\",\n\"wizardId\": 21\n}\n}\n )"
             ],
             "player": {
                 "action": [

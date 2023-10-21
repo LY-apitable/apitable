@@ -3,7 +3,7 @@ const MockDataForDelFieldAction = {
     views: [
       {
         id: 'viwuTxAXZp9fR',
-        name: '维格视图',
+        name: '多维视图',
         rows: [
           {
             recordId: 'recYYHEw1Z9rY'

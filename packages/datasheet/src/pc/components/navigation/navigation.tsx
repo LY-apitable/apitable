@@ -343,11 +343,13 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
       }}
     >
       <div className={classNames(styles.navigation, templateActive && styles.templateActived, notice && styles.noticeOpend)}>
-        <div className={styles.spaceLogo} onClick={openSpaceMenu}>
-          <div className={styles.spaceImg}>
+        <div className={styles.spaceLogo} 
+        // style={{display: 'none'}}
+        >
+          <div style={{display: 'none'}} className={styles.spaceImg}>
             <Avatar type={AvatarType.Space} title={user!.spaceName} id={user!.spaceId} src={user!.spaceLogo} size={AvatarSize.Size32} />
           </div>
-          <div className={styles.spaceDown}>
+          <div style={{display: 'none'}} className={styles.spaceDown}>
             <Tooltip title={t(Strings.workspace_list)} placement="bottom">
               <div>
                 <ChevronDownOutlined className={styles.spaceIcon} />
@@ -355,7 +357,7 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
             </Tooltip>
           </div>
         </div>
-        <div className={styles.navWrapper} onClick={hiddenUserMenu}>
+        <div style={{display: 'none'}} className={styles.navWrapper} onClick={hiddenUserMenu}>
           {navList.map((item: any) => {
             if (item.component) {
               return item.component();
@@ -422,12 +424,12 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
             <SearchOutlined className={styles.icon} size={24} />
           </div>
         </Tooltip> */}
-        <Tooltip title={t(Strings.notification_center)} placement="right" key="notification_center">
+        {/* <Tooltip title={t(Strings.notification_center)} placement="right" key="notification_center">
           <span className={styles.notification}>
             {NotificationNav}
             <span id={NAV_ID.ICON_NOTIFICATION} className={styles.noticeAnimate} />
           </span>
-        </Tooltip>
+        </Tooltip> */}
         {/* {!inSocialApp?.() && !isMobileApp() && (
           <div className={styles.help}>
             <Help templateActived={templateActive} />

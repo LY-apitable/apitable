@@ -27,7 +27,7 @@
 		"value": "/pricing/"
 	},
 	"permission_config_in_workbench_page": {
-		"value": "[{\"key\":0,\"title\":\"表格内的操作权限\",\"detail\":[{\"title\":\"编辑视图工具栏\",\"permissions\":[0,1,2]},{\"title\":\"编辑视图列表\",\"permissions\":[0,1,2]},{\"title\":\"导出视图数据\",\"permissions\":[0,1]},{\"title\":\"增删维格列\",\"permissions\":[0,1]},{\"title\":\"编辑维格列属性（列名/类型/描述）\",\"permissions\":[0,1]},{\"title\":\"编辑维格列样式（列宽/统计栏）\",\"permissions\":[0,1]},{\"title\":\"编辑行（增删/拖动）\",\"permissions\":[0,1,2]},{\"title\":\"编辑单元格（增删改数据）\",\"permissions\":[0,1,2]},{\"title\":\" 撤销，重做\",\"permissions\":[0,1,2]}]},{\"key\":1,\"title\":\"对文件（夹）的操作权限\",\"detail\":[{\"title\":\"设置文件（夹）权限\",\"permissions\":[0,1]},{\"title\":\"将继承切换为指定权限\",\"permissions\":[0,1]},{\"title\":\"将指定切换为继承权限\",\"permissions\":[0]},{\"title\":\"新建文件（夹）\",\"permissions\":[0,1]},{\"title\":\"导入文件\",\"permissions\":[0,1]},{\"title\":\"导出文件\",\"permissions\":[0,1]},{\"title\":\"复制文件（当前文件&上级文件夹权限）\",\"permissions\":[0,1]},{\"title\":\"移动文件（当前文件&目标文件夹权限）\",\"permissions\":[0,1]},{\"title\":\"重命名文件（夹）\",\"permissions\":[0,1]},{\"title\":\"删除文件（夹）\",\"permissions\":[0,1]},{\"title\":\"分享文件（夹）\",\"permissions\":[0,1,2]},{\"title\":\"保存为模板\",\"permissions\":[0,1]}]}]"
+		"value": "[{\"key\":0,\"title\":\"表格内的操作权限\",\"detail\":[{\"title\":\"编辑视图工具栏\",\"permissions\":[0,1,2]},{\"title\":\"编辑视图列表\",\"permissions\":[0,1,2]},{\"title\":\"导出视图数据\",\"permissions\":[0,1]},{\"title\":\"增删多维列\",\"permissions\":[0,1]},{\"title\":\"编辑多维列属性（列名/类型/描述）\",\"permissions\":[0,1]},{\"title\":\"编辑多维列样式（列宽/统计栏）\",\"permissions\":[0,1]},{\"title\":\"编辑行（增删/拖动）\",\"permissions\":[0,1,2]},{\"title\":\"编辑单元格（增删改数据）\",\"permissions\":[0,1,2]},{\"title\":\" 撤销，重做\",\"permissions\":[0,1,2]}]},{\"key\":1,\"title\":\"对文件（夹）的操作权限\",\"detail\":[{\"title\":\"设置文件（夹）权限\",\"permissions\":[0,1]},{\"title\":\"将继承切换为指定权限\",\"permissions\":[0,1]},{\"title\":\"将指定切换为继承权限\",\"permissions\":[0]},{\"title\":\"新建文件（夹）\",\"permissions\":[0,1]},{\"title\":\"导入文件\",\"permissions\":[0,1]},{\"title\":\"导出文件\",\"permissions\":[0,1]},{\"title\":\"复制文件（当前文件&上级文件夹权限）\",\"permissions\":[0,1]},{\"title\":\"移动文件（当前文件&目标文件夹权限）\",\"permissions\":[0,1]},{\"title\":\"重命名文件（夹）\",\"permissions\":[0,1]},{\"title\":\"删除文件（夹）\",\"permissions\":[0,1]},{\"title\":\"分享文件（夹）\",\"permissions\":[0,1,2]},{\"title\":\"保存为模板\",\"permissions\":[0,1]}]}]"
 	},
 	"introduction_video": {
 		"value": "space/2022/04/14/aff988f37b6849b1bf438a73d8721ae2"
@@ -210,7 +210,7 @@
 		"value": "space/2022/02/16/cf2f386d300142a19268c487b351d6bb"
 	},
 	"integration_feishu_help": {
-		"value": "vika维格表 使用指南"
+		"value": "vika多维表 使用指南"
 	},
 	"integration_feishu_manage_open_url": {
 		"value": "https://applink.feishu.cn/client/bot/open"
@@ -270,10 +270,10 @@
 		"value": "https://help.vika.cn/docs/guide/integration-lark"
 	},
 	"login_privacy_policy": {
-		"value": "维格隐私政策"
+		"value": "多维隐私政策"
 	},
 	"login_service_agreement": {
-		"value": "维格服务协议"
+		"value": "多维服务协议"
 	},
 	"integration_wecom_help_url": {
 		"value": "https://help.vika.cn/docs/guide/integration-wecom"
@@ -393,7 +393,7 @@
 		"value": "/wecom-integration/#upgrade"
 	},
 	"user_guide_welcome_introduction_video": {
-		"value": "{ \"title\":\"玩转一张维格表\", \"video\":\"space/2020/12/21/cb7bdf6fe22146068111d46915587fb2\", \"autoPlay\":true }"
+		"value": "{ \"title\":\"玩转一张多维表\", \"video\":\"space/2020/12/21/cb7bdf6fe22146068111d46915587fb2\", \"autoPlay\":true }"
 	},
 	"user_guide_welcome_template1_url": {
 		"value": "/template/tpchFkNFaaJMC/tplDYzZqqwpRQ"
@@ -411,7 +411,7 @@
 		"value": "{\"title\":\"一分钟快速入门\", \"video\":\"space/2021/03/10/a68dbf1e2e7943b09b1550175253fdab\", \"autoPlay\":true}"
 	},
 	"user_guide_welcome_what_is_datasheet_video": {
-		"value": "{ \"title\":\"什么是维格表\", \"video\":\"space/2022/02/21/94cb82f9ffd84a5499c8931a224ad234\", \"autoPlay\":true }"
+		"value": "{ \"title\":\"什么是多维表\", \"video\":\"space/2022/02/21/94cb82f9ffd84a5499c8931a224ad234\", \"autoPlay\":true }"
 	},
 	"widget_center_feature_not_unturned_on_img": {
 		"value": "/space/2021/12/27/cc7c3d706c8e4443a0e9b79673a078e0"

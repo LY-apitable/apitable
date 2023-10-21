@@ -421,10 +421,10 @@ export const UserMenu: FC<React.PropsWithChildren<IUserMenuProps>> = (props) => 
       </div>
       <ComponentDisplay minWidthCompatible={ScreenSize.md}>
         <div className={styles.userMenuBottom}>
-          <div className={styles.userMenuItem} onClick={openUserCenter}>
+          {/* <div className={styles.userMenuItem} onClick={openUserCenter}>
             <UserOutlined className={styles.icon} />
             <div className={styles.name}>{t(Strings.user_center)}</div>
-          </div>
+          </div> */}
           {!inSocialApp?.() && (
             <div className={styles.userMenuItem} onClick={signOut}>
               <LogoutOutlined className={styles.icon} />

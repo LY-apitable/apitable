@@ -7,7 +7,7 @@
       "syncing": false,
       "datasheet": {
         "id": "dstT8XPa51tmphsCt5",
-        "name": "新建维格表",
+        "name": "新建多维表",
         "description": "{}",
         "parentId": "fod6sWvMLEtNc",
         "icon": "",
@@ -75,7 +75,7 @@
             "views": [
               {
                 "id": "viw1euCmpMYrO",
-                "name": "维格视图 2",
+                "name": "多维视图 2",
                 "rows": [
                   {
                     "recordId": "recaPAwcPEtKU"
@@ -101,7 +101,7 @@
               },
               {
                 "id": "viwg5kjpdbKkF",
-                "name": "维格视图",
+                "name": "多维视图",
                 "rows": [
                   {
                     "recordId": "recaPAwcPEtKU"
@@ -138,7 +138,7 @@
               },
               "fldG4paoiHLAU": {
                 "id": "fldG4paoiHLAU",
-                "name": "新建维格表 2",
+                "name": "新建多维表 2",
                 "type": 7,
                 "property": {
                   "brotherFieldId": "fldGZrNET2StU",
@@ -297,7 +297,7 @@
       "syncing": false,
       "datasheet": {
         "id": "dst20W6iYZfeeGaVzu",
-        "name": "新建维格表 2",
+        "name": "新建多维表 2",
         "description": "{}",
         "parentId": "fod6sWvMLEtNc",
         "icon": "",
@@ -365,7 +365,7 @@
             "views": [
               {
                 "id": "viw6gzALyL0h2",
-                "name": "维格视图 2",
+                "name": "多维视图 2",
                 "rows": [
                   {
                     "recordId": "recHwtmd2T99W"
@@ -388,7 +388,7 @@
               },
               {
                 "id": "viwad48YgQxEY",
-                "name": "维格视图",
+                "name": "多维视图",
                 "rows": [
                   {
                     "recordId": "recHwtmd2T99W"
@@ -540,7 +540,7 @@
       "syncing": false,
       "mirror": {
         "id": "mirlZukK7A2JjaehAA",
-        "name": "维格视图 2的镜像",
+        "name": "多维视图 2的镜像",
         "description": "{}",
         "parentId": "fod6sWvMLEtNc",
         "icon": "",
@@ -605,7 +605,7 @@
           "datasheetRevision": 5,
           "datasheetId": "dst20W6iYZfeeGaVzu",
           "viewId": "viw6gzALyL0h2",
-          "datasheetName": "新建维格表 2"
+          "datasheetName": "新建多维表 2"
         },
         "snapshot": {}
       },

@@ -10,11 +10,11 @@
   "properties": {
     "datasheetId": {
       "type": "string",
-      "title": "维格表名称"
+      "title": "多维表名称"
     },
     "datasheetName": {
       "type": "string",
-      "title": "维格表名称"
+      "title": "多维表名称"
     },
     "recordId": {
       "type": "string",

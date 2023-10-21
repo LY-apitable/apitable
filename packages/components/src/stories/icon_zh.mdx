@@ -21,14 +21,14 @@ import { StoryType } from './constants';
 ### icon 组件化协作流程
 
 1. 设计师在 Figma 中将 icon 组件化，保证命名正确（以 filled、outlined 结尾）
-2. 设计师通过 [插件](https://www.notion.so/Figma-Vika-Helper-71cf56eac26242b4b20a0c9d3db2c84e) 将 icon 同步到维格表中。
-3. 研发通过脚本从维格表，拉取 icon 自动生成对应的 React 组件。
+2. 设计师通过 [插件](https://www.notion.so/Figma-Vika-Helper-71cf56eac26242b4b20a0c9d3db2c84e) 将 icon 同步到多维表中。
+3. 研发通过脚本从多维表，拉取 icon 自动生成对应的 React 组件。
 4. 在项目中使用 Icon 组件。
 
 ### 生成 Icon 组件
 
 ```shell
-# 从维格表拉取 icon
+# 从多维表拉取 icon
 yarn sync:icons
 yarn build:icons
 ```

@@ -323,7 +323,7 @@ APITable 可适用这些通用的约定：
 - [帮助中心](https://help.apitable.com/)
 - [👩‍💻 开发者中心](https://developers.apitable.com/)
   - [REST API 文档](https://developers.apitable.com/api/introduction/)
-  - [小程序 SDK](https://developers.apitable.com/widget/introduction/)
+  - [图表 SDK](https://developers.apitable.com/widget/introduction/)
   - [Scripting Widget](https://developers.apitable.com/script/introduction/)
 - [Design System](https://figma.com/@apitable)
 

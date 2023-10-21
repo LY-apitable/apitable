@@ -21,7 +21,7 @@ import { mergeContext, evaluate } from './mock_state';
 
 const englishString = 'Welcome to join APITable Team';
 const chineseString = '欢迎加入APITable科技';
-const chineseString2 = '欢迎加入APITable科技，维格科技真棒';
+const chineseString2 = '欢迎加入APITable科技，多维科技真棒';
 
 describe('Text function test', () => {
   it('FIND', () => {

@@ -132,7 +132,7 @@ const snapshot = `
 \t\t\t}],
 \t\t\t"type": 1,
 \t\t\t"autoSave": false,
-\t\t\t"name": "维格视图",
+\t\t\t"name": "多维视图",
 \t\t\t"id": "viwruy3vMmo70"
 \t\t}]
 \t}

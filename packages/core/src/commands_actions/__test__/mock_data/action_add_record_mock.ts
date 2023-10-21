@@ -3,7 +3,7 @@ const MockDataForAddRecordAction = {
     views: [
       {
         id: 'viwDtemXMuFxz',
-        name: '维格视图',
+        name: '多维视图',
         rows: [
           {
             recordId: 'recNMf9zMl35W'

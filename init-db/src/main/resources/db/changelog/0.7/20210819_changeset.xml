@@ -41,7 +41,7 @@
             UPDATE ${table.prefix}widget_package
             SET i18n_description = '{
             "en-US": "Highlight the statistical value and target value of the specified Grid column as key indicators, such as sales, number of orders, number of registered users, number of bugs, etc.",
-            "zh-CN": "突出展示指定维格列的统计值和目标值，作为关键指标，比如销售额、订单数、注册用户数、Bug 数等"
+            "zh-CN": "突出展示指定多维列的统计值和目标值，作为关键指标，比如销售额、订单数、注册用户数、Bug 数等"
             }'
             WHERE package_id = 'wpkY6DKgb3iVk';
         </sql>

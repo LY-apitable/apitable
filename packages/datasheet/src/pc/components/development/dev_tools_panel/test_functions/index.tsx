@@ -24,7 +24,7 @@ import { getStorage, setStorage, StorageMethod, StorageName } from 'pc/utils/sto
 
 const testFunctions = [
   { key: 'allowFieldLoopRef', name: '允许计算字段循环依赖' },
-  { key: 'widgetIframe', name: '小程序 iframe 方式' },
+  { key: 'widgetIframe', name: '图表 iframe 方式' },
   { key: 'dataBusWasmEnable', name: '开启call databus by Wasm' },
 ];
 
