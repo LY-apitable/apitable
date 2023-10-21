@@ -2,9 +2,9 @@ name: Docker Image web-server CI
 
 on:
   push:
-    branches: [ "feat/ly-dev" ]
+    branches: [ "feat/personal" ]
   pull_request:
-    branches: [ "feat/ly-dev" ]
+    branches: [ "feat/personal" ]
 
 jobs:
 
