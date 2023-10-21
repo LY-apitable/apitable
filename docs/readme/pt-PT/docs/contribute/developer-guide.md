@@ -163,7 +163,7 @@ Além disso, algumas caixas de correio precisam ser habilitadas em segundo plano
 
 Você pode acessar a documentação da API iniciando um servidor local:
 
-1. O endereço da documentação para o servidor do Backend é: http://localhost:8081/api/v1/doc.html
+1. O endereço da documentação para o servidor do Backend é: http://localhost:8881/api/v1/doc.html
 
 2. O endereço da documentação para o room-server é:http://localhost:3333/nest/v1/docs
 

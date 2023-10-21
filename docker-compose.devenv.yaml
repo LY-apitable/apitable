@@ -6,9 +6,9 @@ services:
     image: apitable/devenv:latest
     restart: always
     ports:
-      - "8081:8081"
+      - "8881:8881"
     expose:
-      - "8081"
+      - "8881"
     working_dir: /devenv
     env_file:
       - "${ENV_FILE:-.env}"

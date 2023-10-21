@@ -163,7 +163,7 @@ Ayrıca, smtp'yi kullanmak için bazı posta kutularının arka planda etkinleş
 
 Yerel bir sunucu başlatarak API belgelerine erişebilirsiniz:
 
-1. backend-server için dokümantasyon adresi: http://localhost:8081/api/v1/doc.html
+1. backend-server için dokümantasyon adresi: http://localhost:8881/api/v1/doc.html
 
 2. room-server için dokümantasyon adresi: http://localhost:3333/nest/v1/docs
 

@@ -163,7 +163,7 @@ MAIL_USERNAME=your_email
 
 Ви можете отримати доступ до документації API, запустивши локальний сервер:
 
-1. Документаційна адреса сервера Backend: http://localhost:8081/api/v1/doc.html
+1. Документаційна адреса сервера Backend: http://localhost:8881/api/v1/doc.html
 
 2. Документаційна адреса сервера Backend: http://localhost:3333/api/v1/docs
 

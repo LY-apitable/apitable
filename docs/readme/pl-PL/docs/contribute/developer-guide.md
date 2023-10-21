@@ -163,7 +163,7 @@ Ponadto niektóre skrzynki pocztowe muszą być włączone w tle, aby używać s
 
 Możesz uzyskać dostęp do dokumentacji API, uruchamiając lokalny serwer:
 
-1. Adres dokumentacji dla serwera Backend to: http://localhost:8081/api/v1/doc.html
+1. Adres dokumentacji dla serwera Backend to: http://localhost:8881/api/v1/doc.html
 
 2. Adres dokumentacji dla room-server to: http://localhost:3333/nest/v1/docs
 
