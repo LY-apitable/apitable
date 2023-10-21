@@ -161,7 +161,7 @@ export const TabAddView: React.FC<React.PropsWithChildren<ITabAddView>> = (props
         })}
       >
         <ReactIconButton />
-        <span className={styles.tip}>{viewCount === 1 ? t(Strings.create_view_first) : t(Strings.new_view)}</span>
+        {/* <span className={styles.tip}>{viewCount === 1 ? t(Strings.create_view_first) : t(Strings.new_view)}</span> */}
       </div>
     );
     if (!disabled) {

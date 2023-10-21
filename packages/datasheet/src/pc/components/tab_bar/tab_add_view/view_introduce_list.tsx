@@ -193,7 +193,7 @@ export const ViewIntroduceList = (props: IViewIntroduceList) => {
         })}
       </div>}
 
-      {!embedId && permissions.manageable && (
+      {/* {!embedId && permissions.manageable && (
         <section
           className={styles.addNewDatasheet}
           onClick={() => ShortcutActionManager.trigger(ShortcutActionName.NewDatasheet)}
@@ -201,7 +201,7 @@ export const ViewIntroduceList = (props: IViewIntroduceList) => {
         >
           {t(Strings.tab_add_view_datasheet)}
         </section>
-      )}
+      )} */}
     </div>
   );
 };

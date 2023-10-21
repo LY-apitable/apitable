@@ -519,8 +519,9 @@ function MyAppMain({ Component, pageProps, envVars }: AppProps & { envVars: stri
                       alt="logo"/>
                     <img src={integrateCdnHost(getEnvVariables().LOGO_TEXT_LIGHT!)}
                       className="script-loading-logo-text-img" alt="logo_text_dark"/>
-                  </div> */}
+                   */}
                   加载中
+                  </div>
                 )}
               </div>
             }
