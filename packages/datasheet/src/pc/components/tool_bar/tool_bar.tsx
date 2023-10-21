@@ -19,6 +19,7 @@
 import { useMount, useSize, useThrottleFn } from 'ahooks';
 import classNames from 'classnames';
 import { get } from 'lodash';
+import { ShortcutActionManager, ShortcutActionName } from 'modules/shared/shortcut_key';
 import * as React from 'react';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isMobile } from 'react-device-detect';
@@ -65,7 +66,6 @@ import {
   StyleOutlined,
   WidgetOutlined,
 } from '@apitable/icons';
-import { ShortcutActionManager, ShortcutActionName } from 'modules/shared/shortcut_key';
 import { closeAllExpandRecord } from 'pc/components/expand_record/utils';
 import { MirrorList } from 'pc/components/mirror/mirror_list';
 import { getFieldTypeIcon } from 'pc/components/multi_grid/field_setting';
@@ -453,7 +453,7 @@ const ToolbarBase = () => {
         <ToolItem
           key="api"
           icon={<ApiOutlined size={16} className={styles.toolIcon} />}
-          text={'API'}
+          text={'连接器'}
           // onClick={() => ShortcutActionManager.trigger(ShortcutActionName.ToggleApiPanel)}
           onClick={() => handleToggleRightBar(ShortcutActionName.ToggleApiPanel)}
           className={classNames({ [styles.toolbarItem]: true, [styles.apiActive]: isApiPanelOpen })}

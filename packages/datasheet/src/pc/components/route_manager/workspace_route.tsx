@@ -91,7 +91,8 @@ const WorkspaceRoute: FC<React.PropsWithChildren<unknown>> = () => {
     if (aiId && ChatPage) {
       return <ChatPage />;
     }
-    return <Welcome />;
+    // return <Welcome />;
+    return <DashboardPanel />;
   };
 
   return MainComponent();

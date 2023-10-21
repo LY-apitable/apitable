@@ -66,7 +66,7 @@ const Menu: React.FC<
         <AddOutlined size={16} color={colors.thirdLevelText} />
         {t(Strings.add_widget)}
       </div>
-      {!embedId && (
+      {/* {!embedId && (
         <div
           className={styles.menuItem}
           onClick={(e) => {
@@ -77,7 +77,7 @@ const Menu: React.FC<
           <ImportOutlined size={15} color={colors.thirdLevelText} />
           {t(Strings.import_widget)}
         </div>
-      )}
+      )} */}
     </div>
   );
 };
