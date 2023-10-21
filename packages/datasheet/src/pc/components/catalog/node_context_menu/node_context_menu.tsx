@@ -314,21 +314,21 @@ export const NodeContextMenu: FC<React.PropsWithChildren<INodeContextMenuProps>>
                 openCatalog();
                 addTreeNode(targetId);
               }),
-              contextItemMap.get(ContextItemKey.AddAutomation)(() => {
-                addTreeNode(targetId, ConfigConstant.NodeType.AUTOMATION);
-              }),
-              contextItemMap.get(ContextItemKey.AddForm)(() => {
-                const result = triggerUsageAlert?.(
-                  'maxFormViewsInSpace',
-                  { usage: spaceInfo!.formViewNums + 1, alwaysAlert: true },
-                  SubscribeUsageTipType.Alert,
-                );
-                if (result) {
-                  return;
-                }
-                openCatalog();
-                addForm(targetId);
-              }, !editable),
+              // contextItemMap.get(ContextItemKey.AddAutomation)(() => {
+              //   addTreeNode(targetId, ConfigConstant.NodeType.AUTOMATION);
+              // }),
+              // contextItemMap.get(ContextItemKey.AddForm)(() => {
+              //   const result = triggerUsageAlert?.(
+              //     'maxFormViewsInSpace',
+              //     { usage: spaceInfo!.formViewNums + 1, alwaysAlert: true },
+              //     SubscribeUsageTipType.Alert,
+              //   );
+              //   if (result) {
+              //     return;
+              //   }
+              //   openCatalog();
+              //   addForm(targetId);
+              // }, !editable),
               contextItemMap.get(ContextItemKey.AddDashboard)(() => {
                 openCatalog();
                 addTreeNode(targetId, ConfigConstant.NodeType.DASHBOARD);
@@ -378,7 +378,7 @@ export const NodeContextMenu: FC<React.PropsWithChildren<INodeContextMenuProps>>
                 openImportModal(targetId);
               }),
             ],
-            [contextItemMap.get(ContextItemKey.CreateFromTemplate)(() => Router.push(Navigation.TEMPLATE, { params: { spaceId } }))],
+            // [contextItemMap.get(ContextItemKey.CreateFromTemplate)(() => Router.push(Navigation.TEMPLATE, { params: { spaceId } }))],
           ];
           Player.applyFilters(Events.get_context_menu_root_add, data);
         }
