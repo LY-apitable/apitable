@@ -438,16 +438,16 @@ const ToolbarBase = () => {
       key: 'find',
       show: true,
     },
-    {
-      component: <ForeignForm key="foreignForm" className={styles.toolbarItem} showLabel={showIconBarLabel} />,
-      key: 'foreignForm',
-      show: isGridView && !shareId && !templateId && !mirrorId && embedSetting.formBtn,
-    },
-    {
-      component: <MirrorList key="mirror" className={styles.toolbarItem} showLabel={showIconBarLabel} />,
-      key: 'mirror',
-      show: !shareId && !templateId && !mirrorId && !embedId,
-    },
+    // {
+    //   component: <ForeignForm key="foreignForm" className={styles.toolbarItem} showLabel={showIconBarLabel} />,
+    //   key: 'foreignForm',
+    //   show: isGridView && !shareId && !templateId && !mirrorId && embedSetting.formBtn,
+    // },
+    // {
+    //   component: <MirrorList key="mirror" className={styles.toolbarItem} showLabel={showIconBarLabel} />,
+    //   key: 'mirror',
+    //   show: !shareId && !templateId && !mirrorId && !embedId,
+    // },
     {
       component: (
         <ToolItem
@@ -481,22 +481,22 @@ const ToolbarBase = () => {
       key: 'widget',
       show: embedSetting.widgetBtn,
     },
-    {
-      component: (
-        <ToolItem
-          key="robot"
-          icon={<AutomationOutlined size={16} />}
-          text={t(Strings.automation)}
-          onClick={() => handleToggleRightBar(ShortcutActionName.ToggleRobotPanel)}
-          className={classNames({ [styles.toolbarItem]: true, [styles.apiActive]: isRobotPanelOpen })}
-          id={DATASHEET_ID.ROBOT_BTN}
-          showLabel={showIconBarLabel}
-          disabled={!permissions.editable}
-        />
-      ),
-      key: 'robot',
-      show: !mirrorId && !shareId && !templateId && embedSetting.robotBtn, // Open the portal only in the preview environment before going online.
-    },
+    // {
+    //   component: (
+    //     <ToolItem
+    //       key="robot"
+    //       icon={<AutomationOutlined size={16} />}
+    //       text={t(Strings.automation)}
+    //       onClick={() => handleToggleRightBar(ShortcutActionName.ToggleRobotPanel)}
+    //       className={classNames({ [styles.toolbarItem]: true, [styles.apiActive]: isRobotPanelOpen })}
+    //       id={DATASHEET_ID.ROBOT_BTN}
+    //       showLabel={showIconBarLabel}
+    //       disabled={!permissions.editable}
+    //     />
+    //   ),
+    //   key: 'robot',
+    //   show: !mirrorId && !shareId && !templateId && embedSetting.robotBtn, // Open the portal only in the preview environment before going online.
+    // },
     {
       component: (
         <ToolItem

@@ -99,11 +99,11 @@ export const WidgetCenterModal: React.FC<React.PropsWithChildren<IWidgetCenterMo
         <Typography variant={'h4'} component={'span'} ellipsis style={{ marginRight: '4px' }}>
           {t(Strings.widget_center)}
         </Typography>
-        <Tooltip content={t(Strings.widget_center_help_tooltip)} placement="right-center">
+        {/* <Tooltip content={t(Strings.widget_center_help_tooltip)} placement="right-center">
           <a href={getEnvVariables().WIDGET_CENTER_HELP_URL} target="_blank" className={styles.helpIcon} rel="noreferrer">
             <QuestionCircleOutlined size={24} color={colors.fc3} />
           </a>
-        </Tooltip>
+        </Tooltip> */}
       </div>
     );
   };
