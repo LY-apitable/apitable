@@ -17,6 +17,7 @@
  */
 
 import classNames from 'classnames';
+import { ShortcutActionManager, ShortcutActionName } from 'modules/shared/shortcut_key';
 import Image from 'next/image';
 import Trigger from 'rc-trigger';
 import * as React from 'react';
@@ -36,7 +37,6 @@ import {
   ViewType,
 } from '@apitable/core';
 import { AddOutlined } from '@apitable/icons';
-import { ShortcutActionManager, ShortcutActionName } from 'modules/shared/shortcut_key';
 import { ViewIcon } from 'pc/components/tool_bar/view_switcher/view_icon';
 import DefaultViewPng from 'static/icon/datasheet/view/datasheet_img_view@4x.png';
 import { NodeIcon } from './node_icon';
@@ -183,6 +183,7 @@ export const ViewIntroduceList = (props: IViewIntroduceList) => {
                 className={styles.viewItem}
                 id={DATASHEET_ID.VIEW_CREATOR_FORM}
                 onClick={(e) => addNewNode(e as any as React.MouseEvent, nodeType)}
+                style={{ display: FormView.getViewIntroduce()!.title === '神奇表单' ? 'none' : 'inline-block' }}
               >
                 <NodeIcon nodeType={nodeType} color={colors.primaryColor} size={16}/>
                 <span>{FormView.getViewIntroduce()!.title}</span>

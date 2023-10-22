@@ -22,8 +22,9 @@ import { forwardRef, memo, ReactNode, useCallback, useEffect, useImperativeHandl
 import { Button, Typography } from '@apitable/components';
 import { ConfigConstant, Navigation, t, Strings } from '@apitable/core';
 import { AddOutlined, TriangleRightFilled } from '@apitable/icons';
-
 import { Router } from '../../../route_manager/router';
+import { CreateDataSheetModal } from '../../../workspace/welcome/create_datasheet_modal'
+
 import { TreeItem } from '../tree_item';
 import TreeViewContext from '../tree_view_context';
 import styles from './style.module.less';
@@ -91,6 +92,7 @@ export const TreeViewBase: React.ForwardRefRenderFunction<ITreeViewRef, ITreeVie
   const [dragNodeId, setDragNodesId] = useState<string>('');
   const [highlightNodeId, setHighlightNodeId] = useState<string>('');
   const [loadingNodeId, setLoadingNodeId] = useState<string>('');
+  const [show, setShow] = useState(false);
 
   useImperativeHandle(ref, () => ({
     setLoadingNodeId: (nodeId: string) => setLoadingNodeId(nodeId),
@@ -262,6 +264,7 @@ export const TreeViewBase: React.ForwardRefRenderFunction<ITreeViewRef, ITreeVie
           React.Children.map(children, renderTreeItem)
         )}
       </ul>
+      {show && <CreateDataSheetModal setShow={setShow} />}
     </TreeViewContext.Provider>
   );
 };

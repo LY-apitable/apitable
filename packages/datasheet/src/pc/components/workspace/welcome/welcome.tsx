@@ -89,7 +89,7 @@ export const Welcome: FC<React.PropsWithChildren<unknown>> = () => {
               <Typography variant="h1" color={colors.fc1}>
                 {t(Strings.welcome_title)}
               </Typography>
-              <div className={styles.scrollWrapper}>
+              {/* <div className={styles.scrollWrapper}>
                 <div className={styles.container}>
                   <div className={styles.main}>
                     {data.map((item, index) => (
@@ -161,7 +161,7 @@ export const Welcome: FC<React.PropsWithChildren<unknown>> = () => {
                     ))}
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </ComponentDisplay>
           <ComponentDisplay maxWidthCompatible={ScreenSize.md}>
