@@ -254,7 +254,8 @@ export const TreeViewBase: React.ForwardRefRenderFunction<ITreeViewRef, ITreeVie
               prefixIcon={<AddOutlined />}
               block
               onClick={() => {
-                Router.push(Navigation.TEMPLATE);
+                setShow(true);
+                // Router.push(Navigation.TEMPLATE);
               }}
             >
               {t(Strings.catalog_add_from_template_btn_title)}
