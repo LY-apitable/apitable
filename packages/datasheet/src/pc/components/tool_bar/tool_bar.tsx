@@ -697,7 +697,7 @@ const ToolbarBase = () => {
             />
           </Display>
         )}
-        {!shareId && !templateId && activeNodeId && treeNodesMap[activeNodeId] && !embedId && !isIframe() && (
+    {/* {!shareId && !templateId && activeNodeId && treeNodesMap[activeNodeId] && !embedId && !isIframe() && (
           <Display type={ToolHandleType.Share}>
             <ToolItem
               showLabel={showIconBarLabel}
@@ -708,7 +708,7 @@ const ToolbarBase = () => {
               className={styles.toolbarItem}
             />
           </Display>
-        )}
+        )} */}
       </div>
       <Share nodeId={shareNodeId} onClose={() => setShareNodeId('')} />
       {!isMobile && (
