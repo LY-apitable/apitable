@@ -1,4 +1,4 @@
-name: Docker Image web-server CI
+name: Docker Image backend-server CI
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
         # 登录阿里云镜像仓库
         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-qingdao.aliyuncs.com
         # 使用Dockerfile构建镜像
-        docker build . --file Dockerfile.back-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-backend-server:latest
+        docker build . --file Dockerfile.backend-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-backend-server:latest
         # 推送镜像到镜像仓库
         docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-backend-server:latest
         
