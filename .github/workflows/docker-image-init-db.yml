@@ -1,0 +1,27 @@
+name: Docker Image init-db CI
+
+on:
+  push:
+    branches: [ "feat/personal" ]
+  pull_request:
+    branches: [ "feat/personal" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build the Docker image
+      run: |
+        docker version
+        # 登录阿里云镜像仓库
+        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-qingdao.aliyuncs.com
+        # 使用Dockerfile构建镜像
+        docker build . --file Dockerfile.init-db --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-init-db:latest
+        # 推送镜像到镜像仓库
+        docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-init-db:latest
+        
