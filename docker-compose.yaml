@@ -28,7 +28,7 @@ services:
       - apitable
 
   backend-server:
-    image: ${IMAGE_REGISTRY}/${IMAGE_BACKEND_SERVER}
+    image: ${LY_IMAGE_REGISTRY}/${IMAGE_BACKEND_SERVER}
     pull_policy: ${IMAGE_PULL_POLICY:-if_not_present}
     restart: always
     env_file:
@@ -176,6 +176,8 @@ services:
       - "3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - TZ=${TIMEZONE}
     command: --default-authentication-plugin=mysql_native_password
@@ -211,7 +213,7 @@ services:
 
   # init data
   init-db:
-    image: ${IMAGE_REGISTRY}/${IMAGE_INIT_DB}
+    image: ${LY_IMAGE_REGISTRY}/${IMAGE_INIT_DB}
     pull_policy: ${IMAGE_PULL_POLICY:-if_not_present}
     environment:
       - TZ=${TIMEZONE}
