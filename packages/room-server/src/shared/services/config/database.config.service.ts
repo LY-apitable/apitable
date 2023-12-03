@@ -30,10 +30,10 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
     const { host, port, username, password, database, ssl, entityPrefix, connectionLimit, keepConnectionAlive, retryDelay } = {
-      host: process.env.MYSQL_HOST || 'localhost',
+      host: process.env.MYSQL_HOST || 'rm-bp1nqnpd7q2473e5fro.mysql.rds.aliyuncs.com',
       port: parseInt(process.env.MYSQL_PORT!) || 3306,
-      username: process.env.MYSQL_USERNAME || 'root',
-      password: process.env.MYSQL_PASSWORD || 'apitable@com',
+      username: process.env.MYSQL_USERNAME || 'apitable',
+      password: process.env.MYSQL_PASSWORD || 'Apitable1234@@',
       database: process.env.MYSQL_DATABASE || 'apitable',
       entityPrefix: process.env.DATABASE_TABLE_PREFIX || 'apitable_',
       ssl: process.env.MYSQL_SSL || false,
