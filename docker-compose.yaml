@@ -73,9 +73,9 @@ services:
       - ENABLE_SOCKET=true
     networks:
       - apitable
-    depends_on:
-      mysql:
-        condition: service_healthy
+    # depends_on:
+    #   mysql:
+    #     condition: service_healthy
 
   databus-server:
     image: ${IMAGE_REGISTRY}/${IMAGE_DATABUS_SERVER}
@@ -89,9 +89,9 @@ services:
       - TZ=${TIMEZONE}
     networks:
       - apitable
-    depends_on:
-      mysql:
-        condition: service_healthy
+    # depends_on:
+    #   mysql:
+    #     condition: service_healthy
 
   # Third Party Dockers
   gateway:
@@ -185,12 +185,12 @@ services:
       --collation-server=utf8mb4_general_ci
       --sql_mode=IGNORE_SPACE,NO_ENGINE_SUBSTITUTION
       --lower_case_table_names=2
-    healthcheck:
-      test: "mysql ${MYSQL_DATABASE} -u${MYSQL_USERNAME} -p${MYSQL_PASSWORD} -e 'SELECT 1;'"
-      interval: 5s
-      timeout: 5s
-      start_period: 30s
-      retries: 60
+    # healthcheck:
+    #   test: "mysql ${MYSQL_DATABASE} -u${MYSQL_USERNAME} -p${MYSQL_PASSWORD} -e 'SELECT 1;'"
+    #   interval: 5s
+    #   timeout: 5s
+    #   start_period: 30s
+    #   retries: 60
     networks:
       - apitable
 
@@ -239,8 +239,8 @@ services:
     networks:
       - apitable
     depends_on:
-      mysql:
-        condition: service_healthy
+      # mysql:
+      #   condition: service_healthy
       init-db:
         condition: service_completed_successfully
 
