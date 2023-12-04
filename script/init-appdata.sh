@@ -12,7 +12,7 @@ liquibase \
     --driver="com.mysql.cj.jdbc.Driver" \
     --database-changelog-table-name="${DATABASE_TABLE_PREFIX:=apitable_}db_changelog" \
     --database-changelog-lock-table-name="${DATABASE_TABLE_PREFIX:=apitable_}db_changelog_lock" \
-    --url="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?characterEncoding=utf8&autoReconnect=true&useSSL=true" \
+    --url="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?characterEncoding=utf8&autoReconnect=true&useSSL=false" \
     clearChecksums
 
 liquibase \
@@ -25,7 +25,7 @@ liquibase \
     --driver="com.mysql.cj.jdbc.Driver" \
     --database-changelog-table-name="${DATABASE_TABLE_PREFIX:=apitable_}db_changelog" \
     --database-changelog-lock-table-name="${DATABASE_TABLE_PREFIX:=apitable_}db_changelog_lock" \
-    --url="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?characterEncoding=utf8&autoReconnect=true&useSSL=true" \
+    --url="jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?characterEncoding=utf8&autoReconnect=true&useSSL=false" \
     update \
     -Dtable.prefix="${DATABASE_TABLE_PREFIX:=apitable_}"
 
