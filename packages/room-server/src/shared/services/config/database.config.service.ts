@@ -38,7 +38,8 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
       entityPrefix: process.env.DATABASE_TABLE_PREFIX || 'apitable_',
       ssl: process.env.MYSQL_SSL || false,
       connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT!) || 20,
-      keepConnectionAlive: !!process.env.MYSQL_KEEP_CONNECTION_ALIVE || this.configService.get<boolean>('MYSQL_KEEP_CONNECTION_ALIVE', true),
+      keepConnectionAlive: false,
+      // keepConnectionAlive: !!process.env.MYSQL_KEEP_CONNECTION_ALIVE || this.configService.get<boolean>('MYSQL_KEEP_CONNECTION_ALIVE', true),
       retryDelay: parseInt(process.env.MYSQL_RETRY_DELAY!) || 300,
     };
     return {
