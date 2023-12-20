@@ -51,6 +51,12 @@
         WHERE email = #{email} AND is_deleted = 0
     </select>
 
+    <select id="selectIdByDingUnionId" resultType="java.lang.Long">
+        SELECT id
+        FROM ${tablePrefix}user
+        WHERE ding_union_id = #{dingUnionId} AND is_deleted = 0
+    </select>
+
     <select id="selectByMobile" resultType="com.apitable.user.entity.UserEntity">
         SELECT *
         FROM ${tablePrefix}user

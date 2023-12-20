@@ -111,6 +111,9 @@ dependencies {
     // for apitable-ee
     implementation(rootProject.ext.dependencies['auth0'])
     implementation(rootProject.ext.dependencies['stripe'])
+
+    implementation(rootProject.ext.dependencies['alibaba-dingtalk'])
+    implementation(rootProject.ext.dependencies['alibaba-dingtalk-service'])
 }
 
 jar {

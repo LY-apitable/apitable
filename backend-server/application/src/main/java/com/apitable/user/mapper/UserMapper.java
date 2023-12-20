@@ -79,6 +79,14 @@ public interface UserMapper extends BaseMapper<UserEntity> {
     Long selectIdByEmail(@Param("email") String email);
 
     /**
+     * Obtain User ID through DingTalk Union Id.
+     *
+     * @param dingUnionId DingTalk Union Id
+     * @return User ID
+     */
+    Long selectIdByDingUnionId(@Param("dingUnionId") String dingUnionId);
+
+    /**
      * Get users through Phone number.
      *
      * @param mobilePhone Phone number

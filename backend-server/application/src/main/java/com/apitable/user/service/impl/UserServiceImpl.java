@@ -229,6 +229,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
     }
 
     @Override
+    public Long getUserIdByDingUnionId(final String dingUnionId) {
+        return baseMapper.selectIdByDingUnionId(dingUnionId);
+    }
+
+    @Override
     public boolean checkByCodeAndMobile(final String code,
                                         final String mobile) {
         String areaCode = StrUtil.prependIfMissing(code, "+");
@@ -445,6 +450,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
         // Create personal invitation code
         userServiceFacade.createInvitationCode(entity.getId());
         return entity.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserEntity createUserByDingTalk(
+        final String dingUnionId,
+        final String areaCode,
+        final String mobile,
+        final String email,
+        final String nickName,
+        final String avatar
+    ) {
+        Integer color = nullToDefaultAvatar(avatar) != null ? null
+            : RandomUtil.randomInt(0, USER_AVATAR_COLOR_MAX_VALUE);
+        UserEntity entity = UserEntity.builder()
+            .uuid(IdUtil.fastSimpleUUID())
+            .code(areaCode)
+            .mobilePhone(mobile)
+            .email(email)
+            .nickName(nullToDefaultNickName(nickName, mobile))
+            .locale(languageManager.getDefaultLanguageTag())
+            .avatar(nullToDefaultAvatar(avatar))
+            .color(color)
+            .dingUnionId(dingUnionId)
+            .password(passwordService.encode("Ab123456"))
+            .lastLoginTime(LocalDateTime.now())
+            .build();
+        boolean flag = saveUser(entity);
+        ExceptionUtil.isTrue(flag, REGISTER_FAIL);
+        // Create user activity record
+        iPlayerActivityService.createUserActivityRecord(entity.getId());
+        // Create personal invitation code
+        userServiceFacade.createInvitationCode(entity.getId());
+        return entity;
     }
 
     @Override

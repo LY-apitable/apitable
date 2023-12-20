@@ -102,6 +102,24 @@ public class AuthServiceImpl implements IAuthService {
     }
 
     @Override
+    public Long registerUserByDingTalk(String dingUnionId, String areaCode, String mobile,
+            String email, String nickName, String avatar, String spaceId) {
+        // Create a new user based on the mobile phone number and activate the corresponding member
+        UserEntity user = iUserService.createUserByDingTalk(dingUnionId, areaCode, mobile, email, nickName, avatar);
+        // Query whether there is a space member corresponding to a mobile phone number
+        List<MemberDTO> inactiveMembers = iMemberService.getInactiveMemberDtoByMobile(mobile);
+        // Invite new users to join the space station to reward attachment capacity,
+        // asynchronous  operation
+        if (spaceId != null) {
+            entitlementServiceFacade.rewardGiftCapacity(spaceId,
+                new EntitlementRemark(user.getId(), user.getNickName()));
+        }
+        createOrActiveSpace(user,
+            inactiveMembers.stream().map(MemberDTO::getId).collect(Collectors.toList()));
+        return user.getId();
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Long loginUsingPassword(LoginRo loginRo) {
         // Get the user according to the username (email area code + mobile phone),

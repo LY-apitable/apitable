@@ -69,6 +69,14 @@ public interface IUserService extends IService<UserEntity> {
     boolean checkByEmail(String email);
 
     /**
+     * Obtain user ID according to DingTalk Union Id.
+     * 
+     * @param dingUnionId DingTalk Union Id
+     * @return User ID
+     */
+    Long getUserIdByDingUnionId(String dingUnionId);
+
+    /**
      * Get Users.
      *
      * @param code        Area code
@@ -137,6 +145,19 @@ public interface IUserService extends IService<UserEntity> {
      */
     Long create(String areaCode, String mobile, String nickName, String avatar,
                 String email, String spaceName);
+                
+    /**
+     * Create Account By DingTalk
+     * 
+     * @param dingUnionId
+     * @param areaCode
+     * @param mobile
+     * @param email
+     * @param nickName
+     * @param avatar
+     * @return
+     */
+    UserEntity createUserByDingTalk(String dingUnionId, String areaCode, String mobile, String email, String nickName, String avatar);
 
     /**
      * Create an account by phone number.
