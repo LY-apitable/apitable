@@ -16,21 +16,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import dynamic from 'next/dynamic';
-import React from 'react';
-
-// @ts-ignore
-const DingTalkLoginWithNoSSR = dynamic(
-  () =>
-    // @ts-ignore
-    import('enterprise').then((components) => {
-      return components.DingTalkLogin;
-    }),
-  { ssr: false },
-);
+import {useEffect} from 'react';
+import * as dd from 'dingtalk-jsapi';
+import { Router } from 'pc/components/route_manager/router';
+import { Navigation, Api} from '@apitable/core';
+import { getSearchParams } from 'pc/utils';
 
 const App = () => {
-  return DingTalkLoginWithNoSSR && <DingTalkLoginWithNoSSR />;
+  useEffect(()=>{
+    dd.ready(function () {
+      const urlParams = getSearchParams();
+      let appKey = urlParams.get('appkey');
+      let corpId;
+      Api.getDingTalkCorpId(appKey)
+        .then((result) => {
+          if (result.data.code != 200) {
+            alert(result.data.message);
+            return;
+          }
+          corpId = result.data.data;
+          dd.runtime.permission.requestAuthCode({
+            corpId: corpId,
+            onSuccess: function(result) {
+              Api.loginByDingTalk(appKey, result.code)
+                .then(_response => {
+                  Router.redirect(Navigation.WORKBENCH);
+                })
+                .catch(error => {
+                  alert(JSON.stringify(error))
+                })
+            },
+            onFail : function(err) {
+              alert(JSON.stringify(err))
+            }
+          });
+        });
+    });
+  },[])
+
 };
 
 export default App;

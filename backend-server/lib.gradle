@@ -157,6 +157,8 @@ ext {
             'stripe'                       : "com.stripe:stripe-java:${stripe_version}",
             'shedlock'                     : "net.javacrumbs.shedlock:shedlock-spring:${shedlock_version}",
             'shedlock-redis'               : "net.javacrumbs.shedlock:shedlock-provider-redis-spring:${shedlock_version}",
-            'reactor-test'               : "io.projectreactor:reactor-test",
+            'reactor-test'                 : "io.projectreactor:reactor-test",
+            'alibaba-dingtalk'             : "com.aliyun:dingtalk:${dingtalk_sdk_version}",
+            'alibaba-dingtalk-service'    : "com.aliyun:alibaba-dingtalk-service-sdk:${dingtalk_service_sdk_version}"
     ]
 }
