@@ -183,9 +183,9 @@ const WidgetPackageItemBase = (props: IWidgetPackageItemProps) => {
         {!getEnvVariables().IS_SELFHOST && (
           <div className={styles.developerWrap}>
             <span>{t(Strings.widget_center_publisher)}</span>
-            {/* <div className={styles.avatarWrap}>
+            <div className={styles.avatarWrap}>
               <Avatar style={{ border: 0 }} id={authorIcon} src={authorIcon} title={authorName} size={AvatarSize.Size20} />
-            </div> */}
+            </div>
             <span>{'wetable' || authorName}</span>
           </div>
         )}

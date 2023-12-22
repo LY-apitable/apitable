@@ -66,7 +66,7 @@ const Menu: React.FC<
         <AddOutlined size={16} color={colors.thirdLevelText} />
         {t(Strings.add_widget)}
       </div>
-      {/* {!embedId && (
+      {!embedId && (
         <div
           className={styles.menuItem}
           onClick={(e) => {
@@ -77,7 +77,7 @@ const Menu: React.FC<
           <ImportOutlined size={15} color={colors.thirdLevelText} />
           {t(Strings.import_widget)}
         </div>
-      )} */}
+      )}
     </div>
   );
 };
@@ -264,11 +264,11 @@ export const TabBar: React.FC<React.PropsWithChildren<ITabBarProps>> = (props) =
             {isFullscreen ? t(Strings.collapse_full_screen) : t(Strings.full_screen)}
           </TextButton>
         )}
-        {/* {!isFullscreen && !readonly && isEnoughToShowButton && !embedId && (
+        {!isFullscreen && !readonly && isEnoughToShowButton && !embedId && (
           <a href={t(Strings.intro_dashboard)} target="_blank" className={styles.shareDoc} rel="noreferrer">
             {t(Strings.form_tour_desc)}
           </a>
-        )} */}
+        )}
         {!isFullscreen && !templateId && (!embedId || embedInfo.viewControl?.collaboratorStatusBar) && (
           <div className={styles.status}>
             {!hideReadonlyEmbedItem && (
