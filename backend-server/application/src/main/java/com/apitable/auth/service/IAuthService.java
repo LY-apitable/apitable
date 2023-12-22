@@ -36,6 +36,20 @@ public interface IAuthService {
     Long register(String username, String password);
 
     /**
+     * Register By DingTalk.
+     *
+     * @param dingUnionId  dingUnionId
+     * @param areaCode  areaCode
+     * @param mobile  mobile
+     * @param email  email
+     * @param nickName  nickName
+     * @param avatar  avatar
+     * @param spaceId  spaceId
+     * @return user id
+     */
+    Long registerUserByDingTalk(String dingUnionId, String areaCode, String mobile, String email, String nickName, String avatar, String spaceId);
+
+    /**
      * Password login, only log in existing users, no need to automatically register an account.
      *
      * @param loginRo request parameters
