@@ -16,19 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import {useEffect} from 'react';
 import * as dd from 'dingtalk-jsapi';
+import { useEffect } from 'react';
+import { Navigation, Api } from '@apitable/core';
 import { Router } from 'pc/components/route_manager/router';
-import { Navigation, Api} from '@apitable/core';
 import { getSearchParams } from 'pc/utils';
 
 const App = () => {
   useEffect(()=>{
     dd.ready(function () {
       const urlParams = getSearchParams();
-      let appKey = urlParams.get('appkey');
+      const appKey = urlParams.get('appkey');
       let corpId;
-      Api.getDingTalkCorpId(appKey)
+      Api?.getDingTalkCorpId(appKey)
         .then((result) => {
           if (result.data.code != 200) {
             alert(result.data.message);
@@ -37,22 +37,20 @@ const App = () => {
           corpId = result.data.data;
           dd.runtime.permission.requestAuthCode({
             corpId: corpId,
-            onSuccess: function(result) {
-              Api.loginByDingTalk(appKey, result.code)
-                .then(_response => {
-                  Router.redirect(Navigation.WORKBENCH);
-                })
-                .catch(error => {
-                  alert(JSON.stringify(error))
-                })
-            },
-            onFail : function(err) {
-              alert(JSON.stringify(err))
-            }
+          }).then((result) => {
+            Api.loginByDingTalk(appKey, result.code)
+              .then(_response => {
+                Router.redirect(Navigation.WORKBENCH);
+              })
+              .catch(error => {
+                alert(JSON.stringify(error));
+              });
+          }).catch(err => {
+            alert(JSON.stringify(err));
           });
         });
     });
-  },[])
+  }, []);
 
 };
 
