@@ -234,13 +234,13 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
       key: NavKey.Org,
       domId: NAV_ID.ICON_ADDRESS,
     },
-    // {
-    //   routeAddress: '/template' + search,
-    //   icon: PlanetOutlined,
-    //   text: t(Strings.nav_templates),
-    //   key: NavKey.Template,
-    //   domId: NAV_ID.ICON_TEMPLATE,
-    // },
+    {
+      routeAddress: '/template' + search,
+      icon: PlanetOutlined,
+      text: t(Strings.nav_templates),
+      key: NavKey.Template,
+      domId: NAV_ID.ICON_TEMPLATE,
+    },
     {
       routeAddress: '/management' + search,
       icon: Setting2Outlined,
@@ -344,12 +344,11 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
     >
       <div className={classNames(styles.navigation, templateActive && styles.templateActived, notice && styles.noticeOpend)}>
         <div className={styles.spaceLogo} 
-        // style={{display: 'none'}}
         >
-          <div style={{display: 'none'}} className={styles.spaceImg}>
+          <div className={styles.spaceImg}>
             <Avatar type={AvatarType.Space} title={user!.spaceName} id={user!.spaceId} src={user!.spaceLogo} size={AvatarSize.Size32} />
           </div>
-          <div style={{display: 'none'}} className={styles.spaceDown}>
+          <div className={styles.spaceDown}>
             <Tooltip title={t(Strings.workspace_list)} placement="bottom">
               <div>
                 <ChevronDownOutlined className={styles.spaceIcon} />
@@ -357,7 +356,7 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
             </Tooltip>
           </div>
         </div>
-        <div style={{display: 'none'}} className={styles.navWrapper} onClick={hiddenUserMenu}>
+        <div className={styles.navWrapper} onClick={hiddenUserMenu}>
           {navList.map((item: any) => {
             if (item.component) {
               return item.component();
@@ -412,7 +411,7 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
             </Popup>
           </ComponentDisplay>
         </div>
-{/*         {env.IS_ENTERPRISE && (
+        {env.IS_ENTERPRISE && (
           <Tooltip title={t(Strings.contact_us)} placement="right">
             <div className={styles.iconWrap} onClick={() => contactUs()}>
               <LivechatFilled className={styles.icon} size={32} />
@@ -423,18 +422,18 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
           <div className={styles.iconWrap} onClick={() => expandSearch()}>
             <SearchOutlined className={styles.icon} size={24} />
           </div>
-        </Tooltip> */}
-        {/* <Tooltip title={t(Strings.notification_center)} placement="right" key="notification_center">
+        </Tooltip>
+        <Tooltip title={t(Strings.notification_center)} placement="right" key="notification_center">
           <span className={styles.notification}>
             {NotificationNav}
             <span id={NAV_ID.ICON_NOTIFICATION} className={styles.noticeAnimate} />
           </span>
-        </Tooltip> */}
-        {/* {!inSocialApp?.() && !isMobileApp() && (
+        </Tooltip>
+        {!inSocialApp?.() && !isMobileApp() && (
           <div className={styles.help}>
             <Help templateActived={templateActive} />
           </div>
-        )} */}
+        )}
         <div className={styles.userIcon}>
           <User />
         </div>

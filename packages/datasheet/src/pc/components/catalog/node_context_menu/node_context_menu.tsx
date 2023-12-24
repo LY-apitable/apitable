@@ -251,7 +251,7 @@ export const NodeContextMenu: FC<React.PropsWithChildren<INodeContextMenuProps>>
               contextItemMap.get(ContextItemKey.Rename)(() => rename(nodeId, level, module), !renamable),
               contextItemMap.get(ContextItemKey.Favorite)(() => updateNodeFavoriteStatus(nodeId), nodeFavorite),
               contextItemMap.get(ContextItemKey.Copy)(() => copyNode(nodeId), !copyable),
-              // contextItemMap.get(ContextItemKey.CopyUrl)(() => copyUrl(nodeUrl), type),
+              contextItemMap.get(ContextItemKey.CopyUrl)(() => copyUrl(nodeUrl), type),
             ],
             [
               contextItemMap.get(ContextItemKey.Permission)(() => openPermissionSetting(nodeId), nodeAssignable),

@@ -52,7 +52,7 @@ export const getInitialProps = (context: { ctx: NextPageContext }) => {
   const headers: Record<string, string> = { ...filterHeaders };
 
   const defaultLang = envVars.SYSTEM_CONFIGURATION_DEFAULT_LANGUAGE;
-  let locale = defaultLang ? LANG_MAP[defaultLang] : 'zh-CN';
+  let locale = defaultLang ? LANG_MAP[defaultLang] : 'zh_CN';
   if (cookie) {
     headers.cookie = cookie;
     const getCookie = (name: string) => {
