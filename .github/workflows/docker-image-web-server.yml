@@ -2,9 +2,9 @@ name: Docker Image web-server CI
 
 on:
   push:
-    branches: [ "feat/personal" ]
+    branches: [ "dev/personal-test-web-server" ]
   pull_request:
-    branches: [ "feat/personal" ]
+    branches: [ "dev/personal-test-web-server" ]
 
 jobs:
 
@@ -21,7 +21,7 @@ jobs:
         # 登录阿里云镜像仓库
         docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-qingdao.aliyuncs.com
         # 使用Dockerfile构建镜像
-        docker build . --file Dockerfile.web-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
+        docker build . --file Dockerfile.web-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:1.0.0
         # 推送镜像到镜像仓库
-        docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
+        docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:1.0.0
         
