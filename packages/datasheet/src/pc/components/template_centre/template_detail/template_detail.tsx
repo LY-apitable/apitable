@@ -175,11 +175,8 @@ export const TemplateDetail: FC<React.PropsWithChildren<unknown>> = () => {
           }
         }
       })
-      .catch((err) => {
-        console.warn(err);
-      });
+      .catch((err) => {});
   };
-
   const MainComponent = () => {
     if (!templateDirectory) {
       return <Loading />;
