@@ -28,6 +28,7 @@ const App = () => {
       const urlParams = getSearchParams();
       const appKey = urlParams.get('appkey');
       let corpId;
+      // @ts-ignore
       Api?.getDingTalkCorpId(appKey)
         .then((result) => {
           if (result.data.code != 200) {
@@ -38,6 +39,7 @@ const App = () => {
           dd.runtime.permission.requestAuthCode({
             corpId: corpId,
           }).then((result) => {
+            // @ts-ignore
             Api.loginByDingTalk(appKey, result.code)
               .then(_response => {
                 Router.redirect(Navigation.WORKBENCH);
