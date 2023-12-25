@@ -44,6 +44,17 @@ target "web-server" {
   tags = ["${IMAGE_REGISTRY}/apitable/web-server:latest", "${IMAGE_REGISTRY}/apitable/web-server:${IMAGE_TAG}"]
 }
 
+# https://github.com/apitable/apitable/issues/1379
+target "web-server-experimental" {
+  context = "."
+  dockerfile = "packaging/Dockerfile.web-server"
+  args = {
+    SEMVER_FULL = SEMVER_FULL
+  }
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["linyi94/apitable-web-server:latest", "linyi94/apitable-web-server:${IMAGE_TAG}"]
+}
+
 target "init-db" {
   context = "./init-db"
   dockerfile = "Dockerfile"
