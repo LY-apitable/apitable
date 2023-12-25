@@ -28,7 +28,7 @@ const App = () => {
       const urlParams = getSearchParams();
       let appKey = urlParams.get('appkey');
       let corpId;
-      // ts-ignore
+      // @ts-ignore
       Api.getDingTalkCorpId(appKey)
         .then((result) => {
           if (result.data.code != 200) {
@@ -38,20 +38,31 @@ const App = () => {
           corpId = result.data.data;
           dd.runtime.permission.requestAuthCode({
             corpId: corpId,
-            onSuccess: function(result) {
-              // ts-ignore
-              Api.loginByDingTalk(appKey, result.code)
+            // onSuccess: function(result) {
+            //   Api.loginByDingTalk(appKey, result.code)
+            //     .then(_response => {
+            //       Router.redirect(Navigation.WORKBENCH);
+            //     })
+            //     .catch(error => {
+            //       alert(JSON.stringify(error))
+            //     })
+            // },
+            // onFail : function(err) {
+            //   alert(JSON.stringify(err))
+            // }
+          }).then(result => {
+            // @ts-ignore
+            Api.loginByDingTalk(appKey, result.code)
                 .then(_response => {
                   Router.redirect(Navigation.WORKBENCH);
                 })
                 .catch(error => {
                   alert(JSON.stringify(error))
                 })
-            },
-            onFail : function(err) {
-              alert(JSON.stringify(err))
-            }
-          });
+          }).catch(err => {
+            alert(JSON.stringify(err))
+
+          })
         });
     });
   },[])
