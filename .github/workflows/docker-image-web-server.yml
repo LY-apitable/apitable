@@ -2,26 +2,48 @@ name: Docker Image web-server CI
 
 on:
   push:
-    branches: [ "feat/ly-dev" ]
+    branches: [ "feat/develop" ]
   pull_request:
-    branches: [ "feat/ly-dev" ]
+    branches: [ "feat/develop" ]
 
 jobs:
 
-  build:
-
+  build-push-experimental:
+    needs: build-push
     runs-on: ubuntu-latest
-
+    #if: ${{ github.event_name != 'pull_request' }}
+    # if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    strategy:
+      matrix:
+        target: [ web-server-experimental ]
+    env:
+      APITABLE_DOCKER_HUB_TOKEN: ${{ secrets.APITABLE_DOCKER_HUB_TOKEN }}
     steps:
-    - uses: actions/checkout@v3
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build APITable and Push
+        run: |
+          eval "$(./scripts/semver-ci.sh)"
+          make buildpush-docker-ly target=${{ matrix.target }}
 
-    - name: Build the Docker image
-      run: |
-        docker version
-        # 登录阿里云镜像仓库
-        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-qingdao.aliyuncs.com
-        # 使用Dockerfile构建镜像
-        docker build . --file Dockerfile.web-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
-        # 推送镜像到镜像仓库
-        docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
+  # build:
+
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #   - uses: actions/checkout@v3
+
+  #   - name: Build the Docker image
+  #     run: |
+  #       docker version
+  #       # 登录阿里云镜像仓库
+  #       docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-qingdao.aliyuncs.com
+  #       # 使用Dockerfile构建镜像
+  #       docker build . --file Dockerfile.web-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
+  #       # 推送镜像到镜像仓库
+  #       docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
         
