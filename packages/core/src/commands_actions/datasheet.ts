@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { compensator } from 'compensator';
-import { IJOTAction, IObjectInsertAction, IObjectReplaceAction, OTActionName, ViewPropertyFilter } from 'engine';
+import { compensator } from '../compensator';
+import { IJOTAction, IObjectInsertAction, IObjectReplaceAction, OTActionName } from 'engine/ot/interface';
+import { ViewPropertyFilter } from 'engine/view_property_filter';
 import { findIndex, isEqual, omit, unionWith } from 'lodash';
 import { getMaxViewCountPerSheet } from 'model/utils';
 import {
@@ -28,10 +29,11 @@ import {
   ITemporaryView,
   IUserInfo,
   IViewLockInfo,
-  RowHeightLevel,
-  Selectors,
-  ViewType,
-} from '../exports/store';
+} from '../exports/store/interfaces';
+import { RowHeightLevel } from 'modules/shared/store/constants';
+import { ViewType } from 'modules/shared/store/constants';
+import { getDateTimeCellAlarm } from 'modules/database/store/selectors/resource/datasheet/calc';
+import { getSnapshot } from 'modules/database/store/selectors/resource/datasheet/base';
 import {
   IGridViewColumn,
   IGridViewProperty,
@@ -42,26 +44,32 @@ import {
   IWidgetInPanel,
   IWidgetPanel,
 } from '../exports/store/interfaces';
+
+import { getCellValue } from 'modules/database/store/selectors/resource/datasheet/cell_calc';
+
+import { getViewById } from 'modules/database/store/selectors/resource/datasheet/base';
+import { getFilterInfo,sortRowsBySortInfo } from 'modules/database/store/selectors/resource/datasheet/rows_calc';
 import {
-  getActiveViewGroupInfo,
-  getCellValue,
-  getFieldMap,
-  getFilterInfo,
-  getFilterInfoExceptInvalid,
-  getGroupInfoWithPermission,
   getResourceActiveWidgetPanel,
   getResourceWidgetPanels,
-  getViewById,
+} from 'modules/database/store/selectors/resource';
+import {
+  getActiveViewGroupInfo,
+  getFieldMap,
+  getFilterInfoExceptInvalid,
+  getGroupInfoWithPermission,
   getViewIndex,
-  sortRowsBySortInfo,
-} from '../exports/store/selectors';
+} from 'modules/database/store/selectors/resource/datasheet/calc';
 import { FilterConjunction, IFilterCondition, IFilterInfo, IGroupInfo, ISortInfo, ResourceType } from 'types';
 import { FieldType, IField } from 'types/field_types';
 import { assertNever, getNewId, getUniqName, IDPrefix, NamePrefix } from 'utils';
-import { Field, OtherTypeUnitId, StatType } from '../model/field';
+import { Field } from '../model/field/field';
+import { StatType } from 'model/field/stat';
+import { OtherTypeUnitId } from '../model/field/const';
 import { ICellValue } from '../model/record';
 import { getViewClass } from '../model/views';
 import { ViewFilterDerivate } from 'compute_manager/view_derivate';
+import { produce } from 'immer';
 
 // TODO: all fields should be checked, not only the first one
 function validateFilterInfo(filterInfo?: IFilterInfo) {
@@ -341,7 +349,7 @@ export class DatasheetActions {
    */
   static addField2Action(
     snapshot: ISnapshot,
-    payload: { field: IField; viewId?: string; index?: number; fieldId?: string; offset?: number; hiddenColumn?: boolean },
+    payload: { field: IField; viewId?: string; index?: number; fieldId?: string; offset?: number; hiddenColumn?: boolean, forceColumnVisible?:boolean },
   ): IJOTAction[] | null {
     const fieldMap = snapshot.meta.fieldMap;
     const views = snapshot.meta.views;
@@ -372,6 +380,10 @@ export class DatasheetActions {
 
       // handler of new column in view
       function viewColumnHandler() {
+        if(payload.forceColumnVisible != null) {
+          newColumn.hidden = payload.forceColumnVisible===true;
+          return;
+        }
         let hiddenKey = 'hidden';
         switch (cur.type) {
           case ViewType.Gantt:
@@ -562,7 +574,7 @@ export class DatasheetActions {
       // when delete date column, remove alarm
       const recordMap = snapshot.recordMap;
       Object.keys(recordMap).forEach(recordId => {
-        const alarm = Selectors.getDateTimeCellAlarm(snapshot, recordId, field.id);
+        const alarm = getDateTimeCellAlarm(snapshot, recordId, field.id);
         if (alarm) {
           const alarmActions = DatasheetActions.setDateTimeCellAlarm(snapshot, {
             recordId,
@@ -736,13 +748,14 @@ export class DatasheetActions {
   /**
    * add record to table
    */
-  static addRecord2Action(snapshot: ISnapshot, payload: { viewId: string; record: IRecord; index: number }): IJOTAction[] | null {
+  static addRecord2Action(snapshot: ISnapshot, payload: { viewId: string; record: IRecord; index: number, newRecordIndex: number }): IJOTAction[] | null {
     const recordMap = snapshot.recordMap;
     const views = snapshot.meta.views;
-    const { record, index, viewId } = payload;
+    const { record, index, viewId, newRecordIndex } = payload;
 
     const actions = views.reduce<IJOTAction[]>((pre, cur, viewIndex) => {
-      let rowIndex = cur.rows.length;
+      // multi add rows length no change
+      let rowIndex = cur.rows.length + newRecordIndex;
       if (cur.rows.some(row => row.recordId === record.id)) {
         return pre;
       }
@@ -923,7 +936,7 @@ export class DatasheetActions {
         // TODO(kailang) ObjectDelete has did this
         Object.keys(fieldMap).forEach(fieldId => {
           if (fieldMap[fieldId]!.type === FieldType.DateTime) {
-            const alarm = Selectors.getDateTimeCellAlarm(snapshot, recordId, fieldId);
+            const alarm = getDateTimeCellAlarm(snapshot, recordId, fieldId);
             if (alarm) {
               const alarmActions = DatasheetActions.setDateTimeCellAlarm(snapshot, {
                 recordId,
@@ -960,7 +973,7 @@ export class DatasheetActions {
     },
   ): IJOTAction[] | null {
     const { recordId, fieldId, alarm } = payload;
-    const oldAlarm = Selectors.getDateTimeCellAlarm(snapshot, recordId, fieldId);
+    const oldAlarm = getDateTimeCellAlarm(snapshot, recordId, fieldId);
 
     // new alarm
     if (!oldAlarm) {
@@ -1426,7 +1439,7 @@ export class DatasheetActions {
     },
   ): IJOTAction[] | null {
     const { recordId, datasheetId, insertComments } = options;
-    const recordMap = Selectors.getSnapshot(state, datasheetId)!.recordMap;
+    const recordMap = getSnapshot(state, datasheetId)!.recordMap;
     const record: IRecord = recordMap[recordId]!;
     const { comments = [] } = record;
 
@@ -1919,5 +1932,68 @@ export class DatasheetActions {
       od: fieldMap[fieldId],
       oi: newField,
     };
+  }
+
+  /**
+   * Undo archieve recordIds
+   * @Parmas snapshot
+   * @param payload
+   */
+
+  static unarchivedRecords2Action(snapshot: ISnapshot, payload: { recordsData: any, linkFields: string[] }): IJOTAction[] | null {
+    const { recordsData, linkFields } = payload;
+
+    if (!recordsData || !recordsData.length || !snapshot) return null;
+    const rows = snapshot.meta.views[0]!.rows;
+    const views = snapshot.meta.views;
+    const rlt: IJOTAction[] = [];
+
+    for (let i = 0; i < recordsData.length; i++) {
+
+      for(let j = 0; j < views.length; j++) {
+        rlt.push({
+          n: OTActionName.ListInsert,
+          p: ['meta', 'views', j, 'rows', rows.length],
+          li: { recordId: recordsData[i].id },
+        });
+      }
+
+      const newRecord = produce(recordsData[i], (draft: any) => {
+        Object.keys(draft.data).forEach(key => {
+          if(linkFields.includes(key)) {
+            draft.data[key] = [];
+          }
+        });
+      });
+
+      rlt.push({
+        n: OTActionName.ObjectInsert,
+        p: ['recordMap', recordsData[i].id],
+        oi: newRecord,
+      });
+
+    }
+
+    return rlt;
+  }
+
+  /**
+   * Delete archieve recordIds
+   */
+  static deleteArchivedRecords2Action(snapshot: ISnapshot, payload: { recordsData: any }): IJOTAction[] | null {
+    const { recordsData } = payload;
+
+    if (!recordsData || !snapshot) return null;
+
+    const rlt: IJOTAction[] = [];
+    for (let i = 0; i < recordsData.length; i++) {
+      rlt.push({
+        n: OTActionName.ObjectDelete,
+        p: ['recordMap', recordsData[i].id],
+        od: recordsData[i],
+      });
+    }
+
+    return rlt;
   }
 }

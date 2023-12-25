@@ -40,6 +40,7 @@ import {
   IViewRow,
   NoticeTemplatesConstant,
   Selectors,
+  IRemoteChangeset,
 } from '@apitable/core';
 import { Inject, Injectable } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
@@ -326,6 +327,16 @@ export class FusionApiService {
     };
   }
 
+
+  /**
+   * Query datasheet records have deleted
+   *
+   * @param dstId datasheet id
+   */
+  public async getDeletedRecords(dstId: string): Promise<string[]> {
+    return this.fusionApiRecordService.getDeletedRecordsByDstId(dstId);
+  }
+
   public async getFieldCreateDtos(datasheetId: string): Promise<FieldCreateDto[]> {
     const meta: IMeta = await this.metaService.getMetaDataByDstId(datasheetId);
     return Object.keys(meta.fieldMap).map((fieldId) => {
@@ -433,6 +444,7 @@ export class FusionApiService {
   public async updateRecords(dstId: string, body: RecordUpdateRo, viewId: string): Promise<ListVo> {
     // Validate the existence in advance to prevent repeatedly swiping all the count table data
     const updateRecordsProfiler = this.logger.startTimer();
+    await this.fusionApiRecordService.validateArchivedRecordIncludes(dstId, body.getRecordIds(), ApiTipConstant.api_param_record_archived);
     await this.fusionApiRecordService.validateRecordExists(dstId, body.getRecordIds(), ApiTipConstant.api_param_record_not_exists);
 
     const meta: IMeta = this.request[DATASHEET_META_HTTP_DECORATE];
@@ -628,7 +640,7 @@ export class FusionApiService {
       throw ApiException.tipError(ApiTipConstant.api_insert_error);
     }
 
-    const userId = result.saveResult as string;
+    const userId = this.request[USER_HTTP_DECORATE].id;
     const recordIds = result.data as string[];
 
     // API submission requires a record source for tracking the source of the record
@@ -744,6 +756,7 @@ export class FusionApiService {
    */
   public async deleteRecord(dstId: string, recordIds: string[]): Promise<boolean> {
     // Validate the existence in advance to prevent repeatedly swiping all the count table data
+    await this.fusionApiRecordService.validateArchivedRecordIncludes(dstId, recordIds, ApiTipConstant.api_param_record_archived);
     await this.fusionApiRecordService.validateRecordExists(dstId, recordIds, ApiTipConstant.api_param_record_not_exists);
     const auth = { token: this.request.headers.authorization };
     const datasheet = await this.databusService.getDatasheet(dstId, {
@@ -826,6 +839,25 @@ export class FusionApiService {
     }
     return result.saveResult as string;
   }
+
+  /**
+   * Customize rust command
+   */
+  public async executeCommandFromRust(datasheetId: string, commandBody: IRemoteChangeset[], auth: IAuthHeader): Promise<string> {
+      const linkedRecordMap = undefined;
+      const datasheet = await this.databusService.getDatasheet(datasheetId, {
+        loadOptions: {
+          auth,
+          linkedRecordMap,
+          includeCommentCount: false
+        },
+      });
+      if (datasheet === null) {
+        throw ApiException.tipError(ApiTipConstant.api_datasheet_not_exist);
+      }
+      await datasheet.nestRoomChangeFromRust(datasheetId, commandBody);
+      return 'executeCommandFromRoomServer';
+    }
 
   private async addDatasheetField(dst: databus.Datasheet, fieldOptions: IAddFieldOptions, auth: IAuthHeader): Promise<string> {
     const result = await dst.addFields([fieldOptions], { auth });

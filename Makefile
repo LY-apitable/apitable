@@ -111,13 +111,13 @@ _build-java:
 _pre-check:
 	make _check-web
 
-_check-lint:
-	yarn install && yarn build:pre
-	yarn workspaces focus @apitable/core @apitable/i18n-lang @apitable/icons @apitable/components @apitable/widget-sdk @apitable/datasheet root
-	yarn lint:datasheet
+_check-web:
+	pnpm install && pnpm build:dst:pre
+	pnpm lint:datasheet
 
-_check-web: _build-ts
-
+_build-core:
+	pnpm install
+	nx run @apitable/core:build
 
 ################################ test
 
@@ -136,7 +136,6 @@ _test-ut-core:
 	pnpm run test:core
 
 _test-ut-core-cov:
-	make _build-ts
 	pnpm run test:core:cov
 
 ###### 【core unit test】 ######
@@ -387,6 +386,7 @@ install: install-local
 .PHONY: install-local
 install-local: ## install all dependencies with local programming language environment
 	pnpm install && pnpm build:dst:pre
+	pnpm build:sr
 	cd backend-server && ./gradlew build -x test --stacktrace
 
 .PHONY: install-docker
@@ -509,6 +509,9 @@ _l10n: ## l10n apitable-ce
 	bash ./scripts/language-generate.sh ./packages/i18n-lang/src ./packages/l10n/gen ./packages/l10n/base ./packages/i18n-lang/src ./
 	bash ./scripts/l10n.sh ./packages/i18n-lang/src ./packages/l10n/gen ./packages/l10n/base ./packages/l10n/base ./
 	pnpm run build
+
+wizard: ## wizard update
+	npx ts-node ./scripts/enterprise/wizard-update.ts
 
 ### help
 .PHONY: search

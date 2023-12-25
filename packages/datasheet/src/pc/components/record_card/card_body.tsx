@@ -19,15 +19,15 @@
 import { isNull } from 'util';
 import classNames from 'classnames';
 import * as React from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
-import { useThemeColors } from '@apitable/components';
+import { shallowEqual } from 'react-redux';
+import { useThemeColors, Typography } from '@apitable/components';
 import { BasicValueType, Field, FieldType, getTextFieldType, ICellValue, IField, IViewColumn, Selectors, Strings, t } from '@apitable/core';
 import { expandRecordIdNavigate } from 'pc/components/expand_record';
-import { UrlDiscern } from 'pc/components/multi_grid/cell/cell_text/url_discern';
 import { CellValue } from 'pc/components/multi_grid/cell/cell_value';
 import { getFieldTypeIcon } from 'pc/components/multi_grid/field_setting';
 import { useResponsive } from 'pc/hooks';
 import { store } from 'pc/store';
+import { useAppSelector } from 'pc/store/react-redux';
 import { ScreenSize } from '../common/component_display';
 import { getFieldHeight, getShowFieldType, getVietualFieldHeight } from '../gallery_view/utils';
 import { CardText } from './card_text';
@@ -54,7 +54,7 @@ const SINGLE_TEXT_TYPE = [FieldType.Formula, FieldType.Number, FieldType.Currenc
 
 export const CardBody: React.FC<React.PropsWithChildren<IGalleryCardBodyProps>> = (props) => {
   const { visibleFields, recordId, showEmptyField, multiTextMaxLine, isColNameVisible, className, isVirtual, isGallery, datasheetId } = props;
-  const recordSnapshot = useSelector((state) => Selectors.getRecordSnapshot(state, datasheetId, recordId), shallowEqual);
+  const recordSnapshot = useAppSelector((state) => Selectors.getRecordSnapshot(state, datasheetId, recordId), shallowEqual);
   const { screenIsAtMost } = useResponsive();
   const isMobile = screenIsAtMost(ScreenSize.md);
   const colors = useThemeColors();
@@ -77,7 +77,12 @@ export const CardBody: React.FC<React.PropsWithChildren<IGalleryCardBodyProps>> 
         if (index === 0) {
           return (
             <div key={recordId} className={classNames(styles.cellTitle, styles.cellValue, 'ellipsis')}>
-              <UrlDiscern value={showTitle(cellValue, field)} />
+              <Typography
+                variant="h7"
+                ellipsis
+              >
+                {showTitle(cellValue, field)}
+              </Typography>
             </div>
           );
         }

@@ -43,7 +43,7 @@ interface IDrag {
 
 const DragBase = ({ id, listStyle, task, disabled, isMore }: IDrag) => {
   const { startDate, endDate, title } = task;
-  const { columns, setRecordModal, recordModal, currentSearchRecordId, draggable, isCryptoStartField, isCryptoEndField, isMobile, activeCell } =
+  const { columns, currentSearchRecordId, draggable, isCryptoStartField, isCryptoEndField, isMobile, activeCell } =
     useContext(CalendarContext);
 
   const { show } = useContextMenu({
@@ -81,8 +81,8 @@ const DragBase = ({ id, listStyle, task, disabled, isMore }: IDrag) => {
 
   const isCurrentSearchCell = currentSearchRecordId === id;
 
-  const formatStartDate = startDate ? dayjs(startDate).format(FORMAT_DATE) : '';
-  const formatEndDate = endDate ? dayjs(endDate).format(FORMAT_DATE) : '';
+  const formatStartDate = startDate ? dayjs.tz(startDate).format(FORMAT_DATE) : '';
+  const formatEndDate = endDate ? dayjs.tz(endDate).format(FORMAT_DATE) : '';
 
   const DragItem = () => {
     const itemArray = (isMobile ? columns.slice(0, 1) : columns).map((column) => <RecordItem key={column.fieldId} column={column} id={id} />);
@@ -114,15 +114,6 @@ const DragBase = ({ id, listStyle, task, disabled, isMore }: IDrag) => {
           style={{
             opacity,
             ...listStyle,
-          }}
-          onMouseDown={() => {
-            /**
-             * Close modal when mouse is pressed
-             * Solve the problem of modal not disappearing when dragging
-             */
-            if (!isMobile && recordModal) {
-              setRecordModal(undefined);
-            }
           }}
           onContextMenu={isMobile ? undefined : onContextMenu}
           onClick={() => {

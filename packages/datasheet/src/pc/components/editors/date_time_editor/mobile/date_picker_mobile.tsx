@@ -32,9 +32,9 @@ enum OptionType {
 }
 
 const DatePickerMobileBase: React.ForwardRefRenderFunction<IEditor, IDateTimeEditorProps> = (props, ref) => {
-  const { field, editable, onClose, onSave, commandFn, curAlarm, disabled } = props;
+  const { field, editable, onClose, onSave, commandFn, curAlarm, disabled, userTimeZone } = props;
 
-  const { dateFormat, timeZone, includeTimeZone } = Field.bindModel(field);
+  const { dateFormat, timeZone = userTimeZone, includeTimeZone } = Field.bindModel(field);
 
   const mode = field.property.includeTime ? 'minute' : 'day';
 
@@ -85,7 +85,7 @@ const DatePickerMobileBase: React.ForwardRefRenderFunction<IEditor, IDateTimeEdi
       }
       if (timeZone && option !== OptionType.BACKTONOW) {
         const diff = diffTimeZone(timeZone);
-        _val = dayjs(dayjs(_val).valueOf() + diff).toDate();
+        _val = dayjs.tz(dayjs.tz(_val).valueOf() + diff).toDate();
       }
 
       setValue(_val);

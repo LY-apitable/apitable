@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ResourceRobotDto } from 'automation/dtos/robot.dto';
+import { NodeService } from 'node/services/node.service';
 import { InjectLogger } from 'shared/common';
 import { Logger } from 'winston';
 import { ResourceRobotTriggerDto } from '../dtos/trigger.dto';
@@ -37,9 +38,11 @@ export class RobotTriggerService {
     private readonly automationTriggerRepository: AutomationTriggerRepository,
     private readonly automationServiceRepository: AutomationServiceRepository,
     private readonly automationRobotRepository: AutomationRobotRepository,
+    @Inject(forwardRef(() => NodeService))
+    private readonly nodeService: NodeService,
   ) {}
 
-  public async getTriggersByResourceAndEventType(resourceId: string, endpoint: string): Promise<ResourceRobotTriggerDto[]> {
+  public async getTriggersByResourceAndEventType(resourceId: string, formId: string, endpoint: string): Promise<ResourceRobotTriggerDto[]> {
     const triggerTypeServiceRelDtos = await this.automationTriggerTypeRepository.getTriggerTypeServiceRelByEndPoint(endpoint);
     for (const triggerTypeServiceRel of triggerTypeServiceRelDtos) {
       const officialServiceCount = await this.automationServiceRepository.countOfficialServiceByServiceId(triggerTypeServiceRel.serviceId);
@@ -48,7 +51,7 @@ export class RobotTriggerService {
       );
       if (officialServiceCount > 0) {
         // get the special trigger type's robot's triggers.
-        return await this._getResourceConditionalRobotTriggers(resourceId, triggerTypeServiceRel.triggerTypeId);
+        return await this._getResourceConditionalRobotTriggers(resourceId, formId, triggerTypeServiceRel.triggerTypeId);
       }
     }
     return [];
@@ -56,25 +59,31 @@ export class RobotTriggerService {
 
   public async getTriggersGroupByResourceId(resourceIds: string[]): Promise<IResourceTriggerGroupVo> {
     const resourceRobotDtos = await this.getActiveRobotsByResourceIds(resourceIds);
-    const robotIdToResourceId = resourceRobotDtos.reduce((robotIdToResourceId, item) => {
-      robotIdToResourceId[item.robotId] = item.resourceId;
-      return robotIdToResourceId;
-    }, {} as { [key: string]: string });
+    const robotIdToResourceId = resourceRobotDtos.reduce(
+      (robotIdToResourceId, item) => {
+        robotIdToResourceId[item.robotId] = item.resourceId;
+        return robotIdToResourceId;
+      },
+      {} as { [key: string]: string },
+    );
     const triggers = await this.automationTriggerRepository.getAllTriggersByRobotIds(Object.keys(robotIdToResourceId));
     return triggers.reduce((resourceIdToTriggers, item) => {
-      const resourceId = robotIdToResourceId[item.robotId]!;
+      const resourceId = item.resourceId || robotIdToResourceId[item.robotId]!;
       resourceIdToTriggers[resourceId] = !resourceIdToTriggers[resourceId] ? [] : resourceIdToTriggers[resourceId]!;
       resourceIdToTriggers[resourceId]!.push(item);
       return resourceIdToTriggers;
     }, {} as IResourceTriggerGroupVo);
   }
 
-  async getActiveRobotsByResourceIds(resourceIds: string[] = []):Promise<ResourceRobotDto[]> {
+  async getActiveRobotsByResourceIds(resourceIds: string[] = []): Promise<ResourceRobotDto[]> {
     const resourceRobotDtos = await this.automationRobotRepository.getActiveRobotsByResourceIds(resourceIds);
+    // get resource rel node id
+    const nodeRelIds = await this.nodeService.getRelNodeIdsByMainNodeIds(resourceIds);
+    resourceIds.push(...nodeRelIds);
     // get resource from trigger
     const triggerResourceDtos = await this.automationTriggerRepository.selectRobotIdAndResourceIdByResourceIds(resourceIds);
-    if (triggerResourceDtos && triggerResourceDtos.length > 0) {
-      const robotIds = new Set(triggerResourceDtos.map(i => i.robotId));
+    if (triggerResourceDtos.length > 0) {
+      const robotIds = new Set(triggerResourceDtos.map((i) => i.robotId));
       // check the robot status
       const activeRobotIds = await this.automationRobotRepository.selectActiveRobotIdsByRobotIds(Array.from(robotIds));
       if (activeRobotIds.length > 0) {
@@ -88,13 +97,21 @@ export class RobotTriggerService {
     return resourceRobotDtos;
   }
 
-  private async _getResourceConditionalRobotTriggers(resourceId: string, triggerTypeId: string) {
+  async getTriggerByTriggerId(triggerId: string): Promise<ResourceRobotTriggerDto> {
+    return (await this.automationTriggerRepository.selectTriggerByTriggerId(triggerId)) as ResourceRobotTriggerDto;
+  }
+
+  private async _getResourceConditionalRobotTriggers(resourceId: string, formId: string, triggerTypeId: string) {
     const resourceRobotTriggers: ResourceRobotTriggerDto[] = [];
     // get the datasheet's robots' id.
     const datasheetRobots = await this.automationRobotRepository.selectRobotIdByResourceId(resourceId);
-    for (const robot of datasheetRobots) {
+    let robotIds = await this.automationTriggerRepository.getRobotIdsByResourceIdsAndHasInput([formId]);
+    robotIds.push(...datasheetRobots.map((i) => i.robotId));
+    // filter active robot
+    robotIds = await this.automationRobotRepository.selectActiveRobotIdsByRobotIds(robotIds);
+    for (const robotId of robotIds) {
       // get the special trigger type's robot's triggers.
-      const triggers = await this.automationTriggerRepository.getTriggerByRobotIdAndTriggerTypeId(robot.robotId, triggerTypeId);
+      const triggers = await this.automationTriggerRepository.getTriggerByRobotIdAndTriggerTypeId(robotId, triggerTypeId);
       resourceRobotTriggers.push(...triggers);
     }
     return resourceRobotTriggers;

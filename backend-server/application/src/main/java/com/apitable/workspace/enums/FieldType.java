@@ -23,7 +23,7 @@ import lombok.Getter;
 
 /**
  * <p>
- * field type
+ * field type.
  * </p>
  *
  * @author Benson Cheung
@@ -84,10 +84,22 @@ public enum FieldType {
 
     CASCADER(25),
 
-    ONE_WAY_LINK(26);
+    ONE_WAY_LINK(26),
+
+    WORK_DOC(27),
+
+    BUTTON(28),
+
+    ;
 
     private final int fieldType;
 
+    /**
+     * create field type.
+     *
+     * @param fieldType field type
+     * @return field type
+     */
     public static FieldType create(int fieldType) {
         for (FieldType type : FieldType.values()) {
             if (type.getFieldType() == fieldType) {

@@ -18,8 +18,9 @@
 
 import axios from 'axios';
 import qs from 'qs';
-import { mutate } from 'swr';
-import { IAutomationDatum, IRobotHistoryTask, IRobotRunHistoryList, IRobotTrigger } from './interface';
+import { ICronSchema } from '@apitable/components';
+import { automationApiClient } from 'pc/common/api-client';
+import { IAutomationDatum, IRobotHistoryTask, IRobotTrigger } from './interface';
 import { IAutomationRobotDetailItem } from './robot_context';
 import { IRunHistoryDatum } from './robot_detail/robot_run_history';
 
@@ -40,6 +41,11 @@ export const deleteRobotAction = async (resourceId: string, actionId: string, ro
   return res.data.success;
 };
 
+export const deleteTrigger = async (resourceId: string, id: string, robotId: string) => {
+  const res = await axios.delete(`/automation/${resourceId}/triggers/${id}?robotId=${robotId}`);
+  return res.data.success;
+};
+
 export const updateRobotName = async (resourceId: string, robotId: string, name: string) => {
   return await updateAutomationRobot(resourceId, robotId, {
     name,
@@ -57,16 +63,18 @@ export const updateAutomationRobot = async (resourceId: string, robotId: string,
   return res.data.success;
 };
 
-export const getResourceAutomations = (resourceId: string, options?: {
-  shareId: string
-}): Promise<IAutomationDatum[]> => {
-  const query = options!= null ? qs.stringify(options) : '';
-  return axios.get(`/automation/robots?resourceId=${resourceId}&${query}`).then((res) => {
-    if (res.data.success) {
-      return res.data.data;
-    }
-    return [];
+export const getResourceAutomations = async (
+  resourceId: string,
+  options?: {
+    shareId: string;
+  },
+): Promise<IAutomationDatum[]> => {
+  const resp = await automationApiClient.getResourceRobots({
+    resourceId: resourceId,
+    // @ts-ignore
+    shareId: options?.shareId ?? '',
   });
+  return (resp?.data ?? []) as unknown as IAutomationDatum[];
 };
 
 // export const createAutomationRobot = (robot: { resourceId: string; name: string }): Promise<IAutomationDatum> => {
@@ -87,12 +95,15 @@ export const createAutomationRobot = (robot: { resourceId: string; name: string 
   });
 };
 
-export const checkObject = (val: object) => Object.values(val).some(value => value != null);
-export const getResourceAutomationDetail = (resourceId: string, robotId: string, options: {
-  shareId?: string
-}): Promise<IAutomationRobotDetailItem> => {
-
-  const query = (options!= null && checkObject (options)) ? qs.stringify(options) : '';
+export const checkObject = (val: object) => Object.values(val).some((value) => value != null);
+export const getResourceAutomationDetail = (
+  resourceId: string,
+  robotId: string,
+  options: {
+    shareId?: string;
+  },
+): Promise<IAutomationRobotDetailItem> => {
+  const query = options != null && checkObject(options) ? qs.stringify(options) : '';
   return axios.get(`/automation/${resourceId}/robots/${robotId}?${query}`).then((res) => {
     if (res.data.success) {
       return res.data.data;
@@ -125,26 +136,22 @@ export const deActiveRobot = (robotId: string): Promise<any> => {
 };
 export const deleteRobot = (resourceId: string, robotId: string) => {
   return axios.delete(`/automation/${resourceId}/robots/${robotId}`).then((res) => {
-    if (res.data.success) {
-      return true;
-    }
-    return false;
+    return !!res.data.success;
   });
 };
 
-export const refreshRobotList = (resourceId: string) => {
-  const thisResourceRobotUrl = `/automation/robots?resourceId=${resourceId}`;
-  return mutate(thisResourceRobotUrl);
-};
-
 interface ICreateTrigger {
-  'robotId' ?: string
-  'input': unknown,
-  'relatedResourceId' ?: string
-  'prevTriggerId' ?: string,
-  'triggerTypeId': string
+  robotId?: string;
+  input: unknown;
+  relatedResourceId?: string;
+  prevTriggerId?: string;
+  triggerTypeId: string;
 }
-export const createTrigger = (resourceId: string, data:ICreateTrigger) => {
+
+export type ICronSchemaTimeZone = ICronSchema & {
+  timeZone: string;
+};
+export const createTrigger = (resourceId: string, data: ICreateTrigger) => {
   return axios.post(`/automation/${resourceId}/triggers`, data);
 };
 
@@ -153,24 +160,27 @@ export const changeTriggerTypeId = (resourceId: string, triggerId: string, trigg
     robotId,
     triggerTypeId,
     relatedResourceId: '',
-    input: {
-
-    }
+    input: {},
   });
 };
 
-export const updateTriggerInput = (resourceId: string, triggerId: string, input: any, robotId: string, data: {
-  relatedResourceId: string
-}) => {
+export const updateTriggerInput = (
+  resourceId: string,
+  triggerId: string,
+  input: any,
+  robotId: string,
+  data: {
+    relatedResourceId: string;
+    scheduleConfig?: ICronSchemaTimeZone;
+  },
+) => {
   return axios.patch(`/automation/${resourceId}/triggers/${triggerId}`, {
     input,
     robotId,
-    ...data
+    ...data,
   });
 };
-export const createAction = (
-  resourceId: string,
-  data: { robotId: string; actionTypeId: string; prevActionId?: string; input?: any }) => {
+export const createAction = (resourceId: string, data: { robotId: string; actionTypeId: string; prevActionId?: string; input?: any }) => {
   return axios.post(`/automation/${resourceId}/actions`, data);
 };
 
@@ -178,9 +188,7 @@ export const changeActionTypeId = (resourceId: string, actionId: string, actionT
   return axios.patch(`/automation/${resourceId}/actions/${actionId}`, {
     actionTypeId,
     robotId,
-    input: {
-
-    }
+    input: {},
   });
 };
 
@@ -204,3 +212,6 @@ export const getAutomationRunHistoryDetail = (taskId: string): Promise<IRobotHis
   });
 };
 
+export const reqDatasheetButtonTrigger = (data: { dstId: string; recordId: string; fieldId: string }) => {
+  return nestReq.post(`/datasheets/${data.dstId}/triggers`, data);
+};

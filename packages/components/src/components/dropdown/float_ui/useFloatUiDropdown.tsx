@@ -4,7 +4,7 @@ import { IDropdownProps } from './index';
 
 const DROP_DOWN_OFFSET = 11;
 
-const setIndex = (zIndex: number) => {
+export const setIndex = (zIndex: number) => {
   return {
     name: 'setIndexPlugin',
     fn(state: MiddlewareState) {
@@ -16,7 +16,7 @@ const setIndex = (zIndex: number) => {
   };
 };
 
-const CONST_INITIAL_DROPDOWN_INDEX = 1002;
+const CONST_INITIAL_DROPDOWN_INDEX = 1202;
 export const useFloatUiDropdown: any = (options: {
     isOpen: boolean
     setOpen: (v: boolean) => void;
@@ -58,6 +58,6 @@ export const useFloatUiDropdown: any = (options: {
     ].concat(options?.middleware ?? []),
     whileElementsMounted: autoUpdate
   });
-  
+
   return { refs, floatingStyles, context };
 };

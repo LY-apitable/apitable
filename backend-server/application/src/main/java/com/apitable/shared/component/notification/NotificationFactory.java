@@ -41,6 +41,7 @@ import com.apitable.player.dto.PlayerBaseDTO;
 import com.apitable.player.ro.NotificationCreateRo;
 import com.apitable.player.vo.NotificationDetailVo;
 import com.apitable.player.vo.PlayerBaseVo;
+import com.apitable.shared.clock.spring.ClockManager;
 import com.apitable.shared.sysconfig.notification.NotificationConfigLoader;
 import com.apitable.shared.sysconfig.notification.NotificationTemplate;
 import com.apitable.space.dto.BaseSpaceInfoDTO;
@@ -53,6 +54,7 @@ import com.apitable.workspace.entity.NodeEntity;
 import com.apitable.workspace.mapper.NodeDescMapper;
 import com.apitable.workspace.mapper.NodeMapper;
 import com.apitable.workspace.mapper.NodeShareSettingMapper;
+import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -60,9 +62,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -255,9 +257,10 @@ public class NotificationFactory implements INotificationFactory {
 
     @Override
     public NotificationToTag getToUserTagByTemplateId(BaseTemplateId templateId) {
-        String toUserTag = getTemplateById(templateId.getValue()).getToTag();
-        if (StrUtil.isNotBlank(toUserTag)) {
-            return NotificationToTag.getValue(toUserTag);
+        Optional<NotificationTemplate> template =
+            Optional.ofNullable(getTemplateById(templateId.getValue()));
+        if (template.isPresent() && StrUtil.isNotBlank(template.get().getToTag())) {
+            return NotificationToTag.getValue(template.get().getToTag());
         }
         return NotificationToTag.MEMBERS;
     }
@@ -335,7 +338,7 @@ public class NotificationFactory implements INotificationFactory {
         if (Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
             redisTemplate.opsForValue().increment(key);
         } else {
-            LocalDateTime now = DateUtil.toLocalDateTime(new Date());
+            LocalDateTime now = ClockManager.me().getLocalDateTimeNow();
             LocalDateTime endOfDay = LocalDateTimeUtil.endOfDay(now);
             long between = LocalDateTimeUtil.between(now, endOfDay, ChronoUnit.SECONDS);
             redisTemplate.opsForValue().set(key, Long.valueOf("1"), between, TimeUnit.SECONDS);

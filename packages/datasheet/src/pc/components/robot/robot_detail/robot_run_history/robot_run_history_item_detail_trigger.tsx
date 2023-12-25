@@ -17,11 +17,16 @@
  */
 
 import * as React from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
+import { shallowEqual } from 'react-redux';
 import ReactJson from 'react18-json-view';
 import styled from 'styled-components';
-import { Box, Typography, useTheme, useThemeColors } from '@apitable/components';
+import useSWR from 'swr';
+import { Box, Timing, Typography, useTheme, useThemeColors } from '@apitable/components';
 import { Selectors, t, Strings, data2Operand } from '@apitable/core';
+import { getTriggerDstId } from 'pc/components/automation/controller/hooks/use_robot_fields';
+import { AutomationTiming } from 'pc/components/robot/robot_detail/automation_timing';
+import { TimeScheduleManager } from 'pc/components/robot/robot_detail/trigger/time_schedule_manager';
+import { useAppSelector } from 'pc/store/react-redux';
 import { useAllFields } from '../../hooks';
 import { INodeType, IRobotRunHistoryDetail } from '../../interface';
 import { enrichDatasheetTriggerOutputSchema } from '../magic_variable_container/helper';
@@ -43,7 +48,7 @@ const FilterWrapper = styled.div`
 export const FilterValueDisplay = ({ filter, label, datasheetId }: { filter: any; label: string; datasheetId: string }) => {
   const theme = useTheme();
   if (!filter) return null;
-  if(!datasheetId) {
+  if (!datasheetId) {
     return null;
   }
   return (
@@ -58,13 +63,53 @@ export const FilterValueDisplay = ({ filter, label, datasheetId }: { filter: any
   );
 };
 
+export const ScheduleRuleDisplay = ({
+  value,
+  label,
+  timeZone,
+  scheduleType,
+}: {
+  value: any;
+  label: string;
+  scheduleType: string;
+  timeZone: string;
+}) => {
+  const theme = useTheme();
+  const userTimezone = useAppSelector(Selectors.getUserTimeZone)!;
+  if (!value) return null;
+
+  if (!scheduleType) {
+    return null;
+  }
+  if (!timeZone) {
+    return null;
+  }
+  const cronSchema = TimeScheduleManager.getCronWithTimeZone(value);
+
+  return (
+    <Box>
+      <Typography variant="body3" color={theme.color.fc1}>
+        {label}
+      </Typography>
+      <FilterWrapper>
+        <Timing interval={scheduleType as any} value={cronSchema} readonly />
+      </FilterWrapper>
+    </Box>
+  );
+};
+
 export const RobotRunHistoryTriggerDetail = (props: IRobotRunHistoryTriggerDetail) => {
   const { nodeType, nodeDetail } = props;
 
-  const datasheetId = nodeDetail?.input?.datasheetId ?? '';
-  const datasheet = useSelector(a => Selectors.getDatasheet(a, datasheetId), shallowEqual);
+  const datasheetId1 = nodeDetail?.input?.datasheetId;
+  const formId = nodeDetail?.input?.formId;
+  const resourceId = datasheetId1 ?? formId;
+  const { data: dataList1 } = useSWR(['getRobotMagicDatasheetByResourceId', resourceId], () => getTriggerDstId(resourceId), {});
 
-  const fieldPermissionMap = useSelector((state) => {
+  const datasheetId = dataList1 ?? '';
+  const datasheet = useAppSelector((a) => Selectors.getDatasheet(a, datasheetId), shallowEqual);
+
+  const fieldPermissionMap = useAppSelector((state) => {
     return Selectors.getFieldPermissionMap(state, datasheetId);
   });
   const theme = useTheme();
@@ -75,22 +120,16 @@ export const RobotRunHistoryTriggerDetail = (props: IRobotRunHistoryTriggerDetai
   const colors = useThemeColors();
   const oldSchema = { schema: nodeType.outputJsonSchema };
 
-  if (!fieldPermissionMap || !fields) return (
+  if (!datasheet || !fieldPermissionMap || !fields)
+    return (
+      <Box color={colors.bgCommonDefault} width={'100%'}>
+        <StyledTitle>{t(Strings.robot_run_history_input)}</StyledTitle>
 
-    <Box color={colors.bgCommonDefault} width={'100%'}>
-      <StyledTitle>{t(Strings.robot_run_history_input)}</StyledTitle>
-
-      <Box
-        width={'100%'}
-        boxShadow={`inset 1px 0px 0px ${theme.color.fc5}`}
-        className={styles.historyDetailList}
-      >
-        {!datasheet && (
-          <ReactJson src={nodeDetail.input} collapsed={3} />
-        )}
+        <Box width={'100%'} boxShadow={`inset 1px 0px 0px ${theme.color.fc5}`} className={styles.historyDetailList}>
+          {!datasheet && <ReactJson src={nodeDetail.input} collapsed={3} />}
+        </Box>
       </Box>
-    </Box>
-  );
+    );
 
   const outputSchema: any = enrichDatasheetTriggerOutputSchema(oldSchema as any, fields, fieldPermissionMap);
 
@@ -109,6 +148,18 @@ export const RobotRunHistoryTriggerDetail = (props: IRobotRunHistoryTriggerDetai
           Object.keys(retrievedSchema.properties!).map((propertyKey) => {
             const propertyValue = formData[propertyKey];
             const label = retrievedSchema.properties![propertyKey].title || '';
+            if (propertyKey === 'scheduleRule') {
+              console.log('nodeDetail input', nodeDetail.input);
+              return (
+                <ScheduleRuleDisplay
+                  key={propertyKey}
+                  label={label}
+                  scheduleType={nodeDetail.input.scheduleType}
+                  timeZone={nodeDetail.input.timeZone}
+                  value={nodeDetail.input.scheduleRule}
+                />
+              );
+            }
             if (propertyKey === 'filter') {
               return <FilterValueDisplay key={propertyKey} label={label} filter={nodeDetail.input.filter} datasheetId={datasheetId} />;
             }
@@ -117,14 +168,6 @@ export const RobotRunHistoryTriggerDetail = (props: IRobotRunHistoryTriggerDetai
       </Box>
       ;<StyledTitle>{t(Strings.robot_run_history_output)}</StyledTitle>
       <FormDataRender nodeSchema={outputSchema} formData={nodeDetail.output} disableRetrieveSchema />
-      {/* {
-      list.map((propertySchema, index) => {
-        const propertyValue = nodeDetail.output[propertySchema.key];
-        if (!propertyValue) return null;
-        return <KeyValueDisplay label={propertySchema.title} value={propertyValue} />;
-      })
-    } */}
-      {/* </Typography> */}
     </Box>
   );
 };

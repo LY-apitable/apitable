@@ -17,7 +17,8 @@
  */
 
 import React from 'react';
-import { IRobotAction } from '../../interface';
+import { IRobotAction, IRobotTrigger } from '../../interface';
+
 
 export const getActionList = (actions?: IRobotAction[]): IRobotAction[] => {
   if (!actions || actions.length === 0) {
@@ -40,11 +41,14 @@ export const getActionList = (actions?: IRobotAction[]): IRobotAction[] => {
     const action = preActionIdMap[current];
 
     if(action) {
-      return findNextAction(count -1, action.id, resultList.concat(action!));
+      return findNextAction(count -1, action.id ?? action.actionId, resultList.concat(action!));
     }
     return resultList;
   };
 
-  return findNextAction(actions.length - 1, head.id, [head]);
+  return findNextAction(actions.length - 1, head.id ?? head.actionId, [head]);
 };
 
+export const getTriggerList = (actions?: IRobotTrigger[]): IRobotTrigger[] => {
+  return actions ?? [];
+};

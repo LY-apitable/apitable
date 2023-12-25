@@ -31,11 +31,17 @@ export class OPEventRecordDeleted extends IAtomEventType<IRecordDelete> {
   realType = EventRealTypeEnums.REAL;
   scope = ResourceType.Datasheet;
   test(args: IOPBaseContext) {
-    const { action, resourceId } = args;
+    const { op, action, resourceId } = args;
     const { pass, recordId } = testPath(action.p, ['recordMap', ':recordId'], action.n === 'OD');
+
+    let success = pass;
+    if (op.cmd === 'ArchiveRecords') {
+      success = false;
+    }
     return {
-      pass,
+      pass: success,
       context: {
+        action,
         datasheetId: resourceId,
         recordId,
       }

@@ -18,7 +18,6 @@
 
 import Image from 'next/image';
 import * as React from 'react';
-import { useSelector } from 'react-redux';
 import { ThemeName } from '@apitable/components';
 import { ConfigConstant, INode, IViewColumn, Strings, t, ViewType } from '@apitable/core';
 import { File, Folder, FormSearchItem, View } from 'pc/components/datasheet_search_panel/components';
@@ -28,6 +27,9 @@ import { ScrollBar } from 'pc/components/scroll_bar';
 import EmptyPngDark from 'static/icon/datasheet/empty_state_dark.png';
 import EmptyPngLight from 'static/icon/datasheet/empty_state_light.png';
 import { SecondConfirmType } from './interface';
+
+import {useAppSelector} from "pc/store/react-redux";
+
 export interface IViewNode {
   nodeId: string;
   nodeName: string;
@@ -40,12 +42,12 @@ export type ICommonNode = INode | IViewNode;
 
 interface IFolderContentProps {
   options?: {
-    showForm: boolean
-    showDatasheet: boolean
-    needPermission?: 'manageable' | 'editable'
-    showMirror: boolean
-    showView: boolean
-  },
+    showForm: boolean;
+    showDatasheet: boolean;
+    needPermission?: 'manageable' | 'editable';
+    showMirror: boolean;
+    showView: boolean;
+  };
   nodes: ICommonNode[];
   currentViewId: string;
   currentMirrorId: string;
@@ -55,7 +57,7 @@ interface IFolderContentProps {
   isSelectView: boolean;
   showMirrorNode?: boolean;
   noCheckPermission?: boolean;
-  secondConfirmType?: SecondConfirmType
+  secondConfirmType?: SecondConfirmType;
 
   onNodeClick(nodeType: 'Mirror' | 'Datasheet' | 'View' | 'Folder' | 'Form', id: string): void;
 
@@ -78,26 +80,32 @@ export const FolderContent: React.FC<React.PropsWithChildren<IFolderContentProps
     hideViewNode,
     secondConfirmType,
   } = props;
-  const themeName = useSelector((state) => state.theme);
+  const themeName = useAppSelector((state) => state.theme);
   const EmptyFolderImg = themeName === ThemeName.Light ? EmptyPngLight : EmptyPngDark;
 
-  const showForm= options?.showForm ?? true;
-  const showDatasheet= options?.showDatasheet ?? true;
-  const showMirror= options?.showMirror ?? true;
-  const showView= options?.showView ?? true;
+  const showForm = options?.showForm ?? false;
 
-  const _checkNodeDisable = (node: INode,
-    needPermission: 'manageable' | 'editable' |undefined
-  ) => {
+  const showDatasheet = options?.showDatasheet ?? true;
+  let showMirror = options?.showMirror ?? false;
+  if(showMirrorNode != null && options?.showMirror !=null) {
+    showMirror =showMirrorNode;
+  }
+
+  let showView = options?.showView ?? false;
+  if(hideViewNode !=null && options?.showView != null) {
+    showView = !hideViewNode;
+  }
+
+  const _checkNodeDisable = (node: INode, needPermission: 'manageable' | 'editable' | undefined) => {
     if (noCheckPermission) return;
+    if (!needPermission) return;
     return checkNodeDisable(node, needPermission);
   };
 
-  const checkVisible = (nodeType: ConfigConstant.NodeType, result : boolean ) => {
+  const checkVisible = (nodeType: ConfigConstant.NodeType, result: boolean) => {
+    if (!options) return result;
 
-    if(!options ) return result;
-
-    switch (nodeType ) {
+    switch (nodeType) {
       case ConfigConstant.NodeType.FORM: {
         return result && showForm;
       }
@@ -120,9 +128,11 @@ export const FolderContent: React.FC<React.PropsWithChildren<IFolderContentProps
     <div className={styles.folderContent}>
       <ScrollBar>
         {nodes.map((node) => {
-          showForm && node.type === ConfigConstant.NodeType.FORM && (!onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission));
+          showForm &&
+            node.type === ConfigConstant.NodeType.FORM &&
+            (!onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission));
 
-          if (node.type === ConfigConstant.NodeType.FOLDER ) {
+          if (node.type === ConfigConstant.NodeType.FOLDER) {
             return (
               <Folder key={node.nodeId} id={node.nodeId} onClick={(id) => onNodeClick('Folder', id)}>
                 {node.nodeName}
@@ -145,7 +155,10 @@ export const FolderContent: React.FC<React.PropsWithChildren<IFolderContentProps
               );
             }
           } else {
-            if (node.type === ConfigConstant.NodeType.DATASHEET && checkVisible(node.type, (!onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission)))) {
+            if (
+              node.type === ConfigConstant.NodeType.DATASHEET &&
+              checkVisible(node.type, !onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission))
+            ) {
               return (
                 <File
                   key={node.nodeId}
@@ -160,7 +173,11 @@ export const FolderContent: React.FC<React.PropsWithChildren<IFolderContentProps
               );
             }
 
-            if (showForm && node.type === ConfigConstant.NodeType.FORM && checkVisible (node.type, !onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission))) {
+            if (
+              showForm &&
+              node.type === ConfigConstant.NodeType.FORM &&
+              checkVisible(node.type, !onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission))
+            ) {
               return (
                 <FormSearchItem
                   key={node.nodeId}
@@ -174,7 +191,11 @@ export const FolderContent: React.FC<React.PropsWithChildren<IFolderContentProps
               );
             }
 
-            if (showDatasheet && node.type === ConfigConstant.NodeType.DATASHEET && checkVisible(node.type, !onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission))) {
+            if (
+              showDatasheet &&
+              node.type === ConfigConstant.NodeType.DATASHEET &&
+              checkVisible(node.type, !onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission))
+            ) {
               return (
                 <File
                   nodeType={node.type}
@@ -189,7 +210,11 @@ export const FolderContent: React.FC<React.PropsWithChildren<IFolderContentProps
               );
             }
 
-            if (showMirror && node.type === ConfigConstant.NodeType.MIRROR && checkVisible(node.type, !onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission))) {
+            if (
+              showMirror &&
+              node.type === ConfigConstant.NodeType.MIRROR &&
+              checkVisible(node.type, !onlyShowEditableNode || !_checkNodeDisable(node as INode, options?.needPermission))
+            ) {
               return (
                 <File
                   key={node.nodeId}

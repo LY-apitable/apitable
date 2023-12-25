@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { getCustomConfig } from 'config/env';
+import { getCustomConfig } from './env';
 import { Strings, t } from '../exports/i18n';
 
 export const MAX_ROBOT_COUNT_PER_DST = 30; // The maximum number of robots in a single table
@@ -58,6 +58,7 @@ export const nodeNameMap = new Map<NodeType, string>([
   [NodeType.DATASHEET, t(Strings.datasheet)],
   [NodeType.FORM, t(Strings.form)],
   [NodeType.VIEW, t(Strings.view)],
+  [NodeType.AUTOMATION, t(Strings.automation)],
   [NodeType.TRASH, t(Strings.trash)],
   [NodeType.MIRROR, t(Strings.mirror)],
   [NodeType.DASHBOARD, t(Strings.dashboard)],
@@ -145,10 +146,10 @@ export const nodePermissionMap = new Map<NodeType, { [key: string]: string }>([
   [
     NodeType.AUTOMATION,
     {
-      [permission.manager]: t(Strings.add_datasheet_manager),
-      [permission.editor]: t(Strings.add_datasheet_editor),
-      [permission.reader]: t(Strings.add_datasheet_reader),
-      [permission.updater]: t(Strings.add_datasheet_updater),
+      [permission.manager]: t(Strings.automation_manager_label),
+      [permission.editor]: t(Strings.automation_editor_label),
+      [permission.updater]: t(Strings.automation_updater_label),
+      [permission.reader]: t(Strings.automation_reader_label),
     },
   ],
   [
@@ -292,7 +293,7 @@ export enum ContextMenuType {
   MIRROR = 'MIRROR', // Action menu for view tab bar
   FORM_FIELD_OP = 'FORM_FIELD_OP', // Magical form field operation menu
   EXPAND_RECORD_FIELD = 'EXPAND_RECORD_FIELD', // Expand the operation field configuration in the card
-  AI = 'AI'
+  AI = 'AI',
 }
 
 export const NODE_DESCRIPTION_EDITOR_ID = 'folderDescribeEditor';
@@ -370,7 +371,7 @@ export enum ScanQrType {
 
 export enum ImproveType {
   Phone = 'phone',
-  Email = 'email'
+  Email = 'email',
 }
 
 export const IDENTIFY_CODE_LOGIN = 'identify_code_login'; // login verify code
@@ -405,9 +406,9 @@ export const ROOT_TEAM_ID = '0';
 export const SPACE_NAME_LENGTH = 100;
 
 // space-members-members list query pages number
-export const MEMBER_LIST_PAGE_SIZE = 13;
+export const MEMBER_LIST_PAGE_SIZE = 20;
 // space - sub admin - sub admin list query pages number
-export const SUB_ADMIN_LIST_PAGE_SIZE = 12;
+export const SUB_ADMIN_LIST_PAGE_SIZE = 20;
 
 // gifted space query page number
 export const CAPACITY_REWARD_LIST_PAGE_SIZE = 12;
@@ -488,6 +489,9 @@ export enum WizardIdConstant {
   VIKABY_UPDATE_LOGS_HISTORY = 67,
   AGREE_TERMS_OF_SERVICE = Number(getCustomConfig().LOGIN_AGREE_TERMS_OF_SERVICE_WIZARD_ID),
 
+  AUTOMATION_TRIGGER = 117,
+  AUTOMATION_BUTTON_TRIGGER = 118,
+
   // org chart view
   ORG_VIEW_CREATE = 78, // Click the "Create Schema View button" -> show the video "How to use Schema View"
   ORG_VIEW_PANEL = 79, // In the schema view, the right panel is highlighted, prompting to add cards to the canvas
@@ -498,7 +502,9 @@ export enum WizardIdConstant {
   PERMISSION_SETTING_EXTEND = 95, // Open permission settings, inherit state
   PERMISSION_SETTING_OPENED = 96, // Open permission settings, non-inherited state
 
-  CREATE_MIRROR_TIP = 106
+  CREATE_MIRROR_TIP = 106,
+  PRICE_MODAL = 104,
+  AI_TABLE_VIDEO = 115,
 }
 
 export const WIDGET_PANEL_MAX_WIDGET_COUNT = 30;
