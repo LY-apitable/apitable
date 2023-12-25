@@ -52,7 +52,7 @@ target "web-server-experimental" {
     SEMVER_FULL = SEMVER_FULL
   }
   platforms = ["linux/amd64", "linux/arm64"]
-  tags = ["${IMAGE_REGISTRY}/apitable/web-server:latest", "${IMAGE_REGISTRY}/apitable/web-server:${IMAGE_TAG}"]
+  tags = ["${IMAGE_REGISTRY}/linyi94/web-server:latest", "${IMAGE_REGISTRY}/linyi94/web-server:${IMAGE_TAG}"]
 }
 
 target "init-db" {
