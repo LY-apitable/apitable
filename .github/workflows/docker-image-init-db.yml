@@ -1,4 +1,4 @@
-name: Docker Image web-server CI
+name: Docker Image init-db CI
 
 on:
   push:
@@ -17,10 +17,10 @@ jobs:
       env:
         ALIYUN_REGISTRY_URL: registry.cn-hangzhou.aliyuncs.com
         ALIYUN_NAMESPACE: limch
-        ALIYUN_REPO_NAME: apitable-web-server
+        ALIYUN_REPO_NAME: apitable-init-db
         ALIYUN_USERNAME: tb921193_33
         ALIYUN_PASSWORD: lmlmlmlm8
       run: |
         docker login --username $ALIYUN_USERNAME --password $ALIYUN_PASSWORD $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE
-        docker build . --file packaging/Dockerfile.web-server --tag $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
+        docker build . --file init-db/Dockerfile --tag $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
         docker push $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
