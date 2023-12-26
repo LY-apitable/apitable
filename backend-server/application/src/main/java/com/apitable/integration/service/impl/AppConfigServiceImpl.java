@@ -34,11 +34,13 @@ public class AppConfigServiceImpl implements IAppConfigService {
 
     private static final String REDIS_KEY = "INTEGRATION:AUTH:APPKEY:";
 
+    @Override
     public String getCorpIdByAppKey(String appKey) {
         AppConfig appConfig = getAppConfigByAppKey(appKey);
         return appConfig.getCorpId();
     }
 
+    @Override
     public AppConfig getAppConfigByAppKey(String appKey) {
         String key = REDIS_KEY + appKey;
         AppConfig appConfig = (AppConfig) redisTemplate.opsForValue().get(key);
@@ -71,7 +73,8 @@ public class AppConfigServiceImpl implements IAppConfigService {
                 appConfig.setCorpId(data.getStr("corpId"));
                 appConfig.setClientId(data.getStr("clientId"));
                 appConfig.setClientSecret(data.getStr("clientSecret"));
-
+                appConfig.setAesKey(data.getStr("aesKey"));
+                appConfig.setToken(data.getStr("token"));
                 redisTemplate.opsForValue().set(key, appConfig, 1800, TimeUnit.SECONDS);
 
                 return appConfig;

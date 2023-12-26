@@ -20,7 +20,7 @@ export * from '../../user/api/url.auth';
 export * from '../../user/api/url.user';
 export * from '../../space/api/url.space';
 export * from '../../space/api/url.node';
-export * from '../../enterprise';
+export * from '../../enterprise/api/url.enterprise';
 export * from '../../org/api/url.org';
 export * from '../../space/api/url.template';
 export * from '../../widget/api/url.widget';

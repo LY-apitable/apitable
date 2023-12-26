@@ -50,7 +50,6 @@ export * from '../../modules/org/store/interface/invite';
 export * from '../../modules/org/store/interface/space_permission_manage';
 export * from '../../modules/user/store/interfaces/notification';
 export * from '../../modules/space/store/interfaces/template_centre';
-export * from '../../modules/enterprise';
 export * from '../../modules/org/store/interface/tool_bar';
 export * from '../../modules/database/store/interfaces/kanban';
 export * from '../../modules/database/store/interfaces/common';

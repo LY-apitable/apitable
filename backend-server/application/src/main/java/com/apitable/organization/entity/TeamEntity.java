@@ -67,6 +67,16 @@ public class TeamEntity implements Serializable {
     private Long parentId;
 
     /**
+     * enterprise dept id
+     */
+    private Long deptId;
+
+    /**
+     * enterprise dept id
+     */
+    private Long parentDeptId;
+
+    /**
      * Department Name
      */
     private String teamName;

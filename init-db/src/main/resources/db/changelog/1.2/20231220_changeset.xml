@@ -1,0 +1,60 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+ APITable <https://github.com/apitable/apitable>
+ Copyright (C) 2022 APITable Ltd. <https://apitable.com>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+	  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="V1.2-20231220-001" author="limch" labels="audit">
+        <comment>add column app_key for space table</comment>
+        <sql>
+            ALTER TABLE `${table.prefix}space` ADD COLUMN `app_key` VARCHAR(255) 
+                COMMENT 'Lmkj Auth Key' AFTER `name`;
+
+            ALTER TABLE `${table.prefix}user` ADD COLUMN `app_key` VARCHAR(255) 
+                COMMENT 'Lmkj Auth Key' AFTER `time_zone`;
+
+            ALTER TABLE `${table.prefix}space` ADD UNIQUE INDEX uk_app_key(app_key(255)) 
+                COMMENT 'Unique index of Lmkj Auth Key';
+
+            UPDATE `${table.prefix}space_resource` SET is_enabled = 0 WHERE group_code = 'MANAGE_MEMBER';
+
+            ALTER TABLE `${table.prefix}unit_team` ADD COLUMN `dept_id` BIGINT NOT NULL DEFAULT 1 
+                COMMENT 'enterprise dept id' AFTER `parent_id`;
+
+            ALTER TABLE `${table.prefix}unit_team` ADD INDEX k_dept_id(dept_id) 
+                COMMENT 'Dept Id Index';
+
+            ALTER TABLE `${table.prefix}unit_team` ADD COLUMN `parent_dept_id` BIGINT NOT NULL DEFAULT 1 
+                COMMENT 'enterprise parent dept id' AFTER `dept_id`;
+
+            ALTER TABLE `${table.prefix}unit_team` ADD INDEX k_parent_dept_id(parent_dept_id) 
+                COMMENT 'Parent Dept Id Index';
+
+            ALTER TABLE `${table.prefix}user` DROP INDEX `uk_phone`;
+
+            ALTER TABLE `${table.prefix}user` ADD INDEX k_ding_union_id(ding_union_id) 
+                COMMENT 'Ding Union Id Index';
+
+            ALTER TABLE `${table.prefix}user` ADD INDEX k_app_key(app_key) 
+                COMMENT 'Lmkj Auth Key Index';
+        </sql>
+    </changeSet>
+</databaseChangeLog>

@@ -235,28 +235,3 @@ export function createApiKey() {
 export function refreshApiKey(code?: string, type?: string) {
   return axios.post(Url.REFRESH_API_KEY, { code, type });
 }
-
-/**
- * get DingTalk CoprId by AppKey
- * @param appKey
- */
-export function getDingTalkCorpId(appKey: string) {
-  return axios.get(Url.DINGTALK_CORPID, {
-    params: {
-      appKey,
-    }
-  });
-}
-
-/**
- * login by DingTalk
- * 
- * @param phone 
- * @param authCode 
- */
-export function loginByDingTalk(appKey: string, authCode: string) {
-  return axios.post(Url.DINGTALK_LOGIN, {
-    appKey,
-    authCode
-  });
-}

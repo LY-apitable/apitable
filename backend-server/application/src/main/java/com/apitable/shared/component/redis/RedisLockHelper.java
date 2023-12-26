@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Resource;
 
 import cn.hutool.core.util.ObjectUtil;
+import lombok.extern.slf4j.Slf4j;
 
 import com.apitable.core.util.SpringContextHolder;
 import com.apitable.core.exception.BusinessException;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Component;
  * @date 2021/7/16
  */
 @Component
+@Slf4j
 public class RedisLockHelper {
 
     @Resource
@@ -55,5 +57,31 @@ public class RedisLockHelper {
             throw new BusinessException("repeat request");
         }
         ops.set("", 1, TimeUnit.HOURS);
+    }
+
+    public boolean tryLock(String key) {
+        return tryLock(key, 30000);
+    }
+
+    public boolean tryLock(String key, long lockExpireMils) {
+        long intervalTimeMils = 100L;
+        while (true) {
+            if (redisTemplate.opsForValue().setIfAbsent(key, "1", lockExpireMils, TimeUnit.MILLISECONDS)) {
+                return true;
+            }
+            sleep(intervalTimeMils);
+        }
+    }
+
+    public void releaseLock(String key) {
+        redisTemplate.delete(key);
+    }
+    
+    private void sleep(long intervalTimeMils) {
+        try {
+                TimeUnit.MILLISECONDS.sleep(intervalTimeMils);
+            } catch (InterruptedException e) {
+                log.error("RedisLock interval sleep error", e);
+            }
     }
 }

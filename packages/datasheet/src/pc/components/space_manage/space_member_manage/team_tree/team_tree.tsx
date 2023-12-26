@@ -55,7 +55,7 @@ import {
   isSocialDingTalk,
   isSocialPlatformEnabled,
   isSocialWecom,
-  // @ts-ignore
+// @ts-ignore
 } from 'enterprise';
 
 const _ContextMenu: any = ContextMenu;
@@ -84,13 +84,15 @@ export const TeamTree: FC<React.PropsWithChildren<IModalProps>> = (props) => {
   );
   const [renameDeptModalVisible, setRenameDeptModalVisible] = useState(false);
   const [createDeptModalVisible, setCreateDeptModalVisible] = useState(false);
-  const isBindDingtalk = spaceInfo && isSocialPlatformEnabled?.(spaceInfo, ConfigConstant.SocialType.DINGTALK) && !isSocialDingTalk?.(spaceInfo);
+  // const isBindDingtalk = spaceInfo && isSocialPlatformEnabled?.(spaceInfo, ConfigConstant.SocialType.DINGTALK) && !isSocialDingTalk?.(spaceInfo);
+  const isBindDingtalk = true;
   const isBindWecom = spaceInfo && isSocialPlatformEnabled?.(spaceInfo, ConfigConstant.SocialType.WECOM) && !isSocialWecom?.(spaceInfo);
   const isBindWoa = spaceInfo && isSocialPlatformEnabled?.(spaceInfo, ConfigConstant.SocialType.WOA);
   const [refreshBtnLoading, setRefreshBtnLoading] = useState(false);
   const [inSearch, setInSearch] = useState<boolean>(false);
   const [teamOperate, setTeamOperate] = useState(false);
   const [selectKey, setSelectKey] = useState(ConfigConstant.ROOT_TEAM_ID);
+  const [expandKey, setExpandKey] = useState<(string | number)[]>([ConfigConstant.ROOT_TEAM_ID]);
   const { loading, changeSelectTeam: changeSelectTeamHook } = useSelectTeamChange();
 
   useMount(() => {
@@ -304,19 +306,42 @@ export const TeamTree: FC<React.PropsWithChildren<IModalProps>> = (props) => {
         },
       });
     }
-    if (isBindDingtalk || isBindWecom || isBindWoa) {
-      const refreshMethods = {
-        [ConfigConstant.SocialType.DINGTALK]: freshDingtalkOrg,
-        [ConfigConstant.SocialType.WECOM]: freshWecomOrg,
-        [ConfigConstant.SocialType.WOA]: freshWoaContact,
+
+    const confirmSyncOrg = () => {
+      const confirmSyncOrgOk = () => {
+        if (user) {
+          const refreshMethods = {
+            [ConfigConstant.SocialType.DINGTALK]: Api.syncDingTalkOrg,
+            [ConfigConstant.SocialType.WECOM]: freshWecomOrg,
+            [ConfigConstant.SocialType.WOA]: freshWoaContact,
+          };
+          setRefreshBtnLoading(true);
+          spaceInfo && refreshMethods[spaceInfo.social.platform]?.(spaceId).then((result) => {
+            let rootTeamId = result.data.data;
+            setExpandKey([ConfigConstant.ROOT_TEAM_ID]);
+            dispatch(StoreActions.getTeamListData(user!));
+            dispatch(StoreActions.getTeamInfo(spaceId, rootTeamId));
+            dispatch(StoreActions.getMemberListDataInSpace(1, rootTeamId));
+            Message.success({ content: t(Strings.sync_success)});
+            setRefreshBtnLoading(false);
+          }).catch(() => {
+            Message.error({ content: t(Strings.sync_failed) });
+            setRefreshBtnLoading(false);
+          });
+        }
       };
+      Modal.confirm({
+        title: t(Strings.hint),
+        content: t(Strings.confirm_sync_org),
+        onOk: confirmSyncOrgOk,
+        type: 'warning',
+        maskClosable: true,
+      });
+    };
+    if (isBindDingtalk || isBindWecom || isBindWoa) {
       return getButton({
         onClick: () => {
-          setRefreshBtnLoading(true);
-          spaceInfo &&
-            refreshMethods[spaceInfo.social.platform]?.().then(() => {
-              setRefreshBtnLoading(false);
-            });
+          confirmSyncOrg();
         },
       });
     }
@@ -348,9 +373,9 @@ export const TeamTree: FC<React.PropsWithChildren<IModalProps>> = (props) => {
       node: DataNode;
     },
   ) => {
+    setExpandKey(expandedKeys);
     if (info.expanded && !info.node.children) {
       const teamId = expandedKeys[expandedKeys.length - 1];
-
       dispatch(StoreActions.getSubTeam(teamId));
     }
   };
@@ -380,6 +405,7 @@ export const TeamTree: FC<React.PropsWithChildren<IModalProps>> = (props) => {
                 </div>
               }
               selectedKeys={[selectKey]}
+              expandedKeys={expandKey}
               showIcon={false}
               expandAction={false}
               defaultExpandedKeys={[ConfigConstant.ROOT_TEAM_ID]}

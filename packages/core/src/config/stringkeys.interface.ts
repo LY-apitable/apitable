@@ -1182,6 +1182,7 @@ export type StringKeysMapType = {
   'confirm_market_app_closing': 'confirm_market_app_closing',
   'confirm_open_apply': 'confirm_open_apply',
   'confirm_open_invite': 'confirm_open_invite',
+  'confire_sync_org': 'confire_sync_org',
   'confirm_the_system_has_detected_a_conflict_in_document': 'confirm_the_system_has_detected_a_conflict_in_document',
   'confirm_unbind': 'confirm_unbind',
   'confirm_verified_failed_and_get_the_code_again': 'confirm_verified_failed_and_get_the_code_again',

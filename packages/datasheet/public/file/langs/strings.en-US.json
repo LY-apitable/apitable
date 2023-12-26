@@ -1181,6 +1181,7 @@
   "confirm_market_app_closing": "Confirm close",
   "confirm_open_apply": "Confirm to turn on \"allow applications to join the Space\"",
   "confirm_open_invite": "Confirm to turn on \"Inviting members\"",
+  "confirm_sync_org": "Confire to synchronize address book?",
   "confirm_the_system_has_detected_a_conflict_in_document": "A data conflict was detected in this datasheet. Fix it automatically?",
   "confirm_unbind": "Confirm to unbind",
   "confirm_verified_failed_and_get_the_code_again": "Verification code not verified, please resend the code",

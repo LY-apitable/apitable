@@ -291,4 +291,12 @@ public interface UserMapper extends BaseMapper<UserEntity> {
      * @return UserSensitiveDTO
      */
     List<UserSensitiveDTO> selectEmailAndMobilePhoneByIds(@Param("userIds") List<Long> userIds);
+
+    /**
+     * Obtain User ID through AppKey And DingTalk Union Id.
+     *
+     * @param dingUnionId DingTalk Union Id
+     * @return User ID
+     */
+    Long selectIdByAppKeyAndDingUnionId(@Param("appKey") String appKey, @Param("dingUnionId") String dingUnionId);
 }

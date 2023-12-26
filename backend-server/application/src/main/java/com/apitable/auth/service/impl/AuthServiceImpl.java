@@ -42,6 +42,7 @@ import com.apitable.interfaces.user.facade.UserLinkServiceFacade;
 import com.apitable.interfaces.user.model.UserLinkRequest;
 import com.apitable.organization.dto.MemberDTO;
 import com.apitable.organization.service.IMemberService;
+import com.apitable.organization.service.ITeamService;
 import com.apitable.shared.cache.bean.SocialAuthInfo;
 import com.apitable.shared.cache.service.SocialAuthInfoCacheService;
 import com.apitable.shared.captcha.CodeValidateScope;
@@ -50,6 +51,7 @@ import com.apitable.shared.captcha.ValidateCodeProcessorManage;
 import com.apitable.shared.captcha.ValidateCodeType;
 import com.apitable.shared.captcha.ValidateTarget;
 import com.apitable.shared.security.PasswordService;
+import com.apitable.space.service.ISpaceService;
 import com.apitable.user.entity.UserEntity;
 import com.apitable.user.service.IUserService;
 import java.util.List;
@@ -58,6 +60,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.redis.core.BoundValueOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -91,6 +94,12 @@ public class AuthServiceImpl implements IAuthService {
     @Resource
     private EntitlementServiceFacade entitlementServiceFacade;
 
+    @Resource
+    private ISpaceService iSpaceService;
+
+    @Resource
+    private ITeamService iTeamService;
+
     @Override
     public Long register(final String username, final String password) {
         // Check email format and if exists
@@ -102,20 +111,14 @@ public class AuthServiceImpl implements IAuthService {
     }
 
     @Override
-    public Long registerUserByDingTalk(String dingUnionId, String areaCode, String mobile,
-            String email, String nickName, String avatar, String spaceId) {
+    @Transactional(rollbackFor = Exception.class)
+    public Long registerUserByDingTalk(String appKey, boolean admin, String areaCode, String mobile,
+            String email, String dingUnionId, String nickName) {
         // Create a new user based on the mobile phone number and activate the corresponding member
-        UserEntity user = iUserService.createUserByDingTalk(dingUnionId, areaCode, mobile, email, nickName, avatar);
-        // Query whether there is a space member corresponding to a mobile phone number
-        List<MemberDTO> inactiveMembers = iMemberService.getInactiveMemberDtoByMobile(mobile);
-        // Invite new users to join the space station to reward attachment capacity,
-        // asynchronous  operation
-        if (spaceId != null) {
-            entitlementServiceFacade.rewardGiftCapacity(spaceId,
-                new EntitlementRemark(user.getId(), user.getNickName()));
-        }
-        createOrActiveSpace(user,
-            inactiveMembers.stream().map(MemberDTO::getId).collect(Collectors.toList()));
+        UserEntity user = iUserService.createUserByDingTalk(areaCode, mobile, email, appKey, dingUnionId, nickName);
+        
+        iSpaceService.createOrJoinSpace(appKey, user.getId(), admin);
+
         return user.getId();
     }
 
@@ -268,7 +271,7 @@ public class AuthServiceImpl implements IAuthService {
         // Query whether there is a space member corresponding to the mailbox, only new
         // registration will have this operation
         List<MemberDTO> inactiveMembers = iMemberService.getInactiveMemberDtoByEmail(email);
-        // Invite new users to join the space station to reward attachment capacity,
+// Invite new users to join the space station to reward attachment capacity,
         // asynchronous operation
         if (spaceId != null) {
             entitlementServiceFacade.rewardGiftCapacity(spaceId,

@@ -139,6 +139,8 @@
 
     <resultMap id="memberPageVo" type="com.apitable.organization.vo.MemberPageVo">
         <result column="id" property="memberId"/>
+        <result column="user_id" property="userId"/>
+        <result column="ding_union_id" property="dingUnionId"/>
         <result column="avatar" property="avatar"/>
         <result column="nick_name" property="nickName"/>
         <result column="color" property="avatarColor"/>
@@ -158,9 +160,11 @@
     <select id="selectMembersByRootTeamId" resultMap="memberPageVo">
         SELECT
             vom.id,
+            vom.user_id,
             vu.avatar,
             vu.nick_name,
             vu.color,
+            vu.ding_union_id,
             vom.mobile,
             vom.member_name,
             vom.email,
@@ -482,6 +486,32 @@
         WHERE parent_id = #{parentId}
         AND space_id = #{spaceId}
         AND team_name = #{teamName}
+        AND is_deleted = 0
+    </select>
+
+    <select id="selectAllTeamBySpaceId" resultType="com.apitable.organization.entity.TeamEntity">
+        SELECT *
+        FROM ${tablePrefix}unit_team
+        WHERE space_id = #{spaceId}
+          AND is_deleted = 0
+        ORDER BY parent_id
+    </select>
+
+    <select id="selectTeamBySpaceIdAndDeptId" resultType="com.apitable.organization.entity.TeamEntity">
+        SELECT *
+        FROM ${tablePrefix}unit_team
+        WHERE space_id = #{spaceId}
+          AND dept_id = #{deptId} AND is_deleted = 0
+    </select>
+
+    <select id="selectTeamIdsByDeptIds" resultType="java.lang.Long">
+        SELECT id
+        FROM ${tablePrefix}unit_team
+        WHERE space_id = #{spaceId}
+        AND dept_id IN
+        <foreach item="item" index="index" collection="deptIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
         AND is_deleted = 0
     </select>
 </mapper>

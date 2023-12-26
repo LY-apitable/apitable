@@ -392,4 +392,51 @@ public interface ITeamService extends IService<TeamEntity> {
      * @return TeamEntity
      */
     TeamEntity getTeamByUnitId(String spaceId, String unitId);
+
+    /**
+     * get all team by space id
+     * @param spaceId
+     * @return list of TeamEntity
+     */
+    List<TeamEntity> selectAllTeamBySpaceId(String spaceId);
+
+    /**
+     * create subTeam.
+     *
+     * @param spaceId  space id
+     * @param name     team name
+     * @param superId  parent team id
+     * @param deptId   enterprise dept id
+     * @param parentDeptId enterprise parent dept id
+     * @param sequence team order
+     * @return team
+     */
+    TeamEntity createSubTeam(String spaceId, String name, Long superId, Long deptId, Long parentDeptId, Integer sequence);
+
+    /**
+     * get Team
+     * @param spaceId space id
+     * @param deptId dept id
+     * @return team
+     */
+    TeamEntity getTeamByDeptId(String spaceId, Long deptId);
+
+    /**
+     * adjust the team hierarchy
+     *
+     * @param teamId   team id
+     * @param teamName team name
+     * @param parentId parent team id
+     * @param parentDeptId parent dept id
+     */
+    void updateTeamParent(Long teamId, String teamName, Long parentId, Long parentDeptId);
+
+    /**
+     * get dept team id.
+     *
+     * @param spaceId space id
+     * @param deptIds dept_id list
+     * @return list of team id
+     */
+    List<Long> getTeamIdsByDeptIds(String spaceId, List<Long> deptIds);
 }

@@ -872,4 +872,76 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, TeamEntity> impleme
         }
         return nodeList;
     }
+
+    /**
+     * get all team by space id
+     * 
+     * @param spaceId space id
+     * @return list of TeamEntity
+     */
+    public List<TeamEntity> selectAllTeamBySpaceId(String spaceId) {
+        return baseMapper.selectAllTeamBySpaceId(spaceId);
+    }
+
+    /**
+     * create subTeam.
+     *
+     * @param spaceId  space id
+     * @param name     team name
+     * @param superId  parent team id
+     * @param deptId   enterprise dept id
+     * @param parentDeptId enterprise parent dept id
+     * @param sequence team order
+     * @return team
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TeamEntity createSubTeam(String spaceId, String name, Long superId, Long deptId, Long parentDeptId, Integer sequence) {
+        log.info("create sub team:{}", name);
+        if (null == sequence) {
+            sequence = getMaxSequenceByParentId(superId) + 1;
+        }
+        TeamEntity team = new TeamEntity();
+        team.setSpaceId(spaceId);
+        team.setTeamName(name);
+        team.setParentId(superId);
+        team.setDeptId(deptId);
+        team.setParentDeptId(parentDeptId);
+        team.setSequence(sequence);
+        boolean flag = save(team);
+        ExceptionUtil.isTrue(flag, OrganizationException.CREATE_TEAM_ERROR);
+        iUnitService.create(spaceId, UnitType.TEAM, team.getId());
+        return team;
+    }
+
+    /**
+     * get team
+     */
+    public TeamEntity getTeamByDeptId(String spaceId, Long deptId) {
+        return baseMapper.selectTeamBySpaceIdAndDeptId(spaceId, deptId);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateTeamParent(Long teamId, String teamName, Long parentId, Long parentDeptId) {
+        log.info("adjust the team hierarchy");
+        TeamEntity update = new TeamEntity();
+        update.setId(teamId);
+        update.setTeamName(teamName);
+        update.setParentId(parentId);
+        update.setParentDeptId(parentDeptId);
+        Integer maxSequence = baseMapper.selectMaxSequenceByParentId(parentId);
+        int max = Optional.ofNullable(maxSequence).orElse(0);
+        update.setSequence(max + 1);
+        boolean flag = updateById(update);
+        ExceptionUtil.isTrue(flag, OrganizationException.UPDATE_TEAM_NAME_ERROR);
+    }
+
+    @Override
+    public List<Long> getTeamIdsByDeptIds(String spaceId, List<Long> deptIds) {
+        if (deptIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return baseMapper.selectTeamIdsByDeptIds(spaceId, deptIds);
+    }
 }

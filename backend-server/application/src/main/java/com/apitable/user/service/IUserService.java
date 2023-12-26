@@ -149,15 +149,15 @@ public interface IUserService extends IService<UserEntity> {
     /**
      * Create Account By DingTalk
      * 
-     * @param dingUnionId
      * @param areaCode
      * @param mobile
      * @param email
+     * @param appKey
+     * @param dingUnionId
      * @param nickName
-     * @param avatar
      * @return
      */
-    UserEntity createUserByDingTalk(String dingUnionId, String areaCode, String mobile, String email, String nickName, String avatar);
+    UserEntity createUserByDingTalk(String areaCode, String mobile, String email, String appKey, String dingUnionId, String nickName);
 
     /**
      * Create an account by phone number.
@@ -416,4 +416,13 @@ public interface IUserService extends IService<UserEntity> {
      * @return a map with userId as key
      */
     Map<Long, UserSimpleVO> getUserSimpleInfoMap(List<Long> userIds);
+
+    /**
+     * Obtain user ID according to AppKey And DingTalk Union Id.
+     * 
+     * @param appKey appKey
+     * @param dingUnionId DingTalk Union Id
+     * @return User ID
+     */
+    Long getUserIdByAppKeyAndDingUnionId(String appKey, String dingUnionId);
 }

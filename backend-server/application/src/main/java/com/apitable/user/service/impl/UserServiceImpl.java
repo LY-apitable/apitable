@@ -455,26 +455,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserEntity createUserByDingTalk(
-        final String dingUnionId,
         final String areaCode,
         final String mobile,
         final String email,
-        final String nickName,
-        final String avatar
+        final String appKey,
+        final String dingUnionId,
+        final String nickName
     ) {
-        Integer color = nullToDefaultAvatar(avatar) != null ? null
-            : RandomUtil.randomInt(0, USER_AVATAR_COLOR_MAX_VALUE);
+        Integer color = RandomUtil.randomInt(0, USER_AVATAR_COLOR_MAX_VALUE);
         UserEntity entity = UserEntity.builder()
             .uuid(IdUtil.fastSimpleUUID())
             .code(areaCode)
             .mobilePhone(mobile)
             .email(email)
-            .nickName(nullToDefaultNickName(nickName, mobile))
-            .locale(languageManager.getDefaultLanguageTag())
-            .avatar(nullToDefaultAvatar(avatar))
-            .color(color)
+            .appKey(appKey)
             .dingUnionId(dingUnionId)
-            .password(passwordService.encode("Ab123456"))
+            .nickName(nullToDefaultNickName(nickName, mobile))
+            .locale("zh-CN")
+            .timeZone("Asia/Shanghai")
+            .color(color)
             .lastLoginTime(LocalDateTime.now())
             .build();
         boolean flag = saveUser(entity);
@@ -1231,5 +1230,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
                 vo.setAvatar(i.getAvatar());
                 return vo;
             }));
+    }
+
+    @Override
+    public Long getUserIdByAppKeyAndDingUnionId(final String appKey, final String dingUnionId) {
+        return baseMapper.selectIdByAppKeyAndDingUnionId(appKey, dingUnionId);
     }
 }

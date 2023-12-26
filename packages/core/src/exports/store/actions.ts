@@ -26,7 +26,6 @@ export * from '../../modules/org/store/actions/space_member_manage';
 export * from '../../modules/org/store/actions/invite';
 export * from '../../modules/org/store/actions/space_permission_manage';
 export * from '../../modules/user/store/actions/notification';
-export * from '../../modules/enterprise';
 export * from '../../modules/database/store/actions/toolbar';
 export * from '../../modules/database/store/actions/right_pane';
 export * from '../../modules/database/store/actions/resource';

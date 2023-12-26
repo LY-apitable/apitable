@@ -334,4 +334,27 @@ public interface TeamMapper extends BaseMapper<TeamEntity> {
         @Param("teamName") String teamName
     );
 
+    /**
+     * query all team by space id
+     *
+     * @param spaceId space id
+     * @return teams
+     */
+    List<TeamEntity> selectAllTeamBySpaceId(@Param("spaceId") String spaceId);
+
+    /**
+     * get team by space id and dept id
+     * @param spaceId
+     * @param deptId
+     * @return team
+     */
+    TeamEntity selectTeamBySpaceIdAndDeptId(@Param("spaceId") String spaceId, @Param("deptId") Long deptId);
+
+    /**
+     * get team id list by space id and dept id list
+     * @param spaceId
+     * @param deptIds
+     * @return team id list
+     */
+    List<Long> selectTeamIdsByDeptIds(@Param("spaceId") String spaceId, @Param("deptIds") List<Long> deptIds);
 }

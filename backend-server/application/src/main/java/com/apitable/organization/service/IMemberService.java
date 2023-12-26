@@ -27,11 +27,13 @@ import com.apitable.organization.ro.UpdateMemberOpRo;
 import com.apitable.organization.ro.UpdateMemberRo;
 import com.apitable.organization.vo.MemberBriefInfoVo;
 import com.apitable.organization.vo.MemberInfoVo;
+import com.apitable.organization.vo.MemberPageVo;
 import com.apitable.organization.vo.UploadParseResultVO;
 import com.apitable.workspace.vo.NodeRoleMemberVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import java.util.Collection;
 import java.util.List;
+
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -690,4 +692,12 @@ public interface IMemberService extends IService<MemberEntity> {
      * @return member id
      */
     Long getMemberIdByUnitId(String spaceId, String unitId);
+
+    /**
+     * query root team's members
+     *
+     * @param spaceId space id
+     * @return members info
+     */
+    List<MemberPageVo> selectMembersByRootTeamId(String spaceId);
 }

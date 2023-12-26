@@ -44,7 +44,7 @@ import {
 import { WasmApi } from '../../database/api';
 import { getBrowserDatabusApiEnabled } from 'modules/database/api/wasm';
 
-export * from '../../enterprise';
+export * from '../../enterprise/api/api.enterprise';
 export * from '../../user/api/api.auth';
 export * from '../../user/api/api.user';
 export * from '../../space/api/api.space';

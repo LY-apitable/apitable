@@ -78,6 +78,7 @@ import com.apitable.shared.component.notification.NotificationManager;
 import com.apitable.shared.component.notification.NotificationRenderField;
 import com.apitable.shared.component.notification.NotificationTemplateId;
 import com.apitable.shared.component.notification.NotifyMailFactory;
+import com.apitable.shared.component.redis.RedisLockHelper;
 import com.apitable.shared.config.properties.ConstProperties;
 import com.apitable.shared.config.properties.LimitProperties;
 import com.apitable.shared.constants.AuditConstants;
@@ -87,6 +88,7 @@ import com.apitable.shared.exception.LimitException;
 import com.apitable.shared.holder.NotificationRenderFieldHolder;
 import com.apitable.shared.listener.event.AuditSpaceEvent;
 import com.apitable.shared.listener.event.AuditSpaceEvent.AuditSpaceArg;
+import com.apitable.shared.sysconfig.i18n.I18nStringsUtil;
 import com.apitable.shared.util.IdUtil;
 import com.apitable.shared.util.information.ClientOriginInfo;
 import com.apitable.shared.util.information.InformationUtil;
@@ -138,6 +140,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -145,6 +148,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -233,6 +238,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, SpaceEntity>
 
     @Resource
     private IInvitationService iInvitationService;
+
+    @Resource
+    private RedisLockHelper redisLockHelper;
 
     @Value("${BILLING_APITABLE_ENABLED:false}")
     private Boolean billingApitableEnabled;
@@ -698,6 +706,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, SpaceEntity>
                 bindInfo.setContactSyncing(socialConnectInfo.contactSyncing());
             }
         }
+        //DingTalk
+        bindInfo.setPlatform(2);
         spaceInfoVO.setSocial(bindInfo);
         // credit
         BigDecimal usedCredit = aiServiceFacade.getUsedCreditCount(spaceId);
@@ -1143,4 +1153,91 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, SpaceEntity>
         return seat - activeMemberTotalCount > 0;
     }
 
+    @Override
+    public String getSpaceIdByAppKey(String appKey) {
+        return baseMapper.selectSpaceIdByAppKey(appKey);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Space createSpace(final UserEntity user, final String appKey, final String spaceName) {
+        Long userId = user.getId();
+        // Check whether the user reaches the upper limit
+        boolean limit = this.checkSpaceNumber(userId);
+        ExceptionUtil.isFalse(limit, SpaceException.NUMBER_LIMIT);
+        String spaceId = IdUtil.createSpaceId();
+        memberMapper.updateInactiveStatusByUserId(userId);
+        MemberEntity member = new MemberEntity();
+        member.setSpaceId(spaceId);
+        // synchronize user information
+        member.setUserId(userId);
+        member.setMemberName(user.getNickName());
+        member.setMobile(user.getMobilePhone());
+        member.setEmail(user.getEmail());
+        member.setStatus(UserSpaceStatus.ACTIVE.getStatus());
+        member.setIsAdmin(true);
+        member.setIsActive(true);
+        // the creator of space
+        boolean addMember = iMemberService.save(member);
+        ExceptionUtil.isTrue(addMember, CREATE_MEMBER_ERROR);
+        // create unit
+        iUnitService.create(spaceId, UnitType.MEMBER, member.getId());
+        String props = JSONUtil.parseObj(
+            SpaceGlobalFeature.builder().fileSharable(true).invitable(false)
+                .joinable(false).nodeExportable(true)
+                .allowCopyDataToExternal(true)
+                .allowDownloadAttachment(true).mobileShowable(false)
+                .watermarkEnable(false).build()).toString();
+        SpaceEntity space =
+            SpaceEntity.builder().spaceId(spaceId).name(spaceName).appKey(appKey)
+                .owner(member.getId()).creator(member.getId())
+                .props(props).createdBy(userId).updatedBy(userId)
+                .build();
+        boolean addSpace = save(space);
+        ExceptionUtil.isTrue(addSpace, SpaceException.CREATE_SPACE_ERROR);
+        // add root node
+        String rootNodeId = iNodeService.createChildNode(userId,
+            CreateNodeDto.builder().spaceId(space.getSpaceId())
+                .newNodeId(IdUtil.createNodeId())
+                .type(NodeType.ROOT.getNodeType()).build());
+        // create root department
+        Long rootTeamId = iTeamService.createRootTeam(spaceId, spaceName);
+        iUnitService.create(spaceId, UnitType.TEAM, rootTeamId);
+        //  create root department and member binding
+        iTeamMemberRelService.addMemberTeams(
+            Collections.singletonList(member.getId()),
+            Collections.singletonList(rootTeamId));
+        // gets the node id of the default reference template for the new space.
+        String templateNodeId = iTemplateService.getDefaultTemplateNodeId();
+        if (StrUtil.isNotBlank(templateNodeId)) {
+            // the dump node method, contains grpc calls, placing the last.
+            iNodeService.copyNodeToSpace(userId, spaceId, rootNodeId,
+                templateNodeId, NodeCopyOptions.create());
+        }
+        return new Space(spaceId, rootNodeId);
+    }
+
+    @Override
+    public void createOrJoinSpace(String appKey, Long userId, boolean admin) {
+        String spaceId = getSpaceIdByAppKey(appKey);
+        if (StringUtils.isBlank(spaceId)) {
+            try {
+                redisLockHelper.tryLock(appKey);
+                spaceId = getSpaceIdByAppKey(appKey);
+                if (StringUtils.isBlank(spaceId)) {
+                    UserEntity user = userService.getById(userId);
+                    String spaceName = I18nStringsUtil.t("nav_workbench", new Locale("zh-CN"));
+                    Space space = createSpace(user, appKey, spaceName);
+                    spaceId = space.getId();
+                }
+            } finally {
+                redisLockHelper.releaseLock(appKey);
+            }
+        } else {
+            Long memberId = iMemberService.createMember(userId, spaceId, null);
+            if (admin) {
+                iMemberService.setMemberMainAdmin(memberId);
+            }
+        }
+    }
 }

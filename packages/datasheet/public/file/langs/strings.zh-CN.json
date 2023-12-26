@@ -1183,6 +1183,7 @@
   "confirm_market_app_closing": "确认停用",
   "confirm_open_apply": "确认开启“允许申请加入空间站”",
   "confirm_open_invite": "确认开启“邀请成员”",
+  "confirm_sync_org": "确认要同步通讯录吗？",
   "confirm_the_system_has_detected_a_conflict_in_document": "表格数据有多次更新，需要你手动刷新进行合并",
   "confirm_unbind": "确认解除绑定",
   "confirm_verified_failed_and_get_the_code_again": "尚未通过验证码校验，请重新获取验证码",

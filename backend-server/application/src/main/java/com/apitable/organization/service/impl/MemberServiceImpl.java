@@ -74,6 +74,7 @@ import com.apitable.organization.service.ITeamService;
 import com.apitable.organization.service.IUnitService;
 import com.apitable.organization.vo.MemberBriefInfoVo;
 import com.apitable.organization.vo.MemberInfoVo;
+import com.apitable.organization.vo.MemberPageVo;
 import com.apitable.organization.vo.MemberTeamPathInfo;
 import com.apitable.organization.vo.RoleVo;
 import com.apitable.organization.vo.UploadParseResultVO;
@@ -125,6 +126,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1429,5 +1432,10 @@ public class MemberServiceImpl extends ExpandServiceImpl<MemberMapper, MemberEnt
                 UnitType.MEMBER);
         ExceptionUtil.isNotNull(memberId, NOT_EXIST_MEMBER);
         return memberId;
+    }
+
+    @Override
+    public List<MemberPageVo> selectMembersByRootTeamId(String spaceId) {
+        return teamMapper.selectMembersByRootTeamId(spaceId);
     }
 }

@@ -43,6 +43,10 @@ public class MemberPageVo {
     @JsonSerialize(using = ToStringSerializer.class)
     private Long memberId;
 
+    @Schema(description = "User ID", type = "java.lang.String", example = "1")
+    @JsonSerialize(using = ToStringSerializer.class)
+    private Long userId;
+
     @JsonSerialize(nullsUsing = NullStringSerializer.class, using = ImageSerializer.class)
     @Schema(description = "Head portrait address",
         example = "http://wwww.apitable.com/2019/11/12/17123187253.png")
@@ -53,6 +57,9 @@ public class MemberPageVo {
 
     @Schema(description = "Member Name", example = "Zhang San")
     private String memberName;
+
+    @Schema(description = "Ding Union Id", example = "xxxx")
+    private String dingUnionId;
 
     @JsonSerialize(nullsUsing = NullStringSerializer.class,
         using = MobilePhoneHideSerializer.class)

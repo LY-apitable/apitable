@@ -395,4 +395,31 @@ public interface ISpaceService extends IService<SpaceEntity> {
      * @author Chambers
      */
     boolean getSpaceSeatAvailableStatus(String spaceId);
+
+    /**
+     * get space id by Lmkj Auth Key.
+     *
+     * @param appKey Lmkj Auth Key
+     * @return spaceId
+     */
+    String getSpaceIdByAppKey(String appKey);
+
+    /**
+     * create space by user and appKey.
+     *
+     * @param user      user
+     * @param appKey appKey
+     * @param spaceName spaceName
+     * @return space object
+     */
+    Space createSpace(UserEntity user, String appKey, String spaceName);
+
+    /**
+     * create or join space
+     * 
+     * @param appkey appKey
+     * @param userId userId
+     * @param admin admin
+     */
+    void createOrJoinSpace(String appKey, Long userId, boolean admin);
 }

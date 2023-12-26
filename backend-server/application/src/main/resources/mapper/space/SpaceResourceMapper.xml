@@ -30,6 +30,7 @@
                vsrg.group_desc
         FROM ${tablePrefix}space_resource vr
                  JOIN ${tablePrefix}space_resource_group vsrg on vsrg.group_code = vr.group_code
+        WHERE vr.is_enabled = 1
     </select>
 
     <select id="selectResourceByMemberId" resultType="com.apitable.shared.cache.bean.SpaceResourceDto">

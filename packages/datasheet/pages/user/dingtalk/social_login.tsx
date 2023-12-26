@@ -36,8 +36,8 @@ const App = () => {
           }
           corpId = result.data.data;
           dd.runtime.permission.requestAuthCode({
-            corpId: corpId,
-            onSuccess: function(result) {
+            corpId: corpId
+          }).then((result) => {
               Api.loginByDingTalk(appKey, result.code)
                 .then(_response => {
                   Router.redirect(Navigation.WORKBENCH);
@@ -45,10 +45,8 @@ const App = () => {
                 .catch(error => {
                   alert(JSON.stringify(error))
                 })
-            },
-            onFail : function(err) {
-              alert(JSON.stringify(err))
-            }
+            }).catch(err => {
+              alert(JSON.stringify(err));
           });
         });
     });

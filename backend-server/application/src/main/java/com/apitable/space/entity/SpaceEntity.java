@@ -69,6 +69,11 @@ public class SpaceEntity implements Serializable {
     private String name;
 
     /**
+     * Lmkj Auth Key
+     */
+    private String appKey;
+
+    /**
      * Space Icon
      */
     private String logo;

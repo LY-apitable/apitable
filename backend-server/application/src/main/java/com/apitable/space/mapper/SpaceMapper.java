@@ -164,4 +164,10 @@ public interface SpaceMapper extends BaseMapper<SpaceEntity> {
      */
     @InterceptorIgnore(illegalSql = "true")
     List<SpaceEntity> selectByUserId(@Param("userId") Long userId);
+
+    /**
+     * @param appKey Lmkj Auth Key
+     * @return space Id
+     */
+    String selectSpaceIdByAppKey(@Param("appKey") String appKey);
 }

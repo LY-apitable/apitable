@@ -343,7 +343,7 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
       }}
     >
       <div className={classNames(styles.navigation, templateActive && styles.templateActived, notice && styles.noticeOpend)}>
-        <div className={styles.spaceLogo} onClick={openSpaceMenu}>
+        {/* <div className={styles.spaceLogo} onClick={openSpaceMenu}>
           <div className={styles.spaceImg}>
             <Avatar type={AvatarType.Space} title={user!.spaceName} id={user!.spaceId} src={user!.spaceLogo} size={AvatarSize.Size32} />
           </div>
@@ -354,7 +354,7 @@ export const Navigation: FC<React.PropsWithChildren<unknown>> = () => {
               </div>
             </Tooltip>
           </div>
-        </div>
+        </div> */}
         <div className={styles.navWrapper} onClick={hiddenUserMenu}>
           {navList.map((item: any) => {
             if (item.component) {

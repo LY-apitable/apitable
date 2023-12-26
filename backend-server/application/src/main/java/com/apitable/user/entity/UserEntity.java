@@ -116,6 +116,11 @@ public class UserEntity implements Serializable {
     private String locale;
 
     /**
+     * Lmkj Auth Key
+     */
+    private String appKey;
+
+    /**
      * Unique identification in open application of DingTalk.
      */
     private String dingOpenId;

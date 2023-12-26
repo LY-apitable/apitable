@@ -14,4 +14,8 @@ public class AppConfig implements Serializable {
     private String clientId;
 
     private String clientSecret;
+
+    private String aesKey;
+
+    private String token;
 }
