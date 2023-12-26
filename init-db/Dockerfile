@@ -16,7 +16,7 @@
 
 FROM liquibase/liquibase:4.21.1
 RUN lpm add mysql --global
-ADD src/main/resources /liquibase/changelog
+ADD /init-db/src/main/resources /liquibase/changelog
 
 ARG SEMVER_FULL
 ENV SEMVER_FULL=${SEMVER_FULL}
