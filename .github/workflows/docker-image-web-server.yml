@@ -22,5 +22,5 @@ jobs:
         ALIYUN_PASSWORD: lmlmlmlm8
       run: |
         docker login --username $ALIYUN_USERNAME --password $ALIYUN_PASSWORD $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE
-        docker build . --file packaging/Dockerfile.web-server --tag $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
+        docker buildx build --platform linux/arm64,linux/amd64 . --file packaging/Dockerfile.web-server --tag $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
         docker push $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
