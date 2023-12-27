@@ -245,7 +245,7 @@ buildpush-docker: ## build all and push all to hub.docker.io registry
 
 buildpush-docker-new: ## build all and push all to hub.docker.io registry
 	echo $$ALIYUN_PASSWORD | docker login -u $$ALIYUN_USERNAME --password-stdin $$ALIYUN_REGISTRY_URL/$$ALIYUN_NAMESPACE || true;\
-	$(BUILDER) $(target) --push
+	$(BUILDER) --no-cache $(target) --push
 
 .PHONY: build
 build-docker: ## build all containers
