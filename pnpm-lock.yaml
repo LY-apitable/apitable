@@ -137,7 +137,7 @@ importers:
   packages/components:
     dependencies:
       '@apitable/core':
-        specifier: '*'
+        specifier: '1.2.0'
         version: link:../core
       '@apitable/icons':
         specifier: '*'
@@ -565,7 +565,7 @@ importers:
         specifier: '*'
         version: link:../components
       '@apitable/core':
-        specifier: '*'
+        specifier: '1.2.0'
         version: link:../core
       '@apitable/i18n-lang':
         specifier: '*'
@@ -1311,7 +1311,7 @@ importers:
   packages/room-server:
     dependencies:
       '@apitable/core':
-        specifier: '*'
+        specifier: '1.2.0'
         version: link:../core
       '@apitable/i18n-lang':
         specifier: '*'
@@ -1726,7 +1726,7 @@ importers:
         specifier: '*'
         version: link:../components
       '@apitable/core':
-        specifier: '*'
+        specifier: '1.2.0'
         version: link:../core
       '@apitable/icons':
         specifier: '*'
