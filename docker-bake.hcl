@@ -6,6 +6,14 @@ variable "IMAGE_REGISTRY" {
   default = "docker.io"
 }
 
+variable "IMAGE_REGISTRY_LM" {
+  default = "registry.cn-hangzhou.aliyuncs.com"
+}
+
+variable "IMAGE_NAMESPACE_LM" {
+  default = "limch"
+}
+
 variable "SEMVER_FULL" {
   default = "v0.0.0-alpha"
 }
@@ -40,8 +48,19 @@ target "web-server" {
   args = {
     SEMVER_FULL = SEMVER_FULL
   }
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64"]
   tags = ["${IMAGE_REGISTRY}/apitable/web-server:latest", "${IMAGE_REGISTRY}/apitable/web-server:${IMAGE_TAG}"]
+}
+
+# https://github.com/apitable/apitable/issues/1379
+target "web-server-experimental" {
+  context = "."
+  dockerfile = "packaging/Dockerfile.web-server"
+  args = {
+    SEMVER_FULL = SEMVER_FULL
+  }
+  platforms = ["linux/amd64", "linux/arm64"]
+  tags = ["${IMAGE_REGISTRY_LM}/${IMAGE_NAMESPACE_LM}/apitable-web-server:latest", "${IMAGE_REGISTRY_LM}/${IMAGE_NAMESPACE_LM}/apitable-web-server:${IMAGE_TAG}"]
 }
 
 target "init-db" {

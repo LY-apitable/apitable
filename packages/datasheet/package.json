@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@apitable/components": "*",
-    "@apitable/core": "1.2.0",
+    "@apitable/core": "*",
     "@apitable/i18n-lang": "*",
     "@apitable/icons": "*",
     "@apitable/react-flow": "^9.6.12",

@@ -10,17 +10,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v3
+    strategy:
+      matrix:
+        target: [ web-server-experimental ]
 
-    - name: Build the Docker image
-      env:
-        ALIYUN_REGISTRY_URL: registry.cn-hangzhou.aliyuncs.com
-        ALIYUN_NAMESPACE: limch
-        ALIYUN_REPO_NAME: apitable-web-server
-        ALIYUN_USERNAME: tb921193_33
-        ALIYUN_PASSWORD: lmlmlmlm8
-      run: |
-        docker login --username $ALIYUN_USERNAME --password $ALIYUN_PASSWORD $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE
-        docker build . --file packaging/Dockerfile.web-server --tag $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
-        docker push $ALIYUN_REGISTRY_URL/$ALIYUN_NAMESPACE/$ALIYUN_REPO_NAME:latest
+    env:
+      ALIYUN_USERNAME: tb921193_33
+      ALIYUN_PASSWORD: lmlmlmlm8
+    steps:
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build APITable and Push
+        run: |
+          eval "$(./scripts/semver-ci.sh)"
+          make buildpush-docker-new target=${{ matrix.target }}

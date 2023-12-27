@@ -136,7 +136,7 @@ _test-ut-core:
 	pnpm run test:core
 
 _test-ut-core-cov:
-	make _build-ts
+make _build-ts
 	pnpm run test:core:cov
 
 ###### 【core unit test】 ######
@@ -242,6 +242,10 @@ test-init-db-docker:
 
 buildpush-docker: ## build all and push all to hub.docker.io registry
 	echo $$APITABLE_DOCKER_HUB_TOKEN | docker login -u apitable --password-stdin || true;\
+	$(BUILDER) $(target) --push
+
+buildpush-docker-new: ## build all and push all to hub.docker.io registry
+	echo $$ALIYUN_PASSWORD | docker login -u $$ALIYUN_USERNAME --password-stdin || true;\
 	$(BUILDER) $(target) --push
 
 .PHONY: build
@@ -386,8 +390,8 @@ install: install-local
 
 .PHONY: install-local
 install-local: ## install all dependencies with local programming language environment
-	pnpm install && pnpm build:dst:pre
-	cd backend-server && ./gradlew build -x test --stacktrace
+	pnpm install --no-frozen-lockfile && pnpm run build:dst:pre
+		cd backend-server && ./gradlew build -x test --stacktrace
 
 .PHONY: install-docker
 install-docker: _install-docker-web-server _install-docker-backend-server _install-docker-room-server ## install all dependencies with docker devenv
