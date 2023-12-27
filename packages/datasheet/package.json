@@ -22,10 +22,10 @@
     "node": "16.15.0"
   },
   "dependencies": {
-    "@apitable/components": "*",
-    "@apitable/core": "*",
-    "@apitable/i18n-lang": "*",
-    "@apitable/icons": "*",
+    "@apitable/components": "1.2.0",
+    "@apitable/core": "1.2.0",
+    "@apitable/i18n-lang": "1.2.0",
+    "@apitable/icons": "1.2.0",
     "@apitable/react-flow": "^9.6.12",
     "@apitable/widget-sdk": "1.2.0",
     "@floating-ui/react": "^0.24.5",
