@@ -137,7 +137,7 @@ importers:
   packages/components:
     dependencies:
       '@apitable/core':
-        specifier: '*'
+        specifier: '1.2.0'
         version: link:../core
       '@apitable/icons':
         specifier: '*'
