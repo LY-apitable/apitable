@@ -38,7 +38,7 @@
   },
   "dependencies": {
     "@apitable/components": "*",
-    "@apitable/core": "1.2.0",
+    "@apitable/core": "*",
     "@apitable/icons": "*",
     "@testing-library/react-hooks": "^7.0.1",
     "ahooks": "^3.5.0",
