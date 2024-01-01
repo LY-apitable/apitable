@@ -2,11 +2,11 @@ version: "3.9"
 
 services:
   web-server:
-    # image: ${LY_IMAGE_REGISTRY}/${IMAGE_WEB_SERVER}
-    # pull_policy: ${IMAGE_PULL_POLICY:-if_not_present}
-    build:
-      context: .
-      dockerfile: Dockerfile.web-server
+    image: ${LY_IMAGE_REGISTRY}/${LY_IMAGE_WEB_SERVER}
+    pull_policy: ${IMAGE_PULL_POLICY:-if_not_present}
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.web-server
     restart: always
     expose:
       - "8080"
