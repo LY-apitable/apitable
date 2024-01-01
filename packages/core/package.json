@@ -21,7 +21,7 @@
     "node": ">=8.x"
   },
   "dependencies": {
-    "@apitable/i18n-lang": "*",
+    "@apitable/i18n-lang": "1.2.0",
     "@apitable/databus-wasm-nodejs": "*",
     "@apitable/databus-wasm-web": "*",
     "@apitable/i18n": "^1.0.4",

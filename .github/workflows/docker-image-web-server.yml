@@ -7,42 +7,42 @@ on:
     branches: [ "feat/personal" ]
 
 jobs:
-  # build-push-experimental:
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       target: [ web-server-experimental ]
-  #   env:
-  #     APITABLE_DOCKER_HUB_TOKEN: ${{ secrets.APITABLE_DOCKER_HUB_TOKEN }}
-  #   steps:
-  #     - name: Fetch Sources
-  #       uses: actions/checkout@v4
-  #     - name: Set up QEMU
-  #       uses: docker/setup-qemu-action@v2
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@v2
-  #     - name: Build APITable and Push
-  #       run: |
-  #         eval "$(./scripts/semver-ci.sh)"
-  #         make buildpush-docker-ly target=${{ matrix.target }}
- 
-  build:
-
+  build-push-experimental:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        target: [ web-server-experimental ]
+    env:
+      APITABLE_DOCKER_HUB_TOKEN: ${{ secrets.APITABLE_DOCKER_HUB_TOKEN }}
     steps:
-    - name: Fetch Sources
-      uses: actions/checkout@v4
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    - name: Build the Docker image
-      run: |
-        docker version
-        # 登录阿里云镜像仓库
-        docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-qingdao.aliyuncs.com
-        # 使用Dockerfile构建镜像
-        docker build . --platform=linux/amd64 --file Dockerfile.web-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
-        # 推送镜像到镜像仓库
-        docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
+      - name: Fetch Sources
+        uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Build APITable and Push
+        run: |
+          eval "$(./scripts/semver-ci.sh)"
+          make buildpush-docker-ly target=${{ matrix.target }}
+ 
+  # build:
+
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #   - name: Fetch Sources
+  #     uses: actions/checkout@v4
+  #   - name: Set up QEMU
+  #     uses: docker/setup-qemu-action@v2
+  #   - name: Set up Docker Buildx
+  #     uses: docker/setup-buildx-action@v2
+  #   - name: Build the Docker image
+  #     run: |
+  #       docker version
+  #       # 登录阿里云镜像仓库
+  #       docker login --username=${{ secrets.DOCKER_USERNAME }} --password=${{ secrets.DOCKER_PASSWORD }} registry.cn-qingdao.aliyuncs.com
+  #       # 使用Dockerfile构建镜像
+  #       docker build . --platform=linux/amd64 --file Dockerfile.web-server --tag registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest
+  #       # 推送镜像到镜像仓库
+  #       docker push registry.cn-qingdao.aliyuncs.com/linyi-registry/apitable-web-server:latest

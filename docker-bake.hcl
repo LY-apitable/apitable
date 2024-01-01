@@ -51,7 +51,7 @@ target "web-server-experimental" {
   args = {
     SEMVER_FULL = SEMVER_FULL
   }
-  platforms = ["linux/amd64", "linux/arm64"]
+  platforms = ["linux/amd64"]
   tags = ["linyi94/apitable-web-server:latest", "linyi94/apitable-web-server:${IMAGE_TAG}"]
 }
 
