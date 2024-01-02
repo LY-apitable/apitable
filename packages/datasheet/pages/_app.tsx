@@ -23,6 +23,7 @@ import * as Sentry from '@sentry/nextjs';
 import axios from 'axios';
 import classNames from 'classnames';
 import elementClosest from 'element-closest';
+import ErrorPage from 'error_page';
 import { enableMapSet } from 'immer';
 import * as immer from 'immer';
 import { merge } from 'lodash';
@@ -53,7 +54,6 @@ import {
 } from '@apitable/core';
 import 'antd/es/date-picker/style/index';
 import { getBrowserDatabusApiEnabled } from '@apitable/core/dist/modules/database/api/wasm';
-import ErrorPage from 'error_page';
 import { init as initPlayer } from 'modules/shared/player/init';
 import 'normalize.css';
 import { initializer } from 'pc/common/initializer';
@@ -515,7 +515,7 @@ function MyAppMain({ Component, pageProps, envVars }: AppProps & { envVars: stri
               >
                 {(loading !== LoadingStatus.Complete || userLoading) && (
                   <div className="main-img-wrap" style={{ height: '0' }}>
-                    <img src={integrateCdnHost(getEnvVariables().LOGO!)} className="script-loading-logo-img"
+                    <img src={getEnvVariables().LING_MAO_LOGO} className="script-loading-logo-img"
                       alt="logo"/>
                     <img src={integrateCdnHost(getEnvVariables().LOGO_TEXT_LIGHT!)}
                       className="script-loading-logo-text-img" alt="logo_text_dark"/>
