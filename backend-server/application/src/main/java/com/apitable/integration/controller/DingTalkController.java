@@ -96,9 +96,9 @@ public class DingTalkController  {
     public ResponseData<LoginResultVO> login(@RequestBody @Valid final DingTalkLoginRo dingTalkLoginRo, 
                                         final HttpServletRequest request) {
         Long userId = dingTalkService.getUserInfo(dingTalkLoginRo);
-
+        String spaceId = iSpaceService.getSpaceIdByAppKey(dingTalkLoginRo.getAppKey());
         SessionContext.setUserId(userId);
-        return ResponseData.success(LoginResultVO.builder().userId(userId).build());
+        return ResponseData.success(LoginResultVO.builder().userId(userId).spaceId(spaceId).build());
     }
 
     /**

@@ -129,13 +129,12 @@ public class DingTalkServiceImpl implements IDingTalkService {
             userId = iAuthService.registerUserByDingTalk(dingTalkLoginRo.getAppKey(), userGetResponse.getAdmin(), "+86", 
                                     userGetResponse.getMobile(), userGetResponse.getEmail(), userGetResponse.getUserid(), userGetResponse.getName());
         } else {
-
-        }
-        userId = iUserService.getUserIdByAppKeyAndDingUnionId(dingTalkLoginRo.getAppKey(), userResponse.getUserid());
-        if (null == userId || 0L == userId) {
-            UserGetResponse userGetResponse = getUserDetail(userResponse.getUserid(), appConfig);
-            userId = iAuthService.registerUserByDingTalk(dingTalkLoginRo.getAppKey(), userGetResponse.getAdmin(), "+86", 
-                                    userGetResponse.getMobile(), userGetResponse.getEmail(), userGetResponse.getUserid(), userGetResponse.getName());
+            userId = iUserService.getUserIdByAppKeyAndDingUnionId(dingTalkLoginRo.getAppKey(), userResponse.getUserid());
+            if (null == userId || 0L == userId) {
+                UserGetResponse userGetResponse = getUserDetail(userResponse.getUserid(), appConfig);
+                userId = iAuthService.registerUserByDingTalk(dingTalkLoginRo.getAppKey(), userGetResponse.getAdmin(), "+86", 
+                                        userGetResponse.getMobile(), userGetResponse.getEmail(), userGetResponse.getUserid(), userGetResponse.getName());
+            }
         }
         return userId;
     }

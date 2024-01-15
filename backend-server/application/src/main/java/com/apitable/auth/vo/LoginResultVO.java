@@ -40,6 +40,8 @@ public class LoginResultVO {
     @JsonIgnore
     private Long userId;
 
+    private String spaceId;
+
     @Schema(description = "User registration sign", example = "true")
     @JsonSerialize(nullsUsing = NullBooleanSerializer.class)
     private Boolean isNewUser;
