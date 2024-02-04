@@ -2,23 +2,11 @@ package com.apitable.integration.service.impl;
 
 import static java.util.stream.Collectors.toList;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Resource;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import cn.hutool.json.JSONArray;
+import com.aliyun.dingtalkoauth2_1_0.Client;
+import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenRequest;
+import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenResponse;
+import com.aliyun.teaopenapi.models.Config;
 import com.apitable.auth.service.IAuthService;
 import com.apitable.core.exception.BusinessException;
 import com.apitable.integration.dto.AppConfig;
@@ -48,23 +36,32 @@ import com.dingtalk.api.response.OapiV2DepartmentGetResponse.DeptGetResponse;
 import com.dingtalk.api.response.OapiV2DepartmentListsubResponse;
 import com.dingtalk.api.response.OapiV2DepartmentListsubResponse.DeptBaseResponse;
 import com.dingtalk.api.response.OapiV2UserGetResponse;
-import com.dingtalk.api.response.OapiV2UserGetuserinfoResponse;
 import com.dingtalk.api.response.OapiV2UserGetResponse.UserGetResponse;
+import com.dingtalk.api.response.OapiV2UserGetuserinfoResponse;
 import com.dingtalk.api.response.OapiV2UserGetuserinfoResponse.UserGetByCodeResponse;
 import com.dingtalk.api.response.OapiV2UserListResponse;
 import com.dingtalk.api.response.OapiV2UserListResponse.ListUserResponse;
 import com.dingtalk.api.response.OapiV2UserListResponse.PageResult;
 import com.taobao.api.ApiException;
-
-import cn.hutool.json.JSONArray;
-
-import com.aliyun.dingtalkoauth2_1_0.Client;
-import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenRequest;
-import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenResponse;
-import com.aliyun.teaopenapi.models.Config;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * DingTalkServiceImpl.
+ */
 @Service
 @Slf4j
 public class DingTalkServiceImpl implements IDingTalkService {
@@ -259,7 +256,7 @@ public class DingTalkServiceImpl implements IDingTalkService {
         }
     }
 
-    private List<TeamEntity> syncTeam(String accessToken, String spaceId, Map<Long, TeamEntity> deptIdTeamMap,Long rootTeamId, Long queryDeptId) {
+    private List<TeamEntity> syncTeam(String accessToken, String spaceId, Map<Long, TeamEntity> deptIdTeamMap, Long rootTeamId, Long queryDeptId) {
         DingTalkClient client = new DefaultDingTalkClient(getDepartmentListSubUrl);
         OapiV2DepartmentListsubRequest req = new OapiV2DepartmentListsubRequest();
         req.setDeptId(queryDeptId);
@@ -307,7 +304,6 @@ public class DingTalkServiceImpl implements IDingTalkService {
 
     private String getAccessToken(AppConfig appConfig) throws Exception {
         String clientId = appConfig.getClientId();
-        String clientSecret = appConfig.getClientSecret();
         String key = REDIS_KEY + clientId;
         String accessToken = (String) redisTemplate.opsForValue().get(key);
         if (StringUtils.isNotBlank(accessToken)) {
@@ -321,7 +317,7 @@ public class DingTalkServiceImpl implements IDingTalkService {
         Client client = new Client(config);
         GetAccessTokenRequest request = new GetAccessTokenRequest();
         request.setAppKey(clientId);
-        request.setAppSecret(clientSecret);
+        request.setAppSecret(appConfig.getClientSecret());
         GetAccessTokenResponse response = client.getAccessToken(request);
         if (response.getStatusCode() == 200) {
             accessToken = response.getBody().getAccessToken();
@@ -335,10 +331,10 @@ public class DingTalkServiceImpl implements IDingTalkService {
     }
 
     /**
-     * 根据authCode获取用户ID
+     * 根据authCode获取用户ID.
      *
-     * @param authCode
-     * @param accessToken
+     * @param authCode authCode
+     * @param accessToken accessToken
      */
     private UserGetByCodeResponse getUser(String authCode, String accessToken) {
         DingTalkClient client = new DefaultDingTalkClient(getUserInfoUrl);
@@ -362,10 +358,10 @@ public class DingTalkServiceImpl implements IDingTalkService {
     }
 
     /**
-     * 根据用户ID获取用户详情
+     * 根据用户ID获取用户详情.
      *
-     * @param userId
-     * @param accessToken
+     * @param userId userId
+     * @param appConfig appConfig
      */
     @Override
     public UserGetResponse getUserDetail(String userId, AppConfig appConfig) {
@@ -396,10 +392,10 @@ public class DingTalkServiceImpl implements IDingTalkService {
     }
 
     /**
-     * 根据部门ID获取部门详情
+     * 根据部门ID获取部门详情.
      *
-     * @param deptId
-     * @param accessToken
+     * @param deptId deptId
+     * @param appConfig appConfig
      */
     @Override
     public DeptGetResponse getDepartmentDetail(Long deptId, AppConfig appConfig) {

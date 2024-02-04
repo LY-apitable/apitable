@@ -20,16 +20,19 @@ import { Modal } from 'antd';
 import classNames from 'classnames';
 import { useAtom } from 'jotai';
 import { debounce } from 'lodash';
+import { ContextName, ShortcutContext } from 'modules/shared/shortcut_key';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { Provider, shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { Provider, shallowEqual, useDispatch } from 'react-redux';
 import { Api, INodeDescription, IReduxState, Selectors, StoreActions, Strings, t } from '@apitable/core';
 import { CloseCircleOutlined, CloseOutlined } from '@apitable/icons';
-import { ContextName, ShortcutContext } from 'modules/shared/shortcut_key';
+import { useGetDesc } from 'pc/components/embed_page/hooks/use_get_desc';
+import { embedPageAtom } from 'pc/components/embed_page/store/embed_page_desc_atom';
 import { Deserializer, IEditorData, Serializer, SlateEditor } from 'pc/components/slate_editor';
 import { useImageUpload } from 'pc/hooks';
 import { store } from 'pc/store';
+import { useAppSelector } from 'pc/store/react-redux';
 import { getStorage, setStorage, StorageMethod, StorageName } from 'pc/utils/storage/storage';
 import { stopPropagation } from '../../../utils/dom';
 import { automationStateAtom } from '../../automation/controller';
@@ -56,28 +59,59 @@ const getDefaultValue = (desc: INodeDescription | null) => {
 
 const getJsonValue = (value?: string) => {
   if (!value) return null;
-  debugger;
   try {
     return JSON.parse(value);
-  } catch {
+  } catch (_e) {
     return null;
   }
 };
+
+const useGetPermission = (nodeId: string) => {
+  const permissionsOrigin = useAppSelector((state) => Selectors.getPermissions(state));
+  const permissionAutomations = useAutomationResourcePermission();
+  const [embedPage] = useAtom(embedPageAtom);
+
+  if (nodeId.startsWith('aut')) {
+    return permissionAutomations;
+  }
+
+  if (nodeId.startsWith('emp') && embedPage?.permission) {
+    return embedPage.permission;
+  }
+
+  return permissionsOrigin;
+};
+
+const useGetNodeDesc = (nodeId: string) => {
+  const descDst = useAppSelector((state) => {
+    return Selectors.getNodeDesc(state);
+  }, shallowEqual);
+  const [automationState] = useAtom(automationStateAtom);
+  const [embedPage] = useAtom(embedPageAtom);
+
+  if (nodeId.startsWith('aut')) {
+    return getJsonValue(automationState?.robot?.description);
+  }
+
+  if (nodeId.startsWith('emp') && embedPage?.desc) {
+    return getJsonValue(embedPage.desc);
+  }
+
+  return descDst;
+};
+
 const RenderModalBase: React.FC<React.PropsWithChildren<IRenderModalBase>> = (props) => {
   const { visible, onClose, activeNodeId, onChange, datasheetName, modalStyle, isMobile } = props;
   const dispatch = useDispatch();
-  const descDst = useSelector((state) => Selectors.getNodeDesc(state), shallowEqual);
-  const [automationState, setAutomationState] = useAtom(automationStateAtom);
-  const nodeDesc= checkIfAutomationNode(props.activeNodeId) ? getJsonValue(automationState?.robot?.description): descDst;
+  const nodeDesc = useGetNodeDesc(props.activeNodeId);
 
   const [value, setValue] = useState(getDefaultValue(nodeDesc));
-  const permissionsOrigin = useSelector((state) => Selectors.getPermissions(state));
-  const permissionAutomations = useAutomationResourcePermission();
-  const permissions= checkIfAutomationNode(props.activeNodeId) ? permissionAutomations : permissionsOrigin;
-  const datasheetId = useSelector((state) => Selectors.getActiveDatasheetId(state)!);
+  const permissions = useGetPermission(props.activeNodeId);
+  const datasheetId = useAppSelector((state) => Selectors.getActiveDatasheetId(state)!);
   const { uploadImage } = useImageUpload();
   // This ref is mainly used to prevent cursor changes from triggering repeated submissions of the same data
   const editorHtml = useRef('');
+  const { mutate } = useGetDesc(false);
 
   const onCancel = (e: any, isButton?: boolean) => {
     stopPropagation(e);
@@ -134,6 +168,7 @@ const RenderModalBase: React.FC<React.PropsWithChildren<IRenderModalBase>> = (pr
         // Node description saved successfully
         dispatch(StoreActions.recordNodeDesc(datasheetId, JSON.stringify(descStruct)));
         onChange?.(JSON.stringify(descStruct));
+        mutate();
       } else {
         // Node description failed to save, error message, but does not change edit status
         errModal(message);
@@ -254,9 +289,10 @@ function polyfillData(oldData: string[] | { [key: string]: string[] } | null) {
   return [];
 }
 
-const checkIfAutomationNode=(node: string) => {
+const checkIfAutomationNode = (node: string) => {
   return node.startsWith('aut');
 };
+
 /**
  * share description modal for datasheet and automation
  * @param props
@@ -265,13 +301,9 @@ const checkIfAutomationNode=(node: string) => {
 export const DescriptionModal: React.FC<React.PropsWithChildren<IDescriptionModal>> = (props) => {
   const { activeNodeId, datasheetName, showIntroduction = true, onVisibleChange, className, ...rest } = props;
   const [visible, setVisible] = useState(false);
-  const [automationState, setAutomationState] = useAtom(automationStateAtom);
-  const descDst= useSelector((state) => {
-    return Selectors.getNodeDesc(state);
-  }, shallowEqual);
+  const desc = useGetNodeDesc(props.activeNodeId);
 
-  const desc= checkIfAutomationNode(props.activeNodeId) ? getJsonValue(automationState?.robot?.description): descDst;
-  const curGuideWizardId = useSelector((state: IReduxState) => state.hooks?.curGuideWizardId);
+  const curGuideWizardId = useAppSelector((state: IReduxState) => state.hooks?.curGuideWizardId);
 
   useEffect(() => {
     const storage = polyfillData(getStorage(StorageName.Description)) || [];
@@ -297,10 +329,16 @@ export const DescriptionModal: React.FC<React.PropsWithChildren<IDescriptionModa
         <div className={styles.text}>{desc && htmlElmentHasText(desc.render) ? sanitized(desc.render) : t(Strings.edit_node_desc)}</div>
       )}
       {visible && (
-        <RenderModal visible={visible} onClose={() => {
-          setVisible(false);
-          onVisibleChange?.();
-        }} activeNodeId={activeNodeId} datasheetName={datasheetName} {...rest} />
+        <RenderModal
+          visible={visible}
+          onClose={() => {
+            setVisible(false);
+            onVisibleChange?.();
+          }}
+          activeNodeId={activeNodeId}
+          datasheetName={datasheetName}
+          {...rest}
+        />
       )}
     </div>
   );

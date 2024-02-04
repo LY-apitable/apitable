@@ -19,7 +19,7 @@
 import { useCreation, useUpdate } from 'ahooks';
 import { isEqual } from 'lodash';
 import { FC, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
+import { shallowEqual } from 'react-redux';
 import { useTheme } from '@apitable/components';
 import { CellType, ConfigConstant, Field, ICell, IGridViewProperty, KONVA_DATASHEET_ID, RowHeightLevel, Selectors } from '@apitable/core';
 import { getDetailByTargetName, getLinearRowHeight } from 'pc/components/gantt_view';
@@ -67,6 +67,8 @@ import { IContainerEdit } from '../editors/interface';
 import { getFieldLock } from '../field_permission';
 import { autoSizerCanvas } from '../konva_components';
 import styles from './style.module.less';
+
+import {useAppSelector} from "pc/store/react-redux";
 
 interface IGridViewProps {
   height: number;
@@ -147,7 +149,7 @@ export const KonvaGridView: FC<React.PropsWithChildren<IGridViewProps>> = memo((
     viewId,
     isManualSaveView,
     exportViewId,
-  } = useSelector((state) => {
+  } = useAppSelector((state) => {
     const datasheetId = Selectors.getActiveDatasheetId(state)!;
     const view = Selectors.getCurrentView(state)! as IGridViewProperty;
     const rowHeightLevel = view.rowHeightLevel || RowHeightLevel.Short;
@@ -266,7 +268,7 @@ export const KonvaGridView: FC<React.PropsWithChildren<IGridViewProps>> = memo((
   // Height of field header
   const fieldHeadHeight = useMemo(() => {
     if (!autoHeadHeight) return GRID_FIELD_HEAD_HEIGHT;
-    textSizer.current.setFont({ fontWeight: 'bold', fontSize: 13 });
+    textSizer.current.setFont({ fontSize: 13 });
     const fieldHeight = visibleColumns.reduce((prev, cur, index) => {
       const { fieldId } = cur;
       const field = fieldMap[fieldId];
@@ -588,7 +590,7 @@ export const KonvaGridView: FC<React.PropsWithChildren<IGridViewProps>> = memo((
 
   const { unitTitleMap } = useWxTitleMap();
   const theme = useTheme();
-  const cacheTheme = useSelector(Selectors.getTheme);
+  const cacheTheme = useAppSelector(Selectors.getTheme);
 
   const konvaGridContext = {
     theme,

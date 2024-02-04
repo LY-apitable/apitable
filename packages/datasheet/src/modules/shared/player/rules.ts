@@ -107,6 +107,8 @@ export const getConditionValue = (str: string) => {
       return state.labs;
     }
     case PlayerRulesConditionType.EDITION: {
+      console.log('trigger edition', getInitializationData().env?.split('-')[0]);
+
       return getInitializationData().env?.split('-')[0];
     }
     default:
@@ -127,7 +129,7 @@ export const getConditionArgsValue = (str: any) => {
       return state.space.activeId;
     }
     case PlayerRulesConditionArgsType.AI_ONBOARDING: {
-      return new URLSearchParams(window.location.search).get('source');
+      return new URLSearchParams(window.location.search).get('template');
     }
     default:
       return str;

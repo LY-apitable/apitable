@@ -62,6 +62,7 @@ import com.apitable.interfaces.user.facade.UserLinkServiceFacade;
 import com.apitable.interfaces.user.facade.UserServiceFacade;
 import com.apitable.interfaces.user.model.RewardedUser;
 import com.apitable.organization.dto.MemberDTO;
+import com.apitable.organization.dto.MemberUserDTO;
 import com.apitable.organization.entity.MemberEntity;
 import com.apitable.organization.mapper.MemberMapper;
 import com.apitable.organization.service.IMemberService;
@@ -111,6 +112,8 @@ import com.apitable.workspace.service.INodeShareService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import com.google.common.collect.Lists;
+import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -119,8 +122,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -340,7 +341,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
             // and has not been bound to other accounts,
             // activate the space members of the invited mail
             List<MemberDTO> inactiveMembers =
-                iMemberService.getInactiveMemberByEmails(email);
+                iMemberService.getInactiveMemberByEmail(email);
             inactiveMemberProcess(user.getId(), inactiveMembers);
         } else {
             String spaceName = user.getNickName();
@@ -421,7 +422,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
             // and has not been bound to other accounts,
             // activate the space members of the invited mailbox
             List<MemberDTO> inactiveMembers =
-                iMemberService.getInactiveMemberByEmails(email);
+                iMemberService.getInactiveMemberByEmail(email);
             hasSpace = this.inactiveMemberProcess(entity.getId(),
                 inactiveMembers);
         }
@@ -523,11 +524,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserEntity createUserByEmail(final String email, final String password) {
+        return createUserByEmail(email, password, languageManager.getDefaultLanguageTag());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public UserEntity createUserByEmail(final String email, final String password, String lang) {
         UserEntity entity = UserEntity.builder()
             .uuid(IdUtil.fastSimpleUUID())
             .email(email)
             .nickName(StringUtils.substringBefore(email, "@"))
-            .locale(languageManager.getDefaultLanguageTag())
+            .locale(lang)
             .color(RandomUtil.randomInt(0, USER_AVATAR_COLOR_MAX_VALUE))
             .lastLoginTime(LocalDateTime.now())
             .build();
@@ -598,7 +605,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
         // and has not been bound to other accounts,
         // activate the space members of the invited email
         List<MemberDTO> inactiveMembers =
-            iMemberService.getInactiveMemberByEmails(email);
+            iMemberService.getInactiveMemberByEmail(email);
         this.inactiveMemberProcess(userId, inactiveMembers);
         // Delete Cache
         loginUserCacheService.delete(userId);
@@ -637,7 +644,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
         // and no other account has been bound,
         // activate the invited space member
         List<MemberDTO> inactiveMembers =
-            iMemberService.getInactiveMemberByEmails(mobile);
+            iMemberService.getInactiveMemberDtoByMobile(mobile);
         this.inactiveMemberProcess(userId, inactiveMembers);
 
         // Delete Cache
@@ -1217,16 +1224,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity>
     }
 
     @Override
-    public Map<Long, UserSimpleVO> getUserSimpleInfoMap(List<Long> userIds) {
+    public Map<Long, UserSimpleVO> getUserSimpleInfoMap(String spaceId, List<Long> userIds) {
         if (userIds.isEmpty()) {
             return new HashMap<>();
         }
         UserMapper userMapper = SpringContextHolder.getBean(UserMapper.class);
+        Map<Long, String> members =
+            memberMapper.selectMemberNameByUserIdsAndSpaceIds(spaceId, userIds).stream().collect(
+                Collectors.toMap(MemberUserDTO::getUserId, MemberUserDTO::getMemberName));
         return userMapper.selectByIds(userIds).stream().collect(
             Collectors.toMap(UserEntity::getId, i -> {
+                String memberName = StrUtil.isBlank(members.get(i.getId())) ? i.getNickName() :
+                    members.get(i.getId());
                 UserSimpleVO vo = new UserSimpleVO();
                 vo.setUuid(i.getUuid());
-                vo.setNickName(i.getNickName());
+                vo.setNickName(memberName);
                 vo.setAvatar(i.getAvatar());
                 return vo;
             }));

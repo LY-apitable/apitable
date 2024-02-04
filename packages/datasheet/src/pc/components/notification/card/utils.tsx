@@ -39,13 +39,15 @@ import {
   SystemConfig,
   t,
 } from '@apitable/core';
+import { getUserTimeZone } from '@apitable/core/dist/modules/user/store/selectors/user';
 import { UnitTag } from 'pc/components/catalog/permission_settings/permission/select_unit_modal/unit_tag';
-import { UserCardTrigger } from 'pc/components/common';
+import { UserCardTrigger } from 'pc/components/common/user_card/user_card_trigger';
 import { NoticeTemplatesConstant, NotificationTemplates } from 'pc/components/notification/utils';
+import { store } from 'pc/store';
 import { getEnvVariables } from 'pc/utils/env';
-import styles from './style.module.less';
 // @ts-ignore
-import { getSocialWecomUnitName, isSocialWecom } from 'enterprise';
+import { getSocialWecomUnitName, isSocialWecom } from 'enterprise/home/social_platform/utils';
+import styles from './style.module.less';
 
 const ERROR_STR = '[ERROR STR]';
 dayjs.extend(relativeTime);
@@ -267,11 +269,12 @@ export const getMsgText = (data: INoticeDetail) => {
   }
 };
 
-const timeZone = getTimeZone();
-const abbr = getTimeZoneAbbrByUtc(timeZone)!;
-
 // spaceName is the space to which the current notification belongs
 export const renderNoticeBody = (data: INoticeDetail, options?: IRenderNoticeBodyOptions) => {
+  const state = store.getState();
+  const userTimeZone = getUserTimeZone(state);
+  const timeZone = userTimeZone || getTimeZone();
+  const abbr = getTimeZoneAbbrByUtc(timeZone)!;
   const pureString = options ? options.pureString : false;
   const spaceInfo = options ? options.spaceInfo : null;
 
@@ -391,14 +394,14 @@ export const renderNoticeBody = (data: INoticeDetail, options?: IRenderNoticeBod
         case TemplateKeyword.ExpireAt: {
           return (
             <b>
-              &nbsp;{dayjs(Number(expireAt)).tz(timeZone).format('YYYY-MM-DD')}({abbr})
+              &nbsp;{dayjs.tz(Number(expireAt)).tz(timeZone).format('YYYY-MM-DD')}({abbr})
             </b>
           );
         }
         case TemplateKeyword.TaskExpireAt: {
           return (
             <b>
-              &nbsp;{dayjs(Number(taskExpireAt)).tz(timeZone).format('YYYY-MM-DD HH:mm')}({abbr})
+              &nbsp;{dayjs.tz(Number(taskExpireAt)).tz(timeZone).format('YYYY-MM-DD HH:mm')}({abbr})
             </b>
           );
         }
@@ -426,7 +429,7 @@ export const renderNoticeBody = (data: INoticeDetail, options?: IRenderNoticeBod
         case TemplateKeyword.AutomationRunEndAt: {
           return (
             <b>
-              &nbsp;{dayjs(Number(automationRunEndAt)).tz(timeZone).format('YYYY-MM-DD HH:mm')}({abbr})
+              &nbsp;{dayjs.tz(Number(automationRunEndAt)).tz(timeZone).format('YYYY-MM-DD HH:mm')}({abbr})
             </b>
           );
         }
@@ -461,8 +464,8 @@ export const renderNoticeBody = (data: INoticeDetail, options?: IRenderNoticeBod
       .replace(keyWordAddClass(TemplateKeyword.PlanName), planName)
       .replace(keyWordAddClass(TemplateKeyword.PayFee), payFee)
       .replace(keyWordAddClass(TemplateKeyword.FeatureName), featureName)
-      .replace(keyWordAddClass(TemplateKeyword.ExpireAt), dayjs(Number(expireAt)).format('YYYY-MM-DD'))
-      .replace(keyWordAddClass(TemplateKeyword.TaskExpireAt), dayjs(Number(taskExpireAt)).format('YYYY-MM-DD HH:mm'))
+      .replace(keyWordAddClass(TemplateKeyword.ExpireAt), dayjs.tz(Number(expireAt)).format('YYYY-MM-DD'))
+      .replace(keyWordAddClass(TemplateKeyword.TaskExpireAt), dayjs.tz(Number(taskExpireAt)).format('YYYY-MM-DD HH:mm'))
       .replace(keyWordAddClass(TemplateKeyword.NickName), nickName)
       .replace(keyWordAddClass(TemplateKeyword.OldDisplayValue), oldDisplayValue)
       .replace(keyWordAddClass(TemplateKeyword.NewDisplayValue), newDisplayValue)
@@ -470,7 +473,7 @@ export const renderNoticeBody = (data: INoticeDetail, options?: IRenderNoticeBod
       .replace(keyWordAddClass(TemplateKeyword.Number), number)
       .replace(keyWordAddClass(TemplateKeyword.RoleName), roleName)
       .replace(keyWordAddClass(TemplateKeyword.AutomationName), automationName)
-      .replace(keyWordAddClass(TemplateKeyword.AutomationRunEndAt), dayjs(Number(automationRunEndAt)).format('YYYY-MM-DD HH:mm'));
+      .replace(keyWordAddClass(TemplateKeyword.AutomationRunEndAt), dayjs.tz(Number(automationRunEndAt)).format('YYYY-MM-DD HH:mm'));
   }
   return parser(template, parseOptions);
 };

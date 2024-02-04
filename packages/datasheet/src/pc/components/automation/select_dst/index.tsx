@@ -1,24 +1,34 @@
 import { useAtomValue } from 'jotai';
 import { FC, memo, useState } from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
-import { ConfigConstant, IReduxState, Selectors, Strings, t } from '@apitable/core';
+import { shallowEqual } from 'react-redux';
+import useSWR from 'swr';
+import { ConfigConstant, INode, IReduxState, Selectors, Strings, t } from '@apitable/core';
+import { getNodeInfo } from '@apitable/core/dist/modules/space/api/api.space';
+import {
+  DataSourceSelectorForNode
+} from 'pc/components/data_source_selector_enhanced/data_source_selector_for_node/data_source_selector_for_node';
 import { SearchPanel } from 'pc/components/datasheet_search_panel';
 import { RelatedResource } from '../../robot/robot_context';
-import { automationStateAtom } from '../controller';
+import { automationStateAtom, loadableFormItemAtom } from '../controller';
 import { SelectTrigger } from './select_trigger';
 
-export const SelectDst: FC<{value: string, onChange: (dstId: string|undefined) => void }> = memo(({
-  value, onChange
-})=> {
+import {useAppSelector} from "pc/store/react-redux";
 
-  const datasheet = useSelector(a => Selectors.getDatasheet(a, value), shallowEqual);
-  const { rootId } = useSelector((state: IReduxState) => state.catalogTree);
+export const SelectDst: FC<{ value: string; onChange: (dstId: string | undefined) => void }> = memo(({
+  value,
+  onChange
+}) => {
+  const datasheet = useAppSelector((a: IReduxState) => Selectors.getDatasheet(a, value), shallowEqual);
+  const { rootId } = useAppSelector((state: IReduxState) => state.catalogTree);
 
   const [visible, setVisible] = useState(false);
 
   const stateValue = useAtomValue(automationStateAtom);
-  const { shareId } = useSelector((state: IReduxState) => state.pageParams);
-  const name = shareId !=null ? stateValue?.robot?.relatedResources?.find((item: RelatedResource) => item.nodeId === value)?.nodeName : datasheet?.name;
+  const { shareId } = useAppSelector((state: IReduxState) => state.pageParams);
+  const name =
+        shareId != null ? stateValue?.robot?.relatedResources?.find((item: RelatedResource) => item.nodeId === value)?.nodeName : datasheet?.name;
+
+  const { isLoading, data } = useFolderId(value);
   return (
     <>
       <SelectTrigger
@@ -31,56 +41,78 @@ export const SelectDst: FC<{value: string, onChange: (dstId: string|undefined) =
         label={name}
       />
 
-      {
-        visible && (
-          <SearchPanel
-            folderId={rootId}
-            options={{
-              showForm: false,
-              showDatasheet: true,
-              needPermission: 'manageable',
-              showMirror: false,
-              showView: false
-            }}
-            noCheckPermission={false}
-            activeDatasheetId={value}
-            setSearchPanelVisible={(v) => {
-              setVisible(v);
-            }}
-            onNodeSelect={({ datasheetId }) => {
-              setVisible(false);
-              if(datasheetId === value) {
-                return;
-              }
-              onChange(datasheetId);
-            }}
-            onChange={({ datasheetId }) => {
-              if(datasheetId === value) {
-                return;
-              }
-              setVisible(false);
-              onChange(datasheetId);
-            }}
-          />
-        )
-      }
+      {visible && !isLoading && (
+        <SearchPanel
+          folderId={(data?.parentId) ? data?.parentId : rootId}
+          options={{
+            showForm: false,
+            showDatasheet: true,
+            needPermission: 'manageable',
+            showMirror: false,
+            showView: false,
+          }}
+          noCheckPermission={false}
+          activeDatasheetId={value}
+          setSearchPanelVisible={(v) => {
+            setVisible(v);
+          }}
+          onNodeSelect={({ datasheetId }) => {
+            setVisible(false);
+            if (datasheetId === value) {
+              return;
+            }
+            onChange(datasheetId);
+          }}
+          onChange={({ datasheetId }) => {
+            if (datasheetId === value) {
+              return;
+            }
+            setVisible(false);
+            onChange(datasheetId);
+          }}
+        />
+      )}
     </>
   );
 });
 
-export const SelectForm: FC<{value: string, onChange: (dstId: string|undefined) => void }> = memo(({
-  value, onChange
-})=> {
+export const useFolderId = (formId: string) => {
 
-  const { rootId } = useSelector((state: IReduxState) => state.catalogTree);
-  const { shareId } = useSelector((state: IReduxState) => state.pageParams);
-  const treeMaps = useSelector((state: IReduxState) => state.catalogTree.treeNodesMap);
+  const { isLoading, data } = useSWR(['getNodeInfo', formId], () => getNodeInfo(formId), {
+    isPaused: () => formId == null
+  });
+  return {
+    isLoading: isLoading,
+    data: data?.data?.data?.[0] as INode
+  };
+};
+
+export const SelectForm: FC<{ value: string; onChange: (dstId: string | undefined) => void }> = memo(({
+  value,
+  onChange
+}) => {
+  const { rootId } = useAppSelector((state: IReduxState) => state.catalogTree);
+  const { shareId } = useAppSelector((state: IReduxState) => state.pageParams);
+  const treeMaps = useAppSelector((state: IReduxState) => state.catalogTree.treeNodesMap);
   const [visible, setVisible] = useState(false);
 
-  const form = useSelector((state: IReduxState) => Selectors.getForm(state, value), shallowEqual);
+  const form = useAppSelector((state: IReduxState) => Selectors.getForm(state, value), shallowEqual);
+
+  const formMeta = useAtomValue(loadableFormItemAtom);
+
   const stateValue = useAtomValue(automationStateAtom);
   const node = treeMaps[value];
-  const name = shareId !=null ? stateValue?.robot?.relatedResources?.find((item: RelatedResource) => item.nodeId === value)?.nodeName : form?.name ?? node?.nodeName;
+
+  let name =
+        shareId != null
+          ? stateValue?.robot?.relatedResources?.find((item: RelatedResource) => item.nodeId === value)?.nodeName
+          : (formMeta?.data as any)?.form?.name ?? node?.nodeName;
+  if (form) {
+    name = form.name;
+  }
+
+  const { isLoading, data } = useFolderId(value);
+
   return (
     <>
       <SelectTrigger
@@ -92,41 +124,52 @@ export const SelectForm: FC<{value: string, onChange: (dstId: string|undefined) 
         value={value}
         label={name}
       />
-      {
-        visible && (
-          <SearchPanel
-            options={{
-              needPermission: 'manageable',
-              showForm: true,
-              showDatasheet: false,
-              showMirror: false,
-              showView: false
-            }}
-            noCheckPermission={false}
-            folderId={rootId}
-            formId={value}
-            directClickMode
-            activeDatasheetId={value}
-            setSearchPanelVisible={(v) => {
-              setVisible(v);
-            }}
-            onNodeSelect={({ formId }) => {
-              setVisible(false);
-              if(formId === value) {
-                return;
-              }
-              onChange(formId);
-            }}
-            onChange={({ formId }) => {
-              if(value===formId) {
-                return;
-              }
-              onChange(formId);
-              setVisible(false);
-            }}
-          />
-        )
-      }
+      {visible && (
+        <>
+          {
+            value == null ? (
+              <DataSourceSelectorForNode
+                onHide={() => setVisible(false)}
+                permissionRequired={'manageable'}
+                onChange={({ formId }) => {
+                  if (value === formId) {
+                    setVisible(false);
+                    return;
+                  }
+                  onChange(formId);
+                  setVisible(false);
+                }}
+                nodeTypes={[ConfigConstant.NodeType.FORM, ConfigConstant.NodeType.FOLDER]}
+                defaultNodeIds={{ folderId: data?.parentId ?? rootId, formId: value }}
+                requiredData={['formId']}
+              />
+            ) : (
+              <>{
+                !isLoading && (
+                  <DataSourceSelectorForNode
+                    onHide={() => setVisible(false)}
+                    permissionRequired={'manageable'}
+                    onChange={({ formId }) => {
+                      if (value === formId) {
+                        return;
+                      }
+                      onChange(formId);
+                      setVisible(false);
+                    }}
+                    nodeTypes={[ConfigConstant.NodeType.FORM, ConfigConstant.NodeType.FOLDER]}
+                    defaultNodeIds={{
+                      folderId: (data?.parentId) ? data?.parentId : rootId,
+                      formId: value
+                    }}
+                    requiredData={['formId']}
+                  />
+
+                )
+              }</>
+            )
+          }
+        </>
+      )}
     </>
   );
 });

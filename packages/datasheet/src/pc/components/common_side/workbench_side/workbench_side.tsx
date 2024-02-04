@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ShortcutActionManager, ShortcutActionName } from 'modules/shared/shortcut_key';
 import { usePostHog } from 'posthog-js/react';
 import * as React from 'react';
 import { FC, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { IconButton, LinkButton, Radio, RadioGroup, useContextMenu, useThemeColors } from '@apitable/components';
 import {
   ConfigConstant,
@@ -36,7 +36,6 @@ import {
   WORKBENCH_SIDE_ID,
 } from '@apitable/core';
 import { AddOutlined, DeleteOutlined, FolderAddOutlined, ImportOutlined, PlanetOutlined, SearchOutlined, UserAddOutlined } from '@apitable/icons';
-import { ShortcutActionManager, ShortcutActionName } from 'modules/shared/shortcut_key';
 import { GenerateTemplate } from 'pc/components/catalog/generate_template';
 import { ImportFile } from 'pc/components/catalog/import_file';
 import { MoveTo } from 'pc/components/catalog/move_to';
@@ -57,12 +56,14 @@ import { sendRemind } from 'pc/events/notification_verification';
 import { IPanelInfo, useCatalogTreeRequest, useRequest, useResponsive, useSearchPanel, useUserRequest, useWorkbenchSideSync } from 'pc/hooks';
 import { useAppDispatch } from 'pc/hooks/use_app_dispatch';
 import { useCatalog } from 'pc/hooks/use_catalog';
+import { useAppSelector } from 'pc/store/react-redux';
 import { stopPropagation } from 'pc/utils';
 import { Catalog } from '../../catalog';
 import { Favorite } from './favorite';
 import { SpaceInfo } from './space-info';
-import styles from './style.module.less';
 import { WorkbenchSideContext } from './workbench_side_context';
+import styles from './style.module.less';
+import { getShortcutKeyString } from 'modules/shared/shortcut_key/keybinding_config';
 
 export const WorkbenchSide: FC<React.PropsWithChildren<unknown>> = () => {
   const colors = useThemeColors();
@@ -83,7 +84,7 @@ export const WorkbenchSide: FC<React.PropsWithChildren<unknown>> = () => {
     loading,
     err,
     moveToNodeIds,
-  } = useSelector((state: IReduxState) => {
+  } = useAppSelector((state: IReduxState) => {
     return {
       spaceId: state.space.activeId,
       treeNodesMap: state.catalogTree.treeNodesMap,
@@ -100,25 +101,24 @@ export const WorkbenchSide: FC<React.PropsWithChildren<unknown>> = () => {
   }, shallowEqual);
 
   const isFormShare = /fom\w+/.test(shareModalNodeId);
-  const activedNodeId = useSelector((state) => Selectors.getNodeId(state));
+  const activedNodeId = useAppSelector((state) => Selectors.getNodeId(state));
   const { getTreeDataReq } = useCatalogTreeRequest();
   const { run: getTreeData } = useRequest(getTreeDataReq, { manual: true });
   const { getPositionNodeReq } = useCatalogTreeRequest();
   const { run: getPositionNode } = useRequest(getPositionNodeReq, {
     manual: true,
   });
-  const { getInviteStatus } = useUserRequest();
-  const { data: inviteStatus } = useRequest(getInviteStatus);
   const { screenIsAtMost } = useResponsive();
   const isMobile = screenIsAtMost(ScreenSize.md);
   const dispatch = useAppDispatch();
   const posthog = usePostHog();
 
-  const userInfo = useSelector((state) => state.user.info);
-  const spaceFeatures = useSelector((state) => state.space.spaceFeatures);
-  const spacePermissions = useSelector((state) => state.spacePermissionManage.spaceResource?.permissions);
+  const userInfo = useAppSelector((state) => state.user.info);
+  const spaceFeatures = useAppSelector((state) => state.space.spaceFeatures);
+  const spacePermissions = useAppSelector((state) => state.spacePermissionManage.spaceResource?.permissions);
   const isSpaceAdmin = spacePermissions && spacePermissions.includes('MANAGE_WORKBENCH');
   const rootManageable = userInfo?.isMainAdmin || isSpaceAdmin || spaceFeatures?.rootManageable;
+  const inviteStatus = spaceFeatures?.invitable;
 
   useWorkbenchSideSync();
 
@@ -288,7 +288,7 @@ export const WorkbenchSide: FC<React.PropsWithChildren<unknown>> = () => {
     [rightClickInfo, openFavorite, onSetContextMenu],
   );
 
-  const permissionCommitRemindStatus = useSelector((state) => state.catalogTree.permissionCommitRemindStatus);
+  const permissionCommitRemindStatus = useAppSelector((state) => state.catalogTree.permissionCommitRemindStatus);
 
   function onClosePermissionSettingModal() {
     dispatch(StoreActions.updatePermissionModalNodeId(''));
@@ -305,17 +305,23 @@ export const WorkbenchSide: FC<React.PropsWithChildren<unknown>> = () => {
     <WorkbenchSideContext.Provider value={providerValue}>
       <div className={styles.workbenchSide}>
         <div className={styles.header}>
-          <SpaceInfo />
+          <div className={styles.left}>
+            <SpaceInfo />
+          </div>
           <div className={styles.search}>
-            <IconButton
-              shape="square"
-              className={styles.searchBtn}
-              icon={SearchOutlined}
-              onClick={(e) => {
-                stopPropagation(e);
-                expandSearch();
-              }}
-            />
+            <Tooltip title={t(Strings.search_node_tip, {
+              shortcutKey: getShortcutKeyString(ShortcutActionName.SearchNode)
+            })} placement="right">
+              <IconButton
+                shape="square"
+                className={styles.searchBtn}
+                icon={SearchOutlined}
+                onClick={(e) => {
+                  stopPropagation(e);
+                  expandSearch();
+                }}
+              />
+            </Tooltip>
           </div>
         </div>
 

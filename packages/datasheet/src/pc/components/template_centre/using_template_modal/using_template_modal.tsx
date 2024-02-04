@@ -21,12 +21,12 @@ import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import { usePostHog } from 'posthog-js/react';
 import * as React from 'react';
 import { FC, useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Api, IReduxState, Navigation, StoreActions, Strings, t, TEMPLATE_CENTER_ID, TrackEvents } from '@apitable/core';
 import { ChevronDownOutlined } from '@apitable/icons';
 import { BaseModal } from 'pc/components/common';
 import { Router } from 'pc/components/route_manager/router';
 import { useCatalogTreeRequest, useRequest, useRootManageable, useTemplateRequest } from 'pc/hooks';
+import { useAppSelector } from 'pc/store/react-redux';
 import { transformNodeTreeData, ISelectTreeNode } from 'pc/utils';
 import { dispatch } from 'pc/worker/store';
 import styles from './style.module.less';
@@ -42,7 +42,7 @@ export const UsingTemplateModal: FC<React.PropsWithChildren<IUsingTemplateModalP
   const [nodeId, setNodeId] = useState('');
   // Whether to use the data in the template
   const [isContainData, setIsContainData] = useState(true);
-  const spaceId = useSelector((state: IReduxState) => state.space.activeId);
+  const spaceId = useAppSelector((state: IReduxState) => state.space.activeId);
   const { getNodeTreeReq } = useCatalogTreeRequest();
   const { usingTemplateReq } = useTemplateRequest();
   const { data: NodeTreeData } = useRequest(getNodeTreeReq);
@@ -68,7 +68,6 @@ export const UsingTemplateModal: FC<React.PropsWithChildren<IUsingTemplateModalP
     posthog?.capture(TrackEvents.TemplateConfirmUse);
     const result = await usingTemplate(templateId, nodeId, isContainData);
     if (result && spaceId) {
-      dispatch(StoreActions.getSpaceInfo(spaceId!, true));
       Router.push(Navigation.WORKBENCH, { params: { spaceId, nodeId: result.nodeId } });
     }
   };

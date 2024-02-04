@@ -20,7 +20,6 @@ import classNames from 'classnames';
 import FileSaver from 'file-saver';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Loading, useThemeColors } from '@apitable/components';
 import { DatasheetApi, IAttachmentValue, isImage, isPdf, isPrivateDeployment, Strings, t } from '@apitable/core';
 import {
@@ -37,12 +36,13 @@ import {
 } from '@apitable/icons';
 import { Message } from 'pc/components/common';
 import { navigationToUrl } from 'pc/components/route_manager/navigation_to_url';
+import { useAppSelector } from 'pc/store/react-redux';
 import { copy2clipBoard, getDownloadSrc, getPreviewUrl, isSupportImage } from 'pc/utils';
 import { ITransFormInfo } from '../preview_file.interface';
 import { MAX_SCALE, MIN_SCALE } from '../preview_main/constant';
 import { getFile } from '../preview_main/util';
-import styles from './style.module.less';
 import { IPreviewToolItem, PreviewToolItem } from './tool_item';
+import styles from './style.module.less';
 
 interface IToolBar {
   transformInfo: ITransFormInfo;
@@ -63,7 +63,7 @@ interface IToolBar {
   officePreviewUrl: string | null;
   disabledDownload?: boolean;
   isFullScreen: boolean;
-  toggleIsFullScreen: () => void;
+  toggleIsFullScreen?: () => void;
 }
 
 interface IPreviewToolBar {
@@ -137,8 +137,8 @@ export const ToolBar: React.FC<React.PropsWithChildren<IToolBar>> = (props) => {
   const { scale, initActualScale } = transformInfo;
 
   const [adaptiveMode, setAdaptiveMode] = useState(true);
-  const isSideRecordOpen = useSelector((state) => state.space.isSideRecordOpen);
-  const isRecordFullScreen = useSelector((state) => state.space.isRecordFullScreen);
+  const isSideRecordOpen = useAppSelector((state) => state.space.isSideRecordOpen);
+  const isRecordFullScreen = useAppSelector((state) => state.space.isRecordFullScreen);
 
   useEffect(() => {
     // initActualScale changes, which means that the image is switched, and the adaptiveMode should be reset.
@@ -236,7 +236,7 @@ export const ToolBar: React.FC<React.PropsWithChildren<IToolBar>> = (props) => {
       {
         icon: isFullScreen ? NarrowOutlined : ExpandOutlined,
         tip: () => t(isFullScreen ? Strings.attachment_preview_exit_fullscreen : Strings.attachment_preview_fullscreen),
-        onClick: () => toggleIsFullScreen(),
+        onClick: () => toggleIsFullScreen?.(),
         className: styles.rightIcon,
         visible: !isRecordFullScreen && isSideRecordOpen && !document.querySelector('.centerExpandRecord'),
       },

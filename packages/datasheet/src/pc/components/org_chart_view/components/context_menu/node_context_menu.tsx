@@ -15,10 +15,10 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+import parser from 'html-react-parser';
 import { FC, useContext } from 'react';
 import { ContextMenu, useThemeColors } from '@apitable/components';
-import { CollaCommandName, ExecuteResult, Strings, t } from '@apitable/core';
+import { CollaCommandName, ExecuteResult, Strings, t, Selectors } from '@apitable/core';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -28,7 +28,10 @@ import {
   ExpandOutlined,
   EyeCloseOutlined,
   EyeOpenOutlined,
+  ArchiveOutlined
 } from '@apitable/icons';
+import { Message } from 'pc/components/common';
+import { Modal } from 'pc/components/common/modal/modal/modal';
 import { notifyWithUndo } from 'pc/components/common/notify';
 import { NotifyKey } from 'pc/components/common/notify/notify.interface';
 import { expandRecordIdNavigate } from 'pc/components/expand_record';
@@ -40,9 +43,14 @@ import { FlowContext } from '../../context/flow_context';
 import { INode } from '../../interfaces';
 import { addRecord } from '../record_list';
 
+import {useAppSelector} from "pc/store/react-redux";
+
 export const NodeContextMenu: FC<React.PropsWithChildren<unknown>> = () => {
   const colors = useThemeColors();
   const { linkField, viewId, nodeStateMap, setNodeStateMap, rowsCount, fieldEditable, onChange } = useContext(FlowContext);
+
+  const datasheetId = useAppSelector(Selectors.getActiveDatasheetId)!;
+  const { manageable } = useAppSelector((state) => Selectors.getPermissions(state, datasheetId));
 
   const toggleNodeCollapse = (id: string) => {
     setNodeStateMap((s) => ({
@@ -72,6 +80,27 @@ export const NodeContextMenu: FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const linkFieldId = linkField.id;
+
+  const getArchiveNotice = (content) => {
+    return <div>{parser(content)}</div>;
+  };
+
+  function archiveRecord(recordId: string) {
+    const data: string[] = [];
+
+    data.push(recordId);
+
+    // The setTimeout is used here to ensure that the user is alerted that a large amount of data is being deleted before it is deleted
+    const { result } = resourceService.instance!.commandManager.execute({
+      cmd: CollaCommandName.ArchiveRecords,
+      data,
+    });
+
+    if (ExecuteResult.Success === result) {
+      Message.success({ content: t(Strings.archive_record_success) });
+
+    }
+  }
 
   return (
     <ContextMenu
@@ -218,6 +247,20 @@ export const NodeContextMenu: FC<React.PropsWithChildren<unknown>> = () => {
             },
           ],
           [
+            {
+              icon: <ArchiveOutlined color={colors.thirdLevelText} />,
+              text: t(Strings.menu_archive_record),
+              hidden: !manageable,
+              onClick: ({ props: { node } }: any) => {
+                Modal.warning({
+                  title: t(Strings.menu_archive_record),
+                  content: getArchiveNotice(t(Strings.archive_notice)),
+                  onOk: () => archiveRecord(node.id),
+                  closable: true,
+                  hiddenCancelBtn: false,
+                });
+              },
+            },
             {
               icon: <DeleteOutlined color={colors.thirdLevelText} />,
               text: t(Strings.delete),

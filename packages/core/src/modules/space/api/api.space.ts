@@ -20,7 +20,7 @@ import axios from 'axios';
 import { ConfigConstant } from 'config';
 import urlcat from 'urlcat';
 import { NodeType, ShowRecordHistory } from '../../../config/constant';
-import { IApiWrapper, INode, INodesMapItem, IParent, IUpdateRoleData } from '../../../exports/store';
+import { IApiWrapper, INode, INodesMapItem, IParent, IUpdateRoleData } from '../../../exports/store/interfaces';
 import * as Url from '../../shared/api/url';
 import { IAddNodeParams } from './api.space.interface';
 import { getBrowserDatabusApiEnabled } from '../../database/api/wasm';
@@ -164,10 +164,12 @@ export function addNode(nodeInfo: IAddNodeParams) {
  * @param nodeId Node Id
  */
 export function delNode(nodeId: string) {
-  if (getBrowserDatabusApiEnabled()){
-    WasmApi.getInstance().delete_cache(nodeId).then((result) => {
-      console.log('delete indexDb cache', result);
-    });
+  if (getBrowserDatabusApiEnabled()) {
+    WasmApi.getInstance()
+      .delete_cache(nodeId)
+      .then((result) => {
+        console.log('delete indexDb cache', result);
+      });
   }
   return axios.delete(Url.DELETE_NODE + nodeId);
 }
@@ -186,12 +188,15 @@ export function getSpecifyNodeList(nodeType: NodeType) {
  * @param nodeId Node ID
  * @param data
  */
-export function editNode(nodeId: string, data: {
-  nodeName?: string;
-  icon?: string;
-  cover?: string;
-  showRecordHistory?: ShowRecordHistory
-}) {
+export function editNode(
+  nodeId: string,
+  data: {
+    nodeName?: string;
+    icon?: string;
+    cover?: string;
+    showRecordHistory?: ShowRecordHistory;
+  }
+) {
   return axios.post(Url.EDIT_NODE + nodeId, data);
 }
 
@@ -233,7 +238,7 @@ export function positionNode(nodeId: string) {
  * Get space list
  */
 export function spaceList(onlyManageable?: boolean) {
-  return axios.get(Url.SPACE_LIST, { params: { onlyManageable }});
+  return axios.get(Url.SPACE_LIST, { params: { onlyManageable } });
 }
 
 /**
@@ -397,14 +402,6 @@ export function getSpaceResource() {
 }
 
 /**
- * clean the red dot of space
- * @param spaceId
- */
-export function removeSpaceRedPoint(spaceId: string) {
-  return axios.post(`${Url.REMOVE_RED_POINT}${spaceId}`);
-}
-
-/**
  * get main admin info
  */
 export function getMainAdminInfo() {
@@ -541,22 +538,6 @@ export function deleteSubAdmin(memberId: string) {
 }
 
 /**
- * update member setting
- */
-export function updateMemberSetting(data: { invitable?: boolean; joinable?: boolean; mobileShowable?: boolean }) {
-  return axios.post(Url.UPDATE_MEMBER_SETTING, {
-    ...data,
-  });
-}
-
-/**
- * update workbench setting
- */
-export function updateWorkbenchSetting(data: { nodeExportable?: boolean }) {
-  return axios.post(Url.UPDATE_WORKBENCH_SETTING, { ...data });
-}
-
-/**
  * get space features
  */
 export function getSpaceFeatures() {
@@ -670,7 +651,7 @@ export function updateShare(
     onlyRead?: boolean;
     canBeEdited?: boolean;
     canBeStored?: boolean;
-  },
+  }
 ) {
   return axios.post(Url.UPDATE_SHARE + nodeId, {
     props: JSON.stringify(permission),
@@ -691,11 +672,12 @@ export function nodeShowcase(nodeId: string, shareId?: string) {
   });
 }
 
-export function checkoutOrder(spaceId: string, priceId: string, clientReferenceId: string, couponId: string) {
+export function checkoutOrder(spaceId: string, priceId: string, clientReferenceId: string, couponId: string, trial?: boolean) {
   return axios.post(Url.CHECKOUT_ORDER, {
     spaceId,
     priceId,
     clientReferenceId,
     couponId,
+    trial,
   });
 }

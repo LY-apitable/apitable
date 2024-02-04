@@ -20,11 +20,18 @@ package com.apitable.workspace.service.impl;
 
 import static com.apitable.workspace.enums.PermissionException.ROOT_NODE_OP_DENIED;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.util.Lists.list;
 
+import cn.hutool.json.JSONUtil;
 import com.apitable.AbstractIntegrationTest;
 import com.apitable.core.exception.BusinessException;
+import com.apitable.interfaces.billing.facade.EntitlementServiceFacade;
+import com.apitable.interfaces.billing.model.DefaultSubscriptionFeature;
+import com.apitable.interfaces.billing.model.SubscriptionInfo;
+import com.apitable.mock.bean.MockSubscriptionFeature;
+import com.apitable.mock.bean.MockSubscriptionInfo;
 import com.apitable.mock.bean.MockUserSpace;
 import com.apitable.space.vo.SpaceGlobalFeature;
 import com.apitable.user.entity.UserEntity;
@@ -33,7 +40,9 @@ import com.apitable.workspace.dto.NodeCopyOptions;
 import com.apitable.workspace.dto.NodeTreeDTO;
 import com.apitable.workspace.entity.NodeEntity;
 import com.apitable.workspace.enums.NodeType;
+import com.apitable.workspace.ro.NodeEmbedPageRo;
 import com.apitable.workspace.ro.NodeOpRo;
+import com.apitable.workspace.ro.NodeRelRo;
 import com.apitable.workspace.ro.NodeUpdateOpRo;
 import com.apitable.workspace.vo.NodeInfoTreeVo;
 import com.apitable.workspace.vo.NodeInfoVo;
@@ -41,10 +50,40 @@ import com.apitable.workspace.vo.NodePathVo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 public class NodeServiceImplTest extends AbstractIntegrationTest {
+
+    @MockBean
+    private EntitlementServiceFacade entitlementServiceFacade;
+
+    @Test
+    void testGetSubNodeList() {
+        MockUserSpace userSpace = createSingleUserAndSpace();
+        String rootNodeId = iNodeService.getRootNodeIdBySpaceId(userSpace.getSpaceId());
+        initNodeTreeMockData(userSpace.getSpaceId(), rootNodeId);
+        List<NodeEntity> subNodeList = iNodeService.getSubNodeList("L1");
+        assertThat(subNodeList).isNotEmpty();
+    }
+
+    @Test
+    void testFindSameNameInSameLevelWhenExist() {
+        MockUserSpace userSpace = createSingleUserAndSpace();
+        String rootNodeId = iNodeService.getRootNodeIdBySpaceId(userSpace.getSpaceId());
+        initNodeTreeMockData(userSpace.getSpaceId(), rootNodeId);
+        Optional<NodeEntity> nodeOptional = iNodeService.findSameNameInSameLevel("L1", "L2-1");
+        assertThat(nodeOptional).isPresent();
+    }
+
+    @Test
+    void testFindSameNameInSameLevelWhenNotExist() {
+        Optional<NodeEntity> nodeOptional = iNodeService.findSameNameInSameLevel("L1", "L1-1");
+        assertThat(nodeOptional).isNotPresent();
+    }
 
     @Test
     void testCreateDatasheetNode() {
@@ -54,9 +93,49 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .parentId(rootNodeId)
             .type(NodeType.DATASHEET.getNodeType())
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String nodeId =
             iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), nodeOpRo);
         assertThat(nodeId).isNotBlank();
+    }
+
+    @Test
+    void testCreateFolderNodeWithoutOverLimit() {
+        MockUserSpace userSpace = createSingleUserAndSpace();
+        String rootNodeId = iNodeService.getRootNodeIdBySpaceId(userSpace.getSpaceId());
+        initNodeTreeMockData(userSpace.getSpaceId(), rootNodeId);
+        NodeOpRo nodeOpRo = NodeOpRo.builder()
+            .parentId(rootNodeId)
+            .type(NodeType.FOLDER.getNodeType())
+            .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
+        assertThatNoException()
+            .isThrownBy(() -> iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(),
+                nodeOpRo));
+    }
+
+    @Test
+    void testCreateNotFolderNodeWithOverLimit() {
+        MockUserSpace userSpace = createSingleUserAndSpace();
+        String rootNodeId = iNodeService.getRootNodeIdBySpaceId(userSpace.getSpaceId());
+        initNodeTreeMockData(userSpace.getSpaceId(), rootNodeId);
+        NodeOpRo nodeOpRo = NodeOpRo.builder()
+            .parentId(rootNodeId)
+            .type(NodeType.DATASHEET.getNodeType())
+            .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
+        assertThatThrownBy(
+            () -> iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), nodeOpRo))
+            .isInstanceOf(BusinessException.class);
     }
 
     @Test
@@ -68,6 +147,12 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.AI_CHAT_BOT.getNodeType())
             .checkDuplicateName(false)
             .build();
+        MockSubscriptionFeature feature = new MockSubscriptionFeature();
+        feature.setAiAgentNums(-1L);
+        feature.setFileNodeNums(5L);
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String nodeId =
             iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), nodeOpRo);
         assertThat(nodeId).isNotBlank().startsWith("ai");
@@ -82,6 +167,12 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.AI_CHAT_BOT.getNodeType())
             .checkDuplicateName(false)
             .build();
+        MockSubscriptionFeature feature = new MockSubscriptionFeature();
+        feature.setAiAgentNums(-1L);
+        feature.setFileNodeNums(-1L);
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String nodeId =
             iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), nodeOpRo);
         assertThat(nodeId).isNotBlank().startsWith("ai");
@@ -106,6 +197,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("folder")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String firstLevelFolderId = iNodeService.createNode(userId, spaceId, op);
         // second level folder id
         op.setParentId(firstLevelFolderId);
@@ -120,6 +215,7 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
         assertThat(nodes).isNotEmpty();
         assertThat(nodes.size()).isEqualTo(1);
     }
+
     @Test
     void givenNotRootNodeWhenCheckNodeOpThenPass() {
         // the given node is not the root directory
@@ -132,6 +228,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .build();
         Long memberId = iMemberService.getMemberIdByUserIdAndSpaceId(userSpace.getUserId(),
             userSpace.getSpaceId());
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String nodeId =
             iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), folder);
         // when
@@ -198,6 +298,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("folder")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String parentNodeId =
             iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), firstOp);
         // add node under node
@@ -222,6 +326,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("folder")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String nodeId = iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), op);
         boolean nodeInRootFolder =
             iNodeService.isNodeBelongRootFolder(userSpace.getSpaceId(), nodeId);
@@ -270,6 +378,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("folder")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String firstLevelFolderId = iNodeService.createNode(userSpace.getUserId(), spaceId, op);
         // second level folder id
         op.setParentId(firstLevelFolderId);
@@ -288,6 +400,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("folder")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String firstLevelFolderId = iNodeService.createNode(userSpace.getUserId(), spaceId, op);
         // second level folder id
         op.setParentId(firstLevelFolderId);
@@ -316,6 +432,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("node")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String firstLevelFolderId = iNodeService.createNode(userSpace.getUserId(), spaceId, op);
         String firstLevelFolderId2 = iNodeService.createNode(userSpace.getUserId(), spaceId, op);
         // second level folder id
@@ -348,6 +468,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("node")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String firstLevelFolderId = iNodeService.createNode(userSpace.getUserId(), spaceId, op);
         // second level folder id
         op.setParentId(firstLevelFolderId);
@@ -370,6 +494,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.FOLDER.getNodeType())
             .nodeName("node")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String thirdFolderId = iNodeService.createNode(userId, spaceId, op);
         String firstFolderId = iNodeService.createNode(userId, spaceId, op);
         op.setPreNodeId(firstFolderId);
@@ -392,13 +520,18 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.DATASHEET.getNodeType())
             .nodeName("datasheet")
             .build();
+        MockSubscriptionFeature feature = new MockSubscriptionFeature();
+        feature.setFileNodeNums(-1L);
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String nodeId = iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), op);
         Long memberId = iMemberService.getMemberIdByUserIdAndSpaceId(userSpace.getUserId(),
             userSpace.getSpaceId());
         List<NodeInfoVo> nodes =
             iNodeService.getChildNodesByNodeId(userSpace.getSpaceId(), memberId, rootNodeId, null);
         List<String> childNodeIds =
-            nodes.stream().map(NodeInfoVo::getNodeId).collect(Collectors.toList());
+            nodes.stream().map(NodeInfoVo::getNodeId).toList();
         assertThat(childNodeIds.contains(nodeId)).isTrue();
     }
 
@@ -411,6 +544,10 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
             .type(NodeType.DATASHEET.getNodeType())
             .nodeName("datasheet")
             .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
         String nodeId = iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), op);
         Long memberId = iMemberService.getMemberIdByUserIdAndSpaceId(userSpace.getUserId(),
             userSpace.getSpaceId());
@@ -440,6 +577,98 @@ public class NodeServiceImplTest extends AbstractIntegrationTest {
         List<String> childNodeIds =
             nodes.stream().map(NodeInfoVo::getNodeId).collect(Collectors.toList());
         assertThat(childNodeIds.contains(nodeId)).isTrue();
+    }
+
+    @Test
+    void testCreateEmbedPageNode() {
+        MockUserSpace userSpace = createSingleUserAndSpace();
+        String rootNodeId = iNodeService.getRootNodeIdBySpaceId(userSpace.getSpaceId());
+        NodeRelRo nodeRelRo = new NodeRelRo();
+        NodeEmbedPageRo nodeEmbedPageRo = new NodeEmbedPageRo();
+        nodeEmbedPageRo.setType("figma");
+        nodeEmbedPageRo.setUrl("test");
+        nodeRelRo.setEmbedPage(nodeEmbedPageRo);
+        NodeOpRo op = new NodeOpRo().toBuilder()
+            .parentId(rootNodeId)
+            .type(NodeType.EMBED_PAGE.getNodeType())
+            .nodeName("embed_page")
+            .extra(nodeRelRo)
+            .build();
+        DefaultSubscriptionFeature feature = new DefaultSubscriptionFeature();
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
+        String nodeId = iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), op);
+        Long memberId = iMemberService.getMemberIdByUserIdAndSpaceId(userSpace.getUserId(),
+            userSpace.getSpaceId());
+        List<NodeInfoVo> nodes =
+            iNodeService.getChildNodesByNodeId(userSpace.getSpaceId(), memberId, rootNodeId,
+                NodeType.EMBED_PAGE);
+        List<String> childNodeIds =
+            nodes.stream().map(NodeInfoVo::getNodeId).toList();
+        assertThat(childNodeIds.contains(nodeId)).isTrue();
+    }
+
+    @Test
+    void testUpdateNodeEmbedPageWithNullExtra() {
+        MockUserSpace userSpace = createSingleUserAndSpace();
+        String rootNodeId = iNodeService.getRootNodeIdBySpaceId(userSpace.getSpaceId());
+        MockSubscriptionFeature feature = new MockSubscriptionFeature();
+        feature.setAiAgentNums(-1L);
+        feature.setFileNodeNums(-1L);
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
+        NodeOpRo createRo = new NodeOpRo().toBuilder()
+            .parentId(rootNodeId)
+            .type(NodeType.EMBED_PAGE.getNodeType())
+            .nodeName("embed_page")
+            .build();
+        String nodeId =
+            iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), createRo);
+        NodeUpdateOpRo updateOpRo = new NodeUpdateOpRo();
+        NodeEmbedPageRo nodeEmbedPageRo = new NodeEmbedPageRo();
+        nodeEmbedPageRo.setType("figma");
+        nodeEmbedPageRo.setUrl("test");
+        updateOpRo.setEmbedPage(nodeEmbedPageRo);
+        iNodeService.edit(userSpace.getUserId(), nodeId, updateOpRo);
+
+        NodeEntity nodeEntity = iNodeService.getByNodeId(nodeId);
+        assertThat(JSONUtil.toBean(nodeEntity.getExtra(), NodeUpdateOpRo.class))
+            .isEqualTo(updateOpRo);
+    }
+
+    @Test
+    void testUpdateNodeEmbedPageWithNotNullExtra() {
+        MockUserSpace userSpace = createSingleUserAndSpace();
+        String rootNodeId = iNodeService.getRootNodeIdBySpaceId(userSpace.getSpaceId());
+        MockSubscriptionFeature feature = new MockSubscriptionFeature();
+        feature.setAiAgentNums(-1L);
+        feature.setFileNodeNums(-1L);
+        SubscriptionInfo subscriptionInfo = new MockSubscriptionInfo(feature);
+        Mockito.doReturn(subscriptionInfo).when(entitlementServiceFacade)
+            .getSpaceSubscription(userSpace.getSpaceId());
+        NodeOpRo createRo = new NodeOpRo().toBuilder()
+            .parentId(rootNodeId)
+            .type(NodeType.EMBED_PAGE.getNodeType())
+            .nodeName("embed_page")
+            .build();
+        String nodeId =
+            iNodeService.createNode(userSpace.getUserId(), userSpace.getSpaceId(), createRo);
+        NodeUpdateOpRo updateOpRo = new NodeUpdateOpRo();
+        NodeEmbedPageRo nodeEmbedPageRo = new NodeEmbedPageRo();
+        nodeEmbedPageRo.setType("figma");
+        nodeEmbedPageRo.setUrl("test");
+        updateOpRo.setEmbedPage(nodeEmbedPageRo);
+        iNodeService.edit(userSpace.getUserId(), nodeId, updateOpRo);
+        NodeEmbedPageRo nodeEmbedPageRo2 = new NodeEmbedPageRo();
+        nodeEmbedPageRo2.setType("document");
+        nodeEmbedPageRo2.setUrl("test");
+        updateOpRo.setEmbedPage(nodeEmbedPageRo2);
+        iNodeService.edit(userSpace.getUserId(), nodeId, updateOpRo);
+        NodeEntity nodeEntity = iNodeService.getByNodeId(nodeId);
+        assertThat(JSONUtil.toBean(nodeEntity.getExtra(), NodeUpdateOpRo.class)).isEqualTo(
+            updateOpRo);
     }
 
 }

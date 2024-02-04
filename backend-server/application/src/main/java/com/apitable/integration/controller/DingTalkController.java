@@ -1,17 +1,8 @@
 package com.apitable.integration.controller;
 
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.apitable.auth.vo.LoginResultVO;
 import com.apitable.core.support.ResponseData;
 import com.apitable.integration.dto.AppConfig;
@@ -34,13 +25,19 @@ import com.apitable.space.service.ISpaceService;
 import com.apitable.user.service.IUserService;
 import com.dingtalk.api.response.OapiV2DepartmentGetResponse.DeptGetResponse;
 import com.dingtalk.api.response.OapiV2UserGetResponse.UserGetResponse;
-
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 
 /**
  * DingTalk integrated interface.
@@ -76,7 +73,7 @@ public class DingTalkController  {
     private RedisLockHelper redisLockHelper;
 
     /**
-     * 获取CorpId
+     * 获取CorpId.
      */
     @GetResource(path = "/corpid", requiredLogin = false)
     @Operation(summary = "获取CorpId", description = "通过传入的AppKey获取当前访问企业的CorpId")
@@ -89,7 +86,7 @@ public class DingTalkController  {
     }
 
     /**
-     * 根据免登码，获取用户信息
+     * 根据免登码，获取用户信息.
      */
     @PostResource(name = "Login", path = "/login", requiredLogin = false)
     @Operation(summary = "登录获取用户信息", description = "通过传入的AppKey和免登码获取access_token及用户信息")
@@ -102,7 +99,7 @@ public class DingTalkController  {
     }
 
     /**
-     * 同步钉钉组织架构至ApiTable
+     * 同步钉钉组织架构至ApiTable.
      */
     @PostResource(name = "SyncDingTalk", path = "/sync/{spaceId}", requiredLogin = true)
     @Operation(summary = "同步钉钉组织架构", description = "同步钉钉的组织架构（部门及用户）至ApiTable")
@@ -112,10 +109,8 @@ public class DingTalkController  {
     }
 
     /**
-     * @throws DingTalkEncryptException
-     * 
+     * 钉钉事件订阅.
      */
-
     @PostResource(name = "DingTalkSubscribe", path = "/callback", requiredLogin = false)
     @Operation(summary = "钉钉事件订阅", description = "钉钉事件订阅|通讯录相关")
     public Map<String, String> subscribe(@RequestParam(value = "appKey", required = true) String appKey,

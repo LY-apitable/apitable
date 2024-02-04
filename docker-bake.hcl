@@ -11,7 +11,7 @@ variable "IMAGE_REGISTRY_LM" {
 }
 
 variable "IMAGE_NAMESPACE_LM" {
-  default = "limch"
+  default = "lmkj-test"
 }
 
 variable "SEMVER_FULL" {

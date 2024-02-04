@@ -22,7 +22,7 @@ import { createRoot } from 'react-dom/client';
 import { Button, LinkButton, Typography, useThemeColors } from '@apitable/components';
 import { ConfigConstant, Strings, t } from '@apitable/core';
 import { CloseOutlined } from '@apitable/icons';
-import { Emoji } from 'pc/components/common';
+import { Emoji } from 'pc/components/common/emoji';
 import Vikaby from 'static/icon/workbench/vikaby-good.png';
 import styles from './style.module.less';
 
@@ -84,6 +84,7 @@ export const showBannerAlert = (config: IShowBannerAlert) => {
   const BANNER_ALERT_ID = config.id || 'BANNER_ALERT';
 
   if (destroyPrev) {
+    // unmount previous alert ui
     const prev = document.getElementById(BANNER_ALERT_ID);
     prev && prev.parentNode && prev.parentNode.removeChild(prev);
   } else {
@@ -119,7 +120,6 @@ export const showBannerAlert = (config: IShowBannerAlert) => {
   }
 
   const start = () => {
-    destroyPrev && destroy();
     render();
     if (duration !== 0) {
       setTimeout(() => {

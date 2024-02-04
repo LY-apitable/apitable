@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import { ShortcutActionName } from 'modules/shared/shortcut_key';
+import { getShortcutKeyString } from 'modules/shared/shortcut_key/keybinding_config';
 import { isMobile } from 'react-device-detect';
 import { black, colorVars } from '@apitable/components';
 import { ConfigConstant, Strings, t, WORKBENCH_SIDE_ID } from '@apitable/core';
-import { ShortcutActionName } from 'modules/shared/shortcut_key';
-import { getShortcutKeyString } from 'modules/shared/shortcut_key/keybinding_config';
 import { getEnvVariables } from 'pc/utils/env';
 import { makeNodeIconComponent, NodeIcon } from './node_icons';
 import styles from './style.module.less';
@@ -45,6 +45,7 @@ export enum ContextItemKey {
   addAi,
   CreateBackup,
   AddAutomation,
+  AddEmbed,
 }
 
 const getCopyUrlText = (nodeType: ConfigConstant.NodeType) => {
@@ -55,6 +56,8 @@ const getCopyUrlText = (nodeType: ConfigConstant.NodeType) => {
       return t(Strings.copy_datasheet_url);
     case ConfigConstant.NodeType.FORM:
       return t(Strings.copy_form_url);
+    case ConfigConstant.NodeType.AUTOMATION:
+      return t(Strings.copy_automation_url);
     case ConfigConstant.NodeType.DASHBOARD:
       return t(Strings.copy_dashboard_url);
     case ConfigConstant.NodeType.MIRROR:
@@ -228,6 +231,16 @@ export const contextItemMap = new Map<ContextItemKey, any>([
     }),
   ],
   [
+    ContextItemKey.AddEmbed,
+    (onClick: () => void, hidden: boolean) => ({
+      icon: makeNodeIconComponent(NodeIcon.AddEmbed),
+      text: t(Strings.new_ebmed_page),
+      onClick,
+      hidden,
+      id: WORKBENCH_SIDE_ID.NEW_EMBED,
+    }),
+  ],
+  [
     ContextItemKey.AddForm,
     (onClick: () => void, hidden: boolean) => ({
       icon: makeNodeIconComponent(NodeIcon.AddForm),
@@ -255,7 +268,7 @@ export const contextItemMap = new Map<ContextItemKey, any>([
       text: () => {
         return (
           <div className={styles.beta}>
-            <span>{t(Strings.ai_new_chatbot)}</span>
+            <span>{t(Strings.ai_new_agent)}</span>
             <span className={styles.betaTag}>Beta</span>
           </div>
         );

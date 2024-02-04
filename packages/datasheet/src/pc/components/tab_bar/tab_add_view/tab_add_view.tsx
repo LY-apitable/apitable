@@ -21,7 +21,6 @@ import { get } from 'lodash';
 import RcTrigger from 'rc-trigger';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { IUseListenTriggerInfo } from '@apitable/components';
 import {
   CollaCommandName,
@@ -43,20 +42,29 @@ import { AddOutlined } from '@apitable/icons';
 // eslint-disable-next-line no-restricted-imports
 import { Tooltip } from 'pc/components/common';
 import { notify } from 'pc/components/common/notify';
-import { SearchPanel, SecondConfirmType } from 'pc/components/datasheet_search_panel';
+import {
+  DataSourceSelectorForForm,
+} from 'pc/components/data_source_selector_enhanced/data_source_selector_for_form/data_source_selector_for_preview';
+import {
+  useControlDataSourceSelectorForForm,
+} from 'pc/components/data_source_selector_enhanced/data_source_selector_for_form/hooks/use_control_data_source_selector_for_form';
 import { navigationToUrl } from 'pc/components/route_manager/navigation_to_url';
-import { useSearchPanel } from 'pc/hooks';
 import { resourceService } from 'pc/resource_service';
 import { store } from 'pc/store';
 import { stopPropagation } from '../../../utils/dom';
 import styles from './style.module.less';
 import { ViewIntroduceList } from './view_introduce_list';
+
+import {useAppSelector} from "pc/store/react-redux";
+
 // const ReactIconAddTag = () => <IconAddTag width={16} height={16} />;
 
 interface ITabAddView {
   activityViewId: string | undefined;
   viewCount: number;
+
   switchView(e: React.MouseEvent, id: string, type?: 'add'): void;
+
   setEditIndex: React.Dispatch<React.SetStateAction<number | null>>;
   disabled?: boolean;
 }
@@ -65,7 +73,7 @@ const OFFSET = [0, 8];
 
 export const TabAddView: React.FC<React.PropsWithChildren<ITabAddView>> = (props) => {
   const { activityViewId, viewCount, switchView, setEditIndex, disabled = false } = props;
-  const permissions = useSelector((state: IReduxState) => Selectors.getPermissions(state));
+  const permissions = useAppSelector((state: IReduxState) => Selectors.getPermissions(state));
   // const [plusVisible, setPlusVisible] = useState(false);
   const ref = useRef<any>();
   const close = useCallback(
@@ -74,15 +82,15 @@ export const TabAddView: React.FC<React.PropsWithChildren<ITabAddView>> = (props
     },
     [ref],
   );
-  const { info } = useSelector((state) => state.user);
-  const embedId = useSelector((state) => state.pageParams.embedId);
-  const isLogin = useSelector((state) => state.user.isLogin);
-  const embedInfo = useSelector((state) => Selectors.getEmbedInfo(state));
+  const { info } = useAppSelector((state) => state.user);
+  const embedId = useAppSelector((state) => state.pageParams.embedId);
+  const isLogin = useAppSelector((state) => state.user.isLogin);
+  const embedInfo = useAppSelector((state) => Selectors.getEmbedInfo(state));
 
   const isOnlyView = embedId ? get(embedInfo, 'viewControl.viewId', false) : false;
 
   const isHideenAddView = embedId && (isOnlyView || !isLogin);
-  const { panelVisible, panelInfo, onChange, setPanelInfo, setPanelVisible } = useSearchPanel();
+  const { panelVisible, panelInfo, onChange, setPanelInfo, setPanelVisible } = useControlDataSourceSelectorForForm();
   const [triggerInfo, setTriggerInfo] = useState<IUseListenTriggerInfo>();
 
   const addView = (view: IViewProperty, startIndex: number, viewType: ViewType) => {
@@ -204,11 +212,12 @@ export const TabAddView: React.FC<React.PropsWithChildren<ITabAddView>> = (props
         </RcTrigger>
       )}
       {panelVisible && (
-        <SearchPanel
-          folderId={panelInfo!.folderId}
-          secondConfirmType={SecondConfirmType.Form}
-          activeDatasheetId={panelInfo?.datasheetId || ''}
-          setSearchPanelVisible={setPanelVisible}
+        <DataSourceSelectorForForm
+          defaultNodeIds={{
+            folderId: panelInfo!.folderId,
+            datasheetId: panelInfo!.datasheetId,
+          }}
+          onHide={() => setPanelVisible(false)}
           onChange={onChange}
         />
       )}

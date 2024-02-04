@@ -4,6 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.media.Schema.RequiredMode;
 import lombok.Data;
 
+/**
+ * DingTalkLoginRo.
+ */
 @Data
 @Schema(description = "钉钉免登参数")
 public class DingTalkLoginRo {

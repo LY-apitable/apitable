@@ -33,8 +33,7 @@ import {
   ILastModifiedTimeFieldProperty,
   ILastModifiedTimeField,
   getUtcOptionList,
-  getClientTimeZone,
-  IDateTimeBaseFieldProperty,
+  IDateTimeBaseFieldProperty, Selectors, formatTimeZone,
 } from '@apitable/core';
 import { QuestionCircleOutlined } from '@apitable/icons';
 // eslint-disable-next-line no-restricted-imports
@@ -44,6 +43,8 @@ import settingStyles from '../../field_setting/styles.module.less';
 import styles from '../styles.module.less';
 import { CollectTypeSelect } from './collect_type_select';
 import { FieldSelectModal } from './field_select_modal';
+
+import {useAppSelector} from "pc/store/react-redux";
 
 interface IFormatDateTime {
   currentField: IDateTimeBaseField;
@@ -70,6 +71,7 @@ const optionTimeFormatData = [
 export const FormatDateTime: React.FC<React.PropsWithChildren<IFormatDateTime>> = (props: IFormatDateTime) => {
   const { currentField, setCurrentField } = props;
   const [isModalShow, setModalShow] = useState(false);
+  const userTimeZone = useAppSelector(Selectors.getUserTimeZone)!;
   const handleDateFormatChange = ({ value }: any) => {
     setCurrentField({
       ...currentField,
@@ -247,13 +249,13 @@ export const FormatDateTime: React.FC<React.PropsWithChildren<IFormatDateTime>> 
                 onSelected={handleTimeZoneChange}
                 renderValue={(option) => {
                   if (!option.value) {
-                    return `${option.label}: ${getClientTimeZone()}`;
+                    return `${option.label}: ${formatTimeZone(userTimeZone)}`;
                   }
                   return option.label;
                 }}
                 options={[
                   {
-                    label: t(Strings.follow_system_time_zone),
+                    label: t(Strings.follow_user_time_zone),
                     value: '',
                   },
                   ...getUtcOptionList(),

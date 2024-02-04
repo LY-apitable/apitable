@@ -34,6 +34,8 @@ import {
 import { ALL_ALARM_SUBTRACT } from 'pc/utils/constant';
 import { commandTran, StringsCommandName } from './interface';
 
+const DATEFORMAT='YYYY-MM-DD HH:mm';
+
 export const getForeignDatasheetIdsByOp = (opList: IOperation[]) => {
   const actions = opList.reduce((acc, op) => {
     if (Array.isArray(op.actions)) {
@@ -81,9 +83,23 @@ export const getOperationInfo = (ops: IOperation[]) =>ops.map((op) => {
   switch (op.cmd) {
     case CollaCommandName.AddRecords:
       return commandTran(cmdStringKey, { count: actionCount });
+
     case CollaCommandName.DeleteRecords:
       const count = op.actions.filter((item) => item['od']?.recordMeta).length;
       return commandTran(cmdStringKey, { count });
+
+    case CollaCommandName.UnarchiveRecords:
+      const recordCount = op.actions.filter((item) => item['oi']?.recordMeta).length;
+      return commandTran(cmdStringKey, { record_count: recordCount });
+
+    case CollaCommandName.ArchiveRecords:
+      const recordCounts = op.actions.filter((item) => item['od']?.recordMeta).length;
+      return commandTran(cmdStringKey, { record_count: recordCounts });
+
+    case CollaCommandName.DeleteArchivedRecords:
+      const deleteCounts = op.actions.filter((item) => item['od']?.recordMeta).length;
+      return commandTran(cmdStringKey, { record_count: deleteCounts });
+
     case CollaCommandName.AddFields:
       op.actions.find((item) => {
         if (item['oi'] instanceof Object && !Array.isArray(item['oi'])) {
@@ -107,10 +123,14 @@ export const getOperationInfo = (ops: IOperation[]) =>ops.map((op) => {
     case CollaCommandName.SetDateTimeCellAlarm:
       let status = 'cancel';
       op.actions.forEach((item) => {
-        status=item.n?(item['oi']?'open':'cancel'):(item['oi']?'cancel':'open');
+        if(item.n){
+          status=item.n===OTActionName.ObjectReplace?StringsCommandName.ModifyAlarm:(item['oi']?'open':'cancel');     
+        }else{
+          status=(item['oi']?'cancel':'open');
+        }
         if((item['oi']||item['od']).time)return actionCount=(item['oi']||item['od']).time;
         if (item['od']?.alarmAt || item['oi']?.alarmAt){
-          actionCount = dayjs((item['oi']?.alarmAt || item['od']?.alarmAt)).format('YYYY-MM-DD HH:mm');
+          actionCount = dayjs.tz((item['oi']?.alarmAt || item['od']?.alarmAt)).format(DATEFORMAT);
         }
         if((item['oi']||item['od'])?.subtract){
           actionCount=(item['oi']||item['od'])?.subtract;
@@ -169,7 +189,7 @@ export const getOperationInfo = (ops: IOperation[]) =>ops.map((op) => {
         if(item.p.length===2&&item.p.includes('recordMap')){
           metaCount++;
           extraRecordCount++;
-          extraRecord=' , '+commandTran(StringsCommandName.AddRecords, { count: extraRecordCount });
+          extraRecord=' , '+commandTran(StringsCommandName[CollaCommandName.AddRecords], { count: extraRecordCount });
         }
       }
       metaCount = (op.actions.length - metaCount) ? (op.actions.length - metaCount) : 1;

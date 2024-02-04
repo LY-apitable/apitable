@@ -116,7 +116,7 @@ public class UserEntity implements Serializable {
     private String locale;
 
     /**
-     * Lmkj Auth Key
+     * Lmkj Auth Key.
      */
     private String appKey;
 

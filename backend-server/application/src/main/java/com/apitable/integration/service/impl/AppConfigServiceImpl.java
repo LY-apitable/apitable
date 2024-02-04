@@ -1,27 +1,26 @@
 package com.apitable.integration.service.impl;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Resource;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Service;
-
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.apitable.core.exception.BusinessException;
 import com.apitable.integration.dto.AppConfig;
 import com.apitable.integration.service.IAppConfigService;
-
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.stereotype.Service;
 
+/**
+ * AppConfigServiceImpl.
+ */
 @Service
 @Slf4j
 public class AppConfigServiceImpl implements IAppConfigService {

@@ -22,17 +22,16 @@ import Fuse from 'fuse.js';
 import { isEqual } from 'lodash';
 import * as React from 'react';
 import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { Align, FixedSizeList } from 'react-window';
-import { Button, LinkButton, useThemeColors, ThemeName } from '@apitable/components';
+import { Button, LinkButton, ThemeName, useThemeColors } from '@apitable/components';
 import {
   CollaCommandName,
   ExecuteResult,
   Field,
   FieldType,
   ILinkField,
-  IOneWayLinkField,
   ILinkIds,
+  IOneWayLinkField,
   IReduxState,
   ISegment,
   IViewRow,
@@ -59,6 +58,8 @@ import EmptyPngLight from 'static/icon/datasheet/empty_state_light.png';
 import { RecordList } from './record_list';
 import style from './style.module.less';
 
+import {useAppSelector} from "pc/store/react-redux";
+
 interface ISearchContentProps {
   field: ILinkField | IOneWayLinkField
   searchValue: string;
@@ -73,23 +74,24 @@ const SearchContentBase: React.ForwardRefRenderFunction<{ getFilteredRows(): { [
   const { field, searchValue: _searchValue, onlyShowSelected, cellValue, onChange, focusIndex, datasheetId } = props;
   const foreignDatasheetId = field.property.foreignDatasheetId;
   const colors = useThemeColors();
-  const { foreignDatasheet, foreignDatasheetErrorCode } = useSelector((state: IReduxState) => {
+  const { foreignDatasheet, foreignDatasheetErrorCode } = useAppSelector((state: IReduxState) => {
     return {
       foreignDatasheet: Selectors.getDatasheet(state, foreignDatasheetId)!,
       foreignDatasheetErrorCode: Selectors.getDatasheetErrorCode(state, foreignDatasheetId),
     };
   });
-  const { readable: foreignDatasheetReadable, rowCreatable: foreignDatasheetEditable } = useSelector((state) => {
+  const { readable: foreignDatasheetReadable, rowCreatable: foreignDatasheetEditable } = useAppSelector((state) => {
     return Selectors.getPermissions(state, foreignDatasheetId);
   });
-  const { formId, mirrorId, datasheetId: urlDsId } = useSelector((state) => state.pageParams);
-  const themeName = useSelector((state) => state.theme);
+  const { formId, mirrorId, datasheetId: urlDsId } = useAppSelector((state) => state.pageParams);
+  const themeName = useAppSelector((state) => state.theme);
   const ImageNoRecord = themeName === ThemeName.Light ? EmptyPngLight : EmptyPngDark;
 
   const foreignView = useGetViewByIdWithDefault(field.property.foreignDatasheetId, field.property.limitToView) as any;
   const hasLimitToView = Boolean(field.property.limitToView && foreignView?.id === field.property.limitToView);
   const { recordMap, meta } = foreignDatasheet.snapshot;
   const fieldMap = meta.fieldMap;
+  const archivedRecordIds = meta.archivedRecordIds || [];
   const recordListRef = useRef<FixedSizeList>(null);
   const dispatch = useDispatch();
   const searchValue = useDebounce(_searchValue, { wait: 300 });
@@ -99,8 +101,9 @@ const SearchContentBase: React.ForwardRefRenderFunction<{ getFilteredRows(): { [
 
   const foreignDataMap = useMemo(() => {
     if (hasLimitToView && !foreignDatasheet.isPartOfData) {
+      const state = store.getState();
       return {
-        foreignRows: new ViewDerivateBase(store.getState(), foreignDatasheetId).getViewDerivation(foreignView).rowsWithoutSearch,
+        foreignRows: new ViewDerivateBase(state, foreignDatasheetId).getViewDerivation(foreignView).rowsWithoutSearch,
         foreignColumns: Selectors.getVisibleColumnsBase(foreignView),
       };
     }
@@ -127,9 +130,9 @@ const SearchContentBase: React.ForwardRefRenderFunction<{ getFilteredRows(): { [
         return;
       }
 
-      // filter deleted link record
-      const filterCellValue = cellValue?.filter((id) => {
-        return foreignRows.some(row => row.recordId === id);
+      // filter one way link record
+      const filterCellValue = field.type === FieldType.Link ? cellValue : cellValue?.filter((id) => {
+        return foreignRows.some(row => row.recordId === id) || archivedRecordIds.includes(id);
       });
 
       if (filterCellValue && filterCellValue.includes(recordId)) {
@@ -139,7 +142,8 @@ const SearchContentBase: React.ForwardRefRenderFunction<{ getFilteredRows(): { [
       }
       onChange(value.length ? value : null);
     },
-    [cellValue, onChange, field],
+
+    [cellValue, onChange, field, archivedRecordIds],
   );
 
   const addNewRecord = () => {

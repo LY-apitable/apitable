@@ -29,11 +29,21 @@ public interface IAuthService {
     /**
      * Register.
      *
-     * @param username  username
-     * @param password  password
+     * @param username username
+     * @param password password
      * @return user id
      */
     Long register(String username, String password);
+
+    /**
+     * Register.
+     *
+     * @param username username
+     * @param password password
+     * @param lang language code
+     * @return user id
+     */
+    Long register(String username, String password, String lang);
 
     /**
      * Register By DingTalk.

@@ -26,7 +26,7 @@ import { resourceService } from 'pc/resource_service';
 import { store } from 'pc/store';
 import { getEnvVariables } from 'pc/utils/env';
 // @ts-ignore
-import { AlarmIcon } from 'enterprise';
+import { AlarmIcon } from 'enterprise/alarm/alarm_icon/alarm_icon';
 
 interface IUseCellAlarmProps {
   instance: GridCoordinate;
@@ -124,7 +124,7 @@ export const useCellAlarm = (props: IUseCellAlarmProps) => {
   const row = linearRows[pointRowIndex];
   const pointFieldId = visibleColumns[pointColumnIndex]?.fieldId;
   const pointField = fieldMap[pointFieldId];
-  if (permissions.editable && AlarmIcon && !isScrolling && row?.type === CellType.Record && pointField?.type === FieldType.DateTime) {
+  if (permissions.editable && Boolean(AlarmIcon) && !isScrolling && row?.type === CellType.Record && pointField?.type === FieldType.DateTime) {
     const pointCellValue = Selectors.getCellValue(state, snapshot, pointRecordId, pointFieldId);
     const alarm = Selectors.getDateTimeCellAlarm(snapshot, pointRecordId, pointFieldId);
     if (pointCellValue && !alarm) {

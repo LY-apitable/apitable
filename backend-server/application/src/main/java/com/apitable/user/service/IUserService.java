@@ -70,7 +70,7 @@ public interface IUserService extends IService<UserEntity> {
 
     /**
      * Obtain user ID according to DingTalk Union Id.
-     * 
+     *
      * @param dingUnionId DingTalk Union Id
      * @return User ID
      */
@@ -147,15 +147,15 @@ public interface IUserService extends IService<UserEntity> {
                 String email, String spaceName);
                 
     /**
-     * Create Account By DingTalk
-     * 
-     * @param areaCode
-     * @param mobile
-     * @param email
-     * @param appKey
-     * @param dingUnionId
-     * @param nickName
-     * @return
+     * Create Account By DingTalk.
+     *
+     * @param areaCode    areaCode
+     * @param mobile      mobile
+     * @param email       email
+     * @param appKey      appKey
+     * @param dingUnionId dingUnionId
+     * @param nickName    nickName
+     * @return UserEntity
      */
     UserEntity createUserByDingTalk(String areaCode, String mobile, String email, String appKey, String dingUnionId, String nickName);
 
@@ -182,11 +182,21 @@ public interface IUserService extends IService<UserEntity> {
     /**
      * Create an account by email.
      *
-     * @param email email
+     * @param email    email
      * @param password password
      * @return UserEntity
      */
     UserEntity createUserByEmail(String email, String password);
+
+    /**
+     * Create an account by email.
+     *
+     * @param email    email
+     * @param password password
+     * @param lang lang
+     * @return UserEntity
+     */
+    UserEntity createUserByEmail(String email, String password, String lang);
 
     /**
      * initial new space for new user.
@@ -413,14 +423,15 @@ public interface IUserService extends IService<UserEntity> {
      * get user simple info.
      *
      * @param userIds user id list
+     * @param spaceId user's space id
      * @return a map with userId as key
      */
-    Map<Long, UserSimpleVO> getUserSimpleInfoMap(List<Long> userIds);
+    Map<Long, UserSimpleVO> getUserSimpleInfoMap(String spaceId, List<Long> userIds);
 
     /**
      * Obtain user ID according to AppKey And DingTalk Union Id.
-     * 
-     * @param appKey appKey
+     *
+     * @param appKey      appKey
      * @param dingUnionId DingTalk Union Id
      * @return User ID
      */

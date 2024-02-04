@@ -20,11 +20,10 @@ package com.apitable.space.service.impl;
 
 import static com.apitable.core.constants.RedisConstants.GENERAL_STATICS;
 import static com.apitable.shared.constants.DateFormatConstants.YEARS_MONTH_PATTERN;
-import static java.time.temporal.TemporalAdjusters.firstDayOfMonth;
+import static com.apitable.shared.util.DateHelper.SIMPLE_DATE;
+import static com.apitable.shared.util.DateHelper.SIMPLE_MONTH;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.text.StrSpliter;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
@@ -35,6 +34,7 @@ import com.apitable.control.model.ControlTypeDTO;
 import com.apitable.core.constants.RedisConstants;
 import com.apitable.core.util.SqlTool;
 import com.apitable.organization.service.IMemberService;
+import com.apitable.shared.clock.spring.ClockManager;
 import com.apitable.shared.util.DateHelper;
 import com.apitable.space.dto.ControlStaticsDTO;
 import com.apitable.space.dto.DatasheetStaticsDTO;
@@ -43,18 +43,18 @@ import com.apitable.space.dto.NodeTypeStaticsDTO;
 import com.apitable.space.mapper.StaticsMapper;
 import com.apitable.space.service.IStaticsService;
 import com.apitable.workspace.enums.ViewType;
+import com.apitable.workspace.mapper.DatasheetMapper;
 import com.apitable.workspace.mapper.NodeMapper;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
-import java.text.SimpleDateFormat;
+import jakarta.annotation.Resource;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -82,6 +82,9 @@ public class StaticsServiceImpl implements IStaticsService {
     private StaticsMapper staticsMapper;
 
     @Resource
+    private DatasheetMapper datasheetMapper;
+
+    @Resource
     private RedisTemplate<String, Long> redisTemplate;
 
     @Value("${SKIP_USAGE_VERIFICATION:false}")
@@ -91,31 +94,37 @@ public class StaticsServiceImpl implements IStaticsService {
     private Integer cacheHours;
 
     @Override
-    public long getCurrentMonthApiUsage(String spaceId) {
+    public long getCurrentMonthApiUsage(String spaceId, LocalDate currentMonth) {
         if (Boolean.TRUE.equals(skipUsageVerification)) {
             return 0;
         }
         // Get the API usage of this month up to yesterday
-        Long apiUsageUntilYesterday = this.getCurrentMonthApiUsageUntilYesterday(spaceId);
+        Long apiUsageUntilYesterday = this.getCurrentMonthApiUsageUntilYesterday(spaceId, currentMonth);
         // If it is NULL, it indicates that the daily API usage statistics table is empty, and the old method is adopted
         if (apiUsageUntilYesterday == null) {
-            return this.getCurrentMonthApiUsageWithCache(spaceId);
+            return this.getCurrentMonthApiUsageWithCache(spaceId, currentMonth);
         } else {
             return apiUsageUntilYesterday + this.getTodayApiUsage(spaceId);
         }
     }
 
-    @Override
-    public Long getTodayApiUsage(String spaceId) {
+    /**
+     * Get today's API usage and update the cache.
+     *
+     * @param spaceId space id
+     * @return amount
+     */
+    private Long getTodayApiUsage(String spaceId) {
         // Get today's API usage cache
-        SimpleDateFormat today = new SimpleDateFormat("yyyy-MM-dd");
+        LocalDate now = ClockManager.me().getLocalDateNow();
         String todayKey =
-            StrUtil.format(GENERAL_STATICS, "api" + today.format(new Date()), spaceId);
+            StrUtil.format(GENERAL_STATICS, "api" + now.format(SIMPLE_DATE), spaceId);
         Object apiUsageToday = redisTemplate.opsForValue().get(todayKey);
         if (apiUsageToday == null) {
             // Maximum table ID of yesterday's API usage record
+            LocalDate yesterday = now.minusDays(1);
             Long yesterdayMaxId =
-                staticsMapper.selectMaxIdByTime(today.format(DateUtil.yesterday()));
+                staticsMapper.selectMaxIdByTime(yesterday.format(SIMPLE_DATE));
             // Get today's API usage
             apiUsageToday = staticsMapper.countByIdGreaterThanAndSpaceId(yesterdayMaxId, spaceId);
             // Update today's api usage cache
@@ -126,25 +135,30 @@ public class StaticsServiceImpl implements IStaticsService {
         return Long.valueOf(apiUsageToday.toString());
     }
 
-    @Override
-    public Long getCurrentMonthApiUsageUntilYesterday(String spaceId) {
+    /**
+     * Get the API usage from this month to yesterday, and update the cache.
+     *
+     * @param spaceId space id
+     * @return amount
+     */
+    private Long getCurrentMonthApiUsageUntilYesterday(String spaceId, LocalDate currentMonth) {
         // If it is the first day of this month, 0 will be returned directly
-        if (ObjectUtil.equals(LocalDateTime.now().getDayOfMonth(), 1)) {
+        if (ObjectUtil.equals(currentMonth.getDayOfMonth(), 1)) {
             return 0L;
         } else {
             // Get the API usage cache of this month before today
-            SimpleDateFormat month = new SimpleDateFormat("yyyy-MM");
             String monthKey =
-                StrUtil.format(GENERAL_STATICS, "api" + month.format(new Date()), spaceId);
+                StrUtil.format(GENERAL_STATICS, "api" + currentMonth.format(SIMPLE_MONTH), spaceId);
             Object apiUsageBeforeToday = redisTemplate.opsForValue().get(monthKey);
             if (apiUsageBeforeToday != null) {
                 return Long.valueOf(apiUsageBeforeToday.toString());
             }
             // No cache. Query the API usage in this month before today
-            SimpleDateFormat today = new SimpleDateFormat("yyyy-MM-dd");
+            LocalDate startDayOfMonth = currentMonth.withDayOfMonth(1);
+            LocalDate yesterday = currentMonth.minusDays(1);
             Long totalSum = staticsMapper.selectTotalSumBySpaceIdAndTimeBetween(spaceId,
-                today.format(DateUtil.beginOfMonth(new Date())),
-                today.format(DateUtil.yesterday()));
+                startDayOfMonth.format(SIMPLE_DATE),
+                yesterday.format(SIMPLE_DATE));
             if (totalSum == null) {
                 return null;
             }
@@ -155,16 +169,15 @@ public class StaticsServiceImpl implements IStaticsService {
         }
     }
 
-    private Long getCurrentMonthApiUsageWithCache(String spaceId) {
-        Long minId = this.getApiUsageTableMinId();
+    private Long getCurrentMonthApiUsageWithCache(String spaceId, LocalDate currentMonth) {
+        Long minId = this.getApiUsageTableMinId(currentMonth);
         // The minimum table ID of this month does not exist, that is, there is no call record
         if (minId == null) {
             return 0L;
         }
         // Get today's API usage cache
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         String cacheKey =
-            StrUtil.format(GENERAL_STATICS, "api-" + format.format(new Date()), spaceId);
+            StrUtil.format(GENERAL_STATICS, "api-" + currentMonth.format(SIMPLE_DATE), spaceId);
         Object apiUsageToday = redisTemplate.opsForValue().get(cacheKey);
         if (apiUsageToday == null) {
             apiUsageToday = staticsMapper.countApiUsageBySpaceId(spaceId, minId);
@@ -174,9 +187,8 @@ public class StaticsServiceImpl implements IStaticsService {
         return Long.valueOf(apiUsageToday.toString());
     }
 
-    private Long getApiUsageTableMinId() {
+    private Long getApiUsageTableMinId(LocalDate now) {
         // Get the minimum ID of the API consumption table this month
-        LocalDateTime now = LocalDateTime.now();
         String key = StrUtil.format(GENERAL_STATICS, "api-usage-min-id",
             DateHelper.formatFullTime(now, YEARS_MONTH_PATTERN));
         Long id = redisTemplate.opsForValue().get(key);
@@ -191,7 +203,7 @@ public class StaticsServiceImpl implements IStaticsService {
         if (lastMonthMinId == null) {
             id = staticsMapper.selectApiUsageMaxId();
         } else {
-            LocalDateTime startDayOfMonth = now.with(firstDayOfMonth());
+            LocalDateTime startDayOfMonth = now.atStartOfDay();
             id = staticsMapper.selectApiUsageMinIdByCreatedAt(lastMonthMinId, startDayOfMonth);
         }
         // Keep the cache of the month
@@ -239,7 +251,15 @@ public class StaticsServiceImpl implements IStaticsService {
         if (null != recordCount) {
             return recordCount;
         }
-        recordCount = SqlTool.retCount(staticsMapper.countRecordsBySpaceId(spaceId));
+        List<String> dstIds = datasheetMapper.selectDstIdBySpaceId(spaceId);
+        if (CollUtil.isEmpty(dstIds)) {
+            return 0L;
+        }
+        recordCount = 0L;
+        List<List<String>> dstIdList = CollUtil.split(dstIds, 1000);
+        for (List<String> item : dstIdList) {
+            recordCount += SqlTool.retCount(staticsMapper.countRecordsByDstIds(item));
+        }
         // save in cache
         redisTemplate.opsForValue()
             .setIfAbsent(RedisConstants.getGeneralStaticsOfRecordKey(spaceId), recordCount, 1L,
@@ -289,7 +309,7 @@ public class StaticsServiceImpl implements IStaticsService {
         // Get the table of column permissions
         List<String> dstIds = controlIds.stream()
             .map(controlId -> {
-                List<String> ids = StrSpliter.split(controlId, ControlIdBuilder.SYMBOL,
+                List<String> ids = StrUtil.split(controlId, ControlIdBuilder.SYMBOL,
                     0, true, true);
                 if (CollUtil.isNotEmpty(ids)) {
                     String dstId = ids.get(0);

@@ -1,9 +1,11 @@
 package com.apitable.integration.dto;
 
 import java.io.Serializable;
-
 import lombok.Data;
 
+/**
+ * AppConfig.
+ */
 @Data
 public class AppConfig implements Serializable {
 

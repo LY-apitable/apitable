@@ -1,25 +1,26 @@
 package com.apitable.shared.util;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.Permission;
 import java.security.PermissionCollection;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-import java.security.Security;
-import java.lang.reflect.Field;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 
-import cn.hutool.json.JSONUtil;
-
+/**
+ * DingCallbackCrypto.
+ */
+@Slf4j
 public class DingCallbackCrypto {
 
     private static final Charset CHARSET = Charset.forName("utf-8");
@@ -27,17 +28,19 @@ public class DingCallbackCrypto {
     private byte[] aesKey;
     private String token;
     private String corpId;
+
     /**
-     * ask getPaddingBytes key固定长度
+     * ask getPaddingBytes key固定长度.
      **/
     private static final Integer AES_ENCODE_KEY_LENGTH = 43;
+
     /**
-     * 加密随机字符串字节长度
+     * 加密随机字符串字节长度.
      **/
     private static final Integer RANDOM_LENGTH = 16;
 
     /**
-     * 构造函数
+     * 构造函数.
      *
      * @param token          钉钉开放平台上，开发者设置的token
      * @param encodingAesKey 钉钉开放台上，开发者设置的EncodingAESKey
@@ -56,18 +59,25 @@ public class DingCallbackCrypto {
         aesKey = Base64.decodeBase64(encodingAesKey + "=");
     }
 
+    /**
+     * getEncryptedMap.
+     *
+     * @param plaintext plaintext
+     * @return map
+     * @throws DingTalkEncryptException exception
+     */
     public Map<String, String> getEncryptedMap(String plaintext) throws DingTalkEncryptException {
         return getEncryptedMap(plaintext, System.currentTimeMillis(), Utils.getRandomStr(16));
     }
 
     /**
-     * 将和钉钉开放平台同步的消息体加密,返回加密Map
+     * 将和钉钉开放平台同步的消息体加密,返回加密Map.
      *
      * @param plaintext 传递的消息体明文
      * @param timeStamp 时间戳
      * @param nonce     随机字符串
-     * @return
-     * @throws DingTalkEncryptException
+     * @return map
+     * @throws DingTalkEncryptException exception
      */
     public Map<String, String> getEncryptedMap(String plaintext, Long timeStamp, String nonce)
         throws DingTalkEncryptException {
@@ -92,14 +102,14 @@ public class DingCallbackCrypto {
     }
 
     /**
-     * 密文解密
+     * 密文解密.
      *
      * @param msgSignature 签名串
      * @param timeStamp    时间戳
      * @param nonce        随机串
      * @param encryptMsg   密文
      * @return 解密后的原文
-     * @throws DingTalkEncryptException
+     * @throws DingTalkEncryptException DingTalkEncryptException
      */
     public String getDecryptMsg(String msgSignature, String timeStamp, String nonce, String encryptMsg)
         throws DingTalkEncryptException {
@@ -113,8 +123,9 @@ public class DingCallbackCrypto {
         return result;
     }
 
-    /*
+    /**
      * 对明文加密.
+     *
      * @param text 需要加密的明文
      * @return 加密后base64编码的字符串
      */
@@ -145,8 +156,9 @@ public class DingCallbackCrypto {
         }
     }
 
-    /*
+    /**
      * 对密文进行解密.
+     *
      * @param text 需要解密的密文
      * @return 解密得到的明文
      */
@@ -188,14 +200,14 @@ public class DingCallbackCrypto {
     }
 
     /**
-     * 数字签名
+     * 数字签名.
      *
      * @param token     isv token
      * @param timestamp 时间戳
      * @param nonce     随机串
      * @param encrypt   加密文本
-     * @return
-     * @throws DingTalkEncryptException
+     * @return signature
+     * @throws DingTalkEncryptException DingTalkEncryptException
      */
     public String getSignature(String token, String timestamp, String nonce, String encrypt)
         throws DingTalkEncryptException {
@@ -226,10 +238,19 @@ public class DingCallbackCrypto {
         }
     }
 
+    /**
+     * Utils.
+     */
     public static class Utils {
         public Utils() {
         }
 
+        /**
+         * getRandomStr.
+         *
+         * @param count count
+         * @return randomStr
+         */
         public static String getRandomStr(int count) {
             String base = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             Random random = new Random();
@@ -243,12 +264,24 @@ public class DingCallbackCrypto {
             return sb.toString();
         }
 
+        /**
+         * int2Bytes.
+         *
+         * @param count count
+         * @return bytes
+         */
         public static byte[] int2Bytes(int count) {
-            byte[] byteArr = new byte[] {(byte)(count >> 24 & 255), (byte)(count >> 16 & 255), (byte)(count >> 8 & 255),
-                (byte)(count & 255)};
+            byte[] byteArr = new byte[] {(byte) (count >> 24 & 255), (byte) (count >> 16 & 255), (byte) (count >> 8 & 255),
+                (byte) (count & 255)};
             return byteArr;
         }
 
+        /**
+         * bytes2int.
+         *
+         * @param byteArr byteArr
+         * @return int
+         */
         public static int bytes2int(byte[] byteArr) {
             int count = 0;
 
@@ -261,13 +294,21 @@ public class DingCallbackCrypto {
         }
     }
 
+    /**
+     * PKCS7Padding.
+     */
     public static class PKCS7Padding {
         private static final Charset CHARSET = Charset.forName("utf-8");
-        private static final int BLOCK_SIZE = 32;
 
         public PKCS7Padding() {
         }
 
+        /**
+         * getPaddingBytes.
+         *
+         * @param count count
+         * @return bytes
+         */
         public static byte[] getPaddingBytes(int count) {
             int amountToPad = 32 - count % 32;
             if (amountToPad == 0) {
@@ -284,6 +325,12 @@ public class DingCallbackCrypto {
             return tmp.getBytes(CHARSET);
         }
 
+        /**
+         * removePaddingBytes.
+         *
+         * @param decrypted decrypted
+         * @return bytes
+         */
         public static byte[] removePaddingBytes(byte[] decrypted) {
             int pad = decrypted[decrypted.length - 1];
             if (pad < 1 || pad > 32) {
@@ -294,11 +341,14 @@ public class DingCallbackCrypto {
         }
 
         private static char chr(int a) {
-            byte target = (byte)(a & 255);
-            return (char)target;
+            byte target = (byte) (a & 255);
+            return (char) target;
         }
     }
 
+    /**
+     * DingTalkEncryptException.
+     */
     public static class DingTalkEncryptException extends Exception {
         public static final int SUCCESS = 0;
         public static final int ENCRYPTION_PLAINTEXT_ILLEGAL = 900001;
@@ -333,59 +383,63 @@ public class DingCallbackCrypto {
         }
 
         public DingTalkEncryptException(Integer exceptionCode) {
-            super((String)msgMap.get(exceptionCode));
+            super((String) msgMap.get(exceptionCode));
             this.code = exceptionCode;
         }
     }
+    
     static {
-                try {
-                        Security.setProperty("crypto.policy", "limited");
-                        RemoveCryptographyRestrictions();
-                } catch (Exception var1) {
-                }
-
+        try {
+            Security.setProperty("crypto.policy", "limited");
+            removeCryptographyRestrictions();
+        } catch (Exception exception) {
+            log.error("error", exception);
         }
-        private static void RemoveCryptographyRestrictions() throws Exception {
-                Class<?> jceSecurity = getClazz("javax.crypto.JceSecurity");
-                Class<?> cryptoPermissions = getClazz("javax.crypto.CryptoPermissions");
-                Class<?> cryptoAllPermission = getClazz("javax.crypto.CryptoAllPermission");
-                if (jceSecurity != null) {
-                        setFinalStaticValue(jceSecurity, "isRestricted", false);
-                        PermissionCollection defaultPolicy = (PermissionCollection)getFieldValue(jceSecurity, "defaultPolicy", (Object)null, PermissionCollection.class);
-                        if (cryptoPermissions != null) {
-                                Map<?, ?> map = (Map<?, ?>)getFieldValue(cryptoPermissions, "perms", defaultPolicy, Map.class);
-                                map.clear();
-                        }
+    }
 
-                        if (cryptoAllPermission != null) {
-                                Permission permission = (Permission)getFieldValue(cryptoAllPermission, "INSTANCE", (Object)null, Permission.class);
-                                defaultPolicy.add(permission);
-                        }
-                }
+    private static void removeCryptographyRestrictions() throws Exception {
+        Class<?> jceSecurity = getClazz("javax.crypto.JceSecurity");
+        Class<?> cryptoPermissions = getClazz("javax.crypto.CryptoPermissions");
+        Class<?> cryptoAllPermission = getClazz("javax.crypto.CryptoAllPermission");
+        if (jceSecurity != null) {
+            setFinalStaticValue(jceSecurity, "isRestricted", false);
+            PermissionCollection defaultPolicy = (PermissionCollection) getFieldValue(jceSecurity, "defaultPolicy", (Object) null, PermissionCollection.class);
+            if (cryptoPermissions != null) {
+                Map<?, ?> map = (Map<?, ?>) getFieldValue(cryptoPermissions, "perms", defaultPolicy, Map.class);
+                map.clear();
+            }
 
+            if (cryptoAllPermission != null) {
+                Permission permission = (Permission) getFieldValue(cryptoAllPermission, "INSTANCE", (Object) null, Permission.class);
+                defaultPolicy.add(permission);
+            }
         }
-        private static Class<?> getClazz(String className) {
-                Class<?> clazz = null;
+    }
 
-                try {
-                        clazz = Class.forName(className);
-                } catch (Exception var3) {
-                }
+    private static Class<?> getClazz(String className) {
+        Class<?> clazz = null;
 
-                return clazz;
-        }
-        private static void setFinalStaticValue(Class<?> srcClazz, String fieldName, Object newValue) throws Exception {
-                Field field = srcClazz.getDeclaredField(fieldName);
-                field.setAccessible(true);
-                Field modifiersField = Field.class.getDeclaredField("modifiers");
-                modifiersField.setAccessible(true);
-                modifiersField.setInt(field, field.getModifiers() & -17);
-                field.set((Object)null, newValue);
-        }
-        private static <T> T getFieldValue(Class<?> srcClazz, String fieldName, Object owner, Class<T> dstClazz) throws Exception {
-                Field field = srcClazz.getDeclaredField(fieldName);
-                field.setAccessible(true);
-                return dstClazz.cast(field.get(owner));
+        try {
+            clazz = Class.forName(className);
+        } catch (Exception exception) {
+            log.error("error", exception);
         }
 
+        return clazz;
+    }
+
+    private static void setFinalStaticValue(Class<?> srcClazz, String fieldName, Object newValue) throws Exception {
+        Field field = srcClazz.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(field, field.getModifiers() & -17);
+        field.set((Object) null, newValue);
+    }
+
+    private static <T> T getFieldValue(Class<?> srcClazz, String fieldName, Object owner, Class<T> dstClazz) throws Exception {
+        Field field = srcClazz.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return dstClazz.cast(field.get(owner));
+    }
 }

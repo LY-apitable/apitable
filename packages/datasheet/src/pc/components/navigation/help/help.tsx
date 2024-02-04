@@ -45,12 +45,22 @@ import { useContactUs } from 'pc/hooks/use_contact_us';
 import { getEnvVariables } from 'pc/utils/env';
 import styles from './style.module.less';
 // @ts-ignore
-import { inSocialApp } from 'enterprise';
+import { inSocialApp } from 'enterprise/home/social_platform/utils';
 
 export interface IHelpProps {
   className?: string;
   templateActived: boolean;
 }
+
+const handleEmailClick = (email: string) => {
+  const url = `mailto:${email}`;
+  try {
+    const newWindow = window.open(url, '_blank', 'noopener=yes,noreferrer=yes');
+    newWindow && ((newWindow as any).opener = null);
+  } catch (error) {
+    console.log('error', error);
+  }
+};
 
 export const Help: FC<React.PropsWithChildren<IHelpProps>> = ({ className, templateActived }) => {
   const colors = useThemeColors();
@@ -111,7 +121,13 @@ export const Help: FC<React.PropsWithChildren<IHelpProps>> = ({ className, templ
     {
       icon: <AdviseOutlined />,
       text: t(Strings.vomit_a_slot),
-      onClick: () => navigationToUrl(getEnvVariables().USER_FEEDBACK_FORM_URL),
+      onClick: () => {
+        if (getEnvVariables().IS_AITABLE) {
+          handleEmailClick('support@aitable.ai');
+        } else {
+          navigationToUrl(getEnvVariables().USER_FEEDBACK_FORM_URL);
+        }
+      },
       hidden: isPrivateDeployment(),
     },
     {
@@ -126,7 +142,7 @@ export const Help: FC<React.PropsWithChildren<IHelpProps>> = ({ className, templ
       text: t(Strings.help_partner_program),
       id: NAV_ID.USER_PARTNER_PROGRAM,
       onClick: () => navigationToUrl(`${window.location.origin}/partners/`),
-      hidden: !(getEnvVariables().IS_APITABLE && getEnvVariables().IS_ENTERPRISE),
+      hidden: !(getEnvVariables().IS_APITABLE && getEnvVariables().IS_ENTERPRISE) || getEnvVariables().IS_SELFHOST,
     },
   ];
 

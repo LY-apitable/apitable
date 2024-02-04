@@ -18,6 +18,7 @@
 
 package com.apitable.automation.service.impl;
 
+import static com.apitable.automation.enums.AutomationException.AUTOMATION_ROBOT_NOT_EXIST;
 import static com.apitable.automation.model.ActionSimpleVO.actionComparator;
 import static com.apitable.automation.model.TriggerSimpleVO.triggerComparator;
 import static java.util.stream.Collectors.groupingBy;
@@ -28,6 +29,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.apitable.automation.entity.AutomationRobotEntity;
+import com.apitable.automation.enums.AutomationTriggerType;
 import com.apitable.automation.mapper.AutomationRobotMapper;
 import com.apitable.automation.model.ActionSimpleVO;
 import com.apitable.automation.model.ActionVO;
@@ -43,36 +45,48 @@ import com.apitable.automation.model.UpdateRobotRO;
 import com.apitable.automation.service.IAutomationActionService;
 import com.apitable.automation.service.IAutomationRobotService;
 import com.apitable.automation.service.IAutomationTriggerService;
+import com.apitable.automation.service.IAutomationTriggerTypeService;
 import com.apitable.core.exception.BusinessException;
-import com.apitable.databusclient.ApiException;
-import com.apitable.databusclient.api.AutomationDaoApiApi;
-import com.apitable.databusclient.model.AutomationActionIntroductionPO;
-import com.apitable.databusclient.model.AutomationRobotIntroductionPO;
-import com.apitable.databusclient.model.AutomationRobotIntroductionSO;
-import com.apitable.databusclient.model.AutomationRobotSO;
-import com.apitable.databusclient.model.AutomationRobotUpdateRO;
-import com.apitable.databusclient.model.AutomationSO;
-import com.apitable.databusclient.model.AutomationTriggerIntroductionPO;
+import com.apitable.core.util.ExceptionUtil;
+import com.apitable.internal.service.impl.InternalSpaceServiceImpl;
+import com.apitable.internal.vo.InternalSpaceAutomationRunMessageV0;
 import com.apitable.shared.util.IdUtil;
+import com.apitable.starter.databus.client.api.AutomationDaoApiApi;
+import com.apitable.starter.databus.client.model.AutomationActionIntroductionPO;
+import com.apitable.starter.databus.client.model.AutomationRobotCopyRO;
+import com.apitable.starter.databus.client.model.AutomationRobotIntroductionPO;
+import com.apitable.starter.databus.client.model.AutomationRobotIntroductionSO;
+import com.apitable.starter.databus.client.model.AutomationRobotSO;
+import com.apitable.starter.databus.client.model.AutomationRobotUpdateRO;
+import com.apitable.starter.databus.client.model.AutomationSO;
+import com.apitable.starter.databus.client.model.AutomationTriggerIntroductionPO;
 import com.apitable.template.enums.TemplateException;
 import com.apitable.user.service.IUserService;
 import com.apitable.user.vo.UserSimpleVO;
+import com.apitable.workspace.enums.NodeException;
 import com.apitable.workspace.service.INodeService;
 import com.apitable.workspace.vo.NodeInfo;
 import com.apitable.workspace.vo.NodeSimpleVO;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
+import jakarta.annotation.Resource;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
+/**
+ * automation robot service impl.
+ */
 @Slf4j
 @Service
 public class AutomationRobotServiceImpl implements IAutomationRobotService {
@@ -95,6 +109,12 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
     @Resource
     private IUserService iUserService;
 
+    @Resource
+    private InternalSpaceServiceImpl internalSpaceService;
+
+    @Resource
+    private IAutomationTriggerTypeService iAutomationTriggerTypeService;
+
     @Override
     public List<AutomationRobotDto> getRobotListByResourceId(String resourceId) {
         return robotMapper.selectRobotsByResourceIds(Collections.singletonList(resourceId));
@@ -106,21 +126,22 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
     }
 
     @Override
-    public void copy(Long userId, List<String> resourceIds,
-                     AutomationCopyOptions options, Map<String, String> newNodeMap) {
+    public TriggerCopyResultDto copy(Long userId, List<String> resourceIds,
+                                     AutomationCopyOptions options,
+                                     Map<String, String> newNodeMap) {
         if (CollUtil.isEmpty(resourceIds)) {
-            return;
+            return new TriggerCopyResultDto();
         }
         List<AutomationRobotEntity> robots = robotMapper.selectByResourceIds(resourceIds);
         if (CollUtil.isEmpty(robots)) {
-            return;
+            return new TriggerCopyResultDto();
         }
         Map<String, String> newRobotMap = new HashMap<>(robots.size());
         List<AutomationRobotEntity> entities = new ArrayList<>(robots.size());
         for (AutomationRobotEntity robot : robots) {
             String robotId = IdUtil.createAutomationRobotId();
             AutomationRobotEntity entity = AutomationRobotEntity.builder()
-                .id(IdWorker.getId())
+                .id(BigInteger.valueOf(IdWorker.getId()))
                 .resourceId(newNodeMap.get(robot.getResourceId()))
                 .robotId(robotId)
                 .name(Optional.ofNullable(options.getOverriddenName()).orElse(robot.getName()))
@@ -137,8 +158,32 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
         robotMapper.insertList(entities);
 
         TriggerCopyResultDto resultDto =
-            iAutomationTriggerService.copy(userId, options.isSameSpace(), newRobotMap, newNodeMap);
+            iAutomationTriggerService.copy(userId, options, newRobotMap, newNodeMap);
         iAutomationActionService.copy(userId, newRobotMap, resultDto);
+        return resultDto;
+    }
+
+    @Override
+    public void copyByDatabus(Long userId, List<String> resourceIds, AutomationCopyOptions options,
+                              Map<String, String> newNodeMap) {
+        if (CollUtil.isEmpty(resourceIds)) {
+            return;
+        }
+        List<AutomationRobotCopyRO> robots = new ArrayList<>();
+        for (String resourceId : resourceIds) {
+            AutomationRobotCopyRO robot = new AutomationRobotCopyRO();
+            robot.setAutomationName(options.getOverriddenName());
+            robot.setResourceId(newNodeMap.get(resourceId));
+            robot.setOriginalResourceId(resourceId);
+            robot.setUserId(userId);
+            robots.add(robot);
+        }
+        try {
+            automationDaoApiApi.daoCopyAutomationRobot(robots);
+        } catch (RestClientException e) {
+            log.error("Copy automation error:{}", resourceIds, e);
+            throw new BusinessException(NodeException.NODE_COPY_FOLDER_ERROR);
+        }
     }
 
     @Override
@@ -155,7 +200,16 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
     @Override
     public void updateIsDeletedByResourceIds(Long userId, List<String> resourceIds,
                                              Boolean isDeleted) {
+        List<String> robotIds = robotMapper.selectRobotsByResourceIds(resourceIds).stream().map(
+            AutomationRobotDto::getRobotId).collect(Collectors.toList());
         robotMapper.updateIsDeletedByResourceIds(userId, resourceIds, isDeleted);
+        if (!robotIds.isEmpty()) {
+            // remove button trigger input
+            String triggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
+                AutomationTriggerType.BUTTON_CLICKED.getType());
+            iAutomationTriggerService.updateInputByRobotIdsAndTriggerTypeIds(robotIds,
+                triggerTypeId, null);
+        }
     }
 
     @Override
@@ -170,6 +224,14 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
         if (null == result) {
             return vos;
         }
+        // Query the space ID it belongs to
+        String spaceId = iNodeService.getSpaceIdByNodeId(resourceId);
+        InternalSpaceAutomationRunMessageV0 automationRunMessageV0 =
+            internalSpaceService.getAutomationRunMessageV0(spaceId);
+        Long maxAutomationRunNums = automationRunMessageV0.getMaxAutomationRunNums();
+        Long automationRunNums = automationRunMessageV0.getAutomationRunNums();
+        boolean isOverLimit =
+            maxAutomationRunNums != -1 && automationRunNums > maxAutomationRunNums;
         List<AutomationRobotIntroductionPO> robots = result.getRobots();
         Map<String, List<AutomationActionIntroductionPO>> actionMap =
             result.getActions().stream()
@@ -184,6 +246,7 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
                     .description(robot.getDescription())
                     .resourceId(robot.getResourceId())
                     .isActive(robot.getIsActive())
+                    .isOverLimit(isOverLimit)
                     .build();
             // get robot triggers.
             List<TriggerSimpleVO> triggers =
@@ -232,8 +295,17 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
             .updatedAt(robot.getUpdatedAt())
             .recentlyRunCount(robot.getRecentlyRunCount())
             .build();
-        UserSimpleVO user = iUserService.getUserSimpleInfoMap(ListUtil.toList(robot.getUpdatedBy()))
-            .get(robot.getUpdatedBy());
+        String spaceId = iNodeService.getSpaceIdByNodeId(robot.getResourceId());
+        InternalSpaceAutomationRunMessageV0 automationRunMessageV0 =
+            internalSpaceService.getAutomationRunMessageV0(spaceId);
+        Long maxAutomationRunNums = automationRunMessageV0.getMaxAutomationRunNums();
+        Long automationRunNums = automationRunMessageV0.getAutomationRunNums();
+        boolean isOverLimit =
+            maxAutomationRunNums != -1 && automationRunNums > maxAutomationRunNums;
+        vo.setIsOverLimit(isOverLimit);
+        UserSimpleVO user =
+            iUserService.getUserSimpleInfoMap(spaceId, ListUtil.toList(robot.getUpdatedBy()))
+                .get(robot.getUpdatedBy());
         vo.setUpdatedBy(user);
         List<NodeSimpleVO> relatedResources =
             Optional.ofNullable(automation.getRelatedResources()).orElse(new ArrayList<>()).stream()
@@ -289,20 +361,20 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
         List<String> referenceResourceIds = triggers.stream()
             .map(AutomationTriggerDto::getResourceId)
             .filter(StrUtil::isNotBlank).collect(Collectors.toList());
-        Collection<String> disjunction = CollUtil.disjunction(referenceResourceIds, subNodeIds);
-        if (CollUtil.isEmpty(disjunction)) {
+        Collection<String> subtract = CollUtil.subtract(referenceResourceIds, subNodeIds);
+        if (CollUtil.isEmpty(subtract)) {
             return;
         }
         Optional<AutomationTriggerDto> trigger = triggers.stream()
-            .filter(i -> i.getResourceId().equals(CollUtil.getFirst(disjunction)))
+            .filter(i -> i.getResourceId().equals(CollUtil.getFirst(subtract)))
             .findFirst();
-        if (!trigger.isPresent()) {
+        if (trigger.isEmpty()) {
             return;
         }
         Optional<AutomationRobotDto> robot = robots.stream()
             .filter(i -> i.getRobotId().equals(trigger.get().getRobotId()))
             .findFirst();
-        if (!robot.isPresent()) {
+        if (robot.isEmpty()) {
             return;
         }
         List<String> nodeIds = new ArrayList<>();
@@ -342,7 +414,7 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
         try {
             automationDaoApiApi.daoUpdateAutomationRobot(robotId, ro);
             return true;
-        } catch (ApiException e) {
+        } catch (RestClientException e) {
             log.error("Update automation error", e);
             return false;
         }
@@ -355,9 +427,32 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
         ro.setIsDeleted(true);
         try {
             automationDaoApiApi.daoUpdateAutomationRobot(robotId, ro);
-        } catch (ApiException e) {
+        } catch (RestClientException e) {
             log.error("Delete automation error", e);
         }
+    }
+
+    @Override
+    public long getRobotRunsCountBySpaceId(String spaceId) {
+        try {
+            return Objects.requireNonNull(
+                    automationDaoApiApi.daoGetRobotRunsBySpaceId(spaceId).getData())
+                .getRecentlyRunCount();
+        } catch (Exception e) {
+            log.error("Get robot runs count by spaceId error", e);
+            return 0L;
+        }
+    }
+
+    @Override
+    public void checkRobotExists(String robotId) {
+        ExceptionUtil.isTrue(SqlHelper.retBool(robotMapper.selectCountByRobotId(robotId)),
+            AUTOMATION_ROBOT_NOT_EXIST);
+    }
+
+    @Override
+    public void updateUpdaterByRobotId(String robotId, Long updatedBy) {
+        robotMapper.updateUpdatedByRobotId(robotId, updatedBy);
     }
 
     private AutomationRobotIntroductionSO getRobotsByResourceIdFromDatabus(String resourceId) {
@@ -372,7 +467,7 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
                 return null;
             }
             return result;
-        } catch (ApiException e) {
+        } catch (RestClientException e) {
             log.error("Get automation error", e);
             return null;
         }
@@ -381,7 +476,7 @@ public class AutomationRobotServiceImpl implements IAutomationRobotService {
     private AutomationSO getRobotByRobotIdFromDatabus(String robotId) {
         try {
             return automationDaoApiApi.daoGetRobotByRobotId(robotId).getData();
-        } catch (ApiException e) {
+        } catch (RestClientException e) {
             log.error("Get automation detail error", e);
             return null;
         }

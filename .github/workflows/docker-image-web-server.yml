@@ -16,7 +16,7 @@ jobs:
 
     env:
       ALIYUN_REGISTRY_URL: registry.cn-hangzhou.aliyuncs.com
-      ALIYUN_NAMESPACE: limch
+      ALIYUN_NAMESPACE: lmkj-test
       ALIYUN_USERNAME: tb921193_33
       ALIYUN_PASSWORD: lmlmlmlm8
     steps:

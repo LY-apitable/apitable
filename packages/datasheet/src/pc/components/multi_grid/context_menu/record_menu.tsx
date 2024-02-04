@@ -17,12 +17,15 @@
  */
 
 import { useMount } from 'ahooks';
+import parser from 'html-react-parser';
 import { isInteger } from 'lodash';
 import difference from 'lodash/difference';
+import { ShortcutActionName } from 'modules/shared/shortcut_key';
+import { getShortcutKeyString } from 'modules/shared/shortcut_key/keybinding_config';
+import { appendRow, Direction } from 'modules/shared/shortcut_key/shortcut_actions/append_row';
 import path from 'path-browserify';
 import * as React from 'react';
 import { KeyboardEvent, useRef, useCallback } from 'react';
-import { useSelector } from 'react-redux';
 import { batchActions } from 'redux-batched-actions';
 import { ContextMenu, IContextMenuItemProps, useThemeColors } from '@apitable/components';
 import {
@@ -48,11 +51,10 @@ import {
   DeleteOutlined,
   DuplicateOutlined,
   ExpandOutlined,
+  ArchiveOutlined
 } from '@apitable/icons';
-import { ShortcutActionName } from 'modules/shared/shortcut_key';
-import { getShortcutKeyString } from 'modules/shared/shortcut_key/keybinding_config';
-import { appendRow, Direction } from 'modules/shared/shortcut_key/shortcut_actions/append_row';
 import { Message } from 'pc/components/common';
+import { Modal } from 'pc/components/common/modal/modal/modal';
 import { notifyWithUndo } from 'pc/components/common/notify';
 import { NotifyKey } from 'pc/components/common/notify/notify.interface';
 import { expandRecordIdNavigate } from 'pc/components/expand_record';
@@ -65,6 +67,8 @@ import { getEnvVariables } from 'pc/utils/env';
 import { isWindowsOS } from 'pc/utils/os';
 import { copy2clipBoard } from '../../../utils/dom';
 import { IInputEditor, InputMenuItem } from './input_menu_item';
+
+import {useAppSelector} from "pc/store/react-redux";
 
 export const GRID_RECORD_MENU = 'GRID_RECORD_MENU';
 
@@ -93,21 +97,23 @@ export function copyRecord(recordId: string): Promise<ICollaCommandExecuteResult
 export const RecordMenu: React.FC<React.PropsWithChildren<IRecordMenuProps>> = (props) => {
   const colors = useThemeColors();
   const { insertDirection = 'vertical', hideInsert, menuId, extraData } = props;
-  const recordRanges = useSelector((state) => Selectors.getSelectionRecordRanges(state));
-  const view = useSelector((state) => Selectors.getCurrentView(state))!;
+  const recordRanges = useAppSelector((state) => Selectors.getSelectionRecordRanges(state));
+  const view = useAppSelector((state) => Selectors.getCurrentView(state))!;
+  const permission = useAppSelector((state) => Selectors.getPermissions(state, datasheetId));
   const isOrgChart = view.type === ViewType.OrgChart;
   const isCalendar = view.type === ViewType.Calendar;
   const isGallery = view.type === ViewType.Gallery;
   const isKanban = view.type === ViewType.Kanban;
   const dispatch = useDispatch();
-  const { rowCreatable, rowRemovable } = useSelector(Selectors.getPermissions);
-  const datasheetId = useSelector(Selectors.getActiveDatasheetId)!;
-  const { mirrorId, shareId, templateId, embedId } = useSelector((state) => state.pageParams);
+  const { rowCreatable, rowRemovable } = useAppSelector(Selectors.getPermissions);
+  const datasheetId = useAppSelector(Selectors.getActiveDatasheetId)!;
+  const { mirrorId, shareId, templateId, embedId } = useAppSelector((state) => state.pageParams);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const beforeInputRef = useRef<IInputEditor>(null);
   const afterInputRef = useRef<IInputEditor>(null);
-  const selection = useSelector(Selectors.getSelectRanges);
-  const subscriptions = useSelector((state) => state.subscriptions)!;
+  const selection = useAppSelector(Selectors.getSelectRanges);
+  const subscriptions = useAppSelector((state) => state.subscriptions)!;
+  const { manageable } = useAppSelector((state) => Selectors.getPermissions(state, datasheetId));
 
   const { run: subscribeRecordByIds } = useRequest(DatasheetApi.subscribeRecordByIds, { manual: true });
   const { run: unsubscribeRecordByIds } = useRequest(DatasheetApi.unsubscribeRecordByIds, { manual: true });
@@ -127,6 +133,36 @@ export const RecordMenu: React.FC<React.PropsWithChildren<IRecordMenuProps>> = (
   useMount(() => {
     wrapperRef.current && wrapperRef.current.focus();
   });
+
+  function archiveRecord(recordId: string) {
+    const data: string[] = [];
+    if (!isCalendar && recordRanges && recordRanges.length) {
+      // Handling the deletion of ticked rows
+      for (const v of recordRanges) {
+        data.push(v);
+      }
+    } else if (!isCalendar && selection && selection.length) {
+      // Handling the deletion of selections
+      for (const v of selection) {
+        const selectRecords = Selectors.getRangeRecords(store.getState(), v);
+        selectRecords && data.push(...selectRecords.map((r) => r.recordId));
+      }
+    } else {
+      // Handling right-click menu deletion
+      data.push(recordId);
+    }
+    // The setTimeout is used here to ensure that the user is alerted that a large amount of data is being deleted before it is deleted
+    const { result } = resourceService.instance!.commandManager.execute({
+      cmd: CollaCommandName.ArchiveRecords,
+      data,
+    });
+
+    if (ExecuteResult.Success === result) {
+      Message.success({ content: t(Strings.archive_record_success) });
+
+      dispatch(batchActions([StoreActions.clearSelection(datasheetId), StoreActions.clearActiveRowInfo(datasheetId)]));
+    }
+  }
 
   function deleteRecord(recordId: string) {
     const data: string[] = [];
@@ -164,6 +200,28 @@ export const RecordMenu: React.FC<React.PropsWithChildren<IRecordMenuProps>> = (
   }
 
   const recordShowName = View.bindModel(view.type).recordShowName;
+
+  function getArchiveString() {
+    const recordShowUnit = View.bindModel(view.type).recordShowUnit;
+    let archiveCount = 0;
+    if (onlyOperateOneRecord) {
+      return t(Strings.menu_archive_record, { recordShowName });
+    }
+
+    if (hasSelection) {
+      const selectRecords = Selectors.getRangeRecords(store.getState(), selection[0]);
+      archiveCount = selectRecords ? selectRecords.length : 0;
+    }
+    if (recordRanges && recordRanges.length) {
+      archiveCount = recordRanges.length;
+    }
+
+    return t(Strings.menu_archive_multi_records, {
+      count: archiveCount,
+      unit: recordShowUnit,
+      recordShowName,
+    });
+  }
 
   function getDeleteString() {
     const recordShowUnit = View.bindModel(view.type).recordShowUnit;
@@ -321,6 +379,10 @@ export const RecordMenu: React.FC<React.PropsWithChildren<IRecordMenuProps>> = (
   const IconInsertBefore = insertDirection === 'horizontal' ? ArrowLeftOutlined : ArrowUpOutlined;
   const IconInsertAfter = insertDirection === 'horizontal' ? ArrowRightOutlined : ArrowDownOutlined;
 
+  const getArchiveNotice = (content) => {
+    return <div>{parser(content)}</div>;
+  };
+
   let data: Partial<IContextMenuItemProps>[][] = [
     [
       {
@@ -354,6 +416,20 @@ export const RecordMenu: React.FC<React.PropsWithChildren<IRecordMenuProps>> = (
       },
     ],
     [
+      {
+        icon: <ArchiveOutlined color={colors.thirdLevelText} />,
+        text: getArchiveString(),
+        hidden: !rowRemovable || !manageable || Boolean(mirrorId),
+        onClick: ({ props: { recordId } }: any) => {
+          Modal.warning({
+            title: t(Strings.menu_archive_record),
+            content: getArchiveNotice(t(Strings.archive_notice)),
+            onOk: () => archiveRecord(recordId),
+            closable: true,
+            hiddenCancelBtn: false,
+          });
+        },
+      },
       {
         icon: <DeleteOutlined color={colors.thirdLevelText} />,
         text: getDeleteString(),
@@ -421,7 +497,7 @@ export const RecordMenu: React.FC<React.PropsWithChildren<IRecordMenuProps>> = (
         icon: <CopyOutlined color={colors.thirdLevelText} />,
         text: t(Strings.copy_from_cell),
         shortcutKey: getShortcutKeyString(ShortcutActionName.Copy),
-        hidden: isCalendar || isGallery || isKanban,
+        hidden: isCalendar || isGallery || isKanban || !permission.copyable,
         onClick: onCopy,
       },
       // TODO: paste because of browser security restrictions,

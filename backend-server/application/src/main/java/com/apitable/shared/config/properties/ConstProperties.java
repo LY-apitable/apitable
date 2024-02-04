@@ -75,6 +75,11 @@ public class ConstProperties {
     private String quoteEnTemplateId = "tpll8mltwrZMT";
 
     /**
+     * List of templates referenced by new registered users.
+     */
+    private String registerQuoteTemplates;
+
+    /**
      * dingtalk subscription information table id.
      */
     private String dingTalkOrderDatasheet;
@@ -92,6 +97,12 @@ public class ConstProperties {
             .getOrDefault(BucketKey.ASSETS, new OssBucketInfo());
     }
 
+    /**
+     * splice asset url.
+     *
+     * @param token token
+     * @return concat url
+     */
     public String spliceAssetUrl(String token) {
         if (token == null || token.equals(StrUtil.EMPTY)
             || token.startsWith("http")) {

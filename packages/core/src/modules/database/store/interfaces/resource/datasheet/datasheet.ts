@@ -17,19 +17,14 @@
  */
 
 import { IRemoteChangeset } from 'engine/ot';
-import { FillDirection, ICell, ICellValue, IFieldRanges, IRange, IRecordRanges, StatType } from 'model';
+import { StatType } from 'model/field/stat';
+import { ICellValue } from 'model/record';
+import { FillDirection, ICell, IFieldRanges, IRange, IRecordRanges } from 'model/view/range';
 import { IField, IStandardValue } from 'types/field_types';
 import { IFilterInfo, IGroupInfo, ISortedField, ISortInfo } from 'types/view_types';
-import {
-  CellType,
-  GalleryStyleKeyType,
-  IUnitValue,
-  IUserValue,
-  LayoutType,
-  RowHeightLevel,
-  ViewType,
-  WhyRecordMoveType,
-} from '../../../../../../exports/store';
+import { IUnitValue, IUserValue } from 'exports/store/interfaces';
+import { CellType, GalleryStyleKeyType, LayoutType, RowHeightLevel, ViewType, WhyRecordMoveType } from 'modules/shared/store/constants';
+
 import * as actions from '../../../../../shared/store/action_constants';
 import {
   CalendarColorType,
@@ -95,6 +90,7 @@ export interface IMeta {
   fieldMap: IFieldMap;
   views: IViewProperty[];
   widgetPanels?: IWidgetPanel[];
+  archivedRecordIds?: string[];
 }
 
 export interface IRecordCellValue {
@@ -474,6 +470,8 @@ export interface IDatasheetClientState {
   isRobotPanelOpen?: boolean;
   operateViewIds?: string[] | null;
   isTimeMachinePanelOpen?: boolean;
+  isCopilotPanelOpen?: boolean;
+  isArchivedRecordsPanelOpen?: boolean;
   exportViewId?: string | null;
   // View-derived data, all content obtained by calculation, is uniformly maintained here.
   viewDerivation: { [viewId: string]: IViewDerivation };
@@ -821,7 +819,8 @@ export interface IPageParams {
   nodeId?: string;
   mirrorId?: string;
   embedId?: string;
-  aiId?: string
+  aiId?: string;
+  embedPageId?: string;
 }
 
 export interface ICollaboratorParams {
@@ -1025,12 +1024,12 @@ export interface IAddDatasheetAction {
 }
 
 export interface ISetViewPropertyAction {
-  datasheetId: string,
+  datasheetId: string;
   type: typeof actions.SET_VIEW_PROPERTY;
   payload: {
-    viewId: string,
-    viewProperty: IViewProperty
-  }
+    viewId: string;
+    viewProperty: IViewProperty;
+  };
 }
 
 export interface ISetPageParamsAction {
@@ -1234,7 +1233,7 @@ export interface IRecordAlarm {
   alarmUsers?: IAlarmUser[];
   recordId?: string;
   fieldId?: string;
-  alarmAt?: string
+  alarmAt?: string;
 }
 
 /**

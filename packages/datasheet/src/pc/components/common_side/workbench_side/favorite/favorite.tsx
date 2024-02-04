@@ -19,8 +19,8 @@
 import classnames from 'classnames';
 import Image from 'next/image';
 import * as React from 'react';
-import { FC, useContext, useMemo, useRef } from 'react';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import { FC, useContext, useEffect, useMemo, useRef } from 'react';
+import { shallowEqual, useDispatch } from 'react-redux';
 import { Skeleton } from '@apitable/components';
 import { ConfigConstant, IReduxState, Navigation, NodeErrorType, Selectors, StoreActions, Strings, t } from '@apitable/core';
 import { NodeItem } from 'pc/components/catalog/tree/node_item';
@@ -28,6 +28,7 @@ import { ScreenSize } from 'pc/components/common/component_display';
 import { ITreeViewRef, TreeItem, TreeView } from 'pc/components/common/tree_view';
 import { Router } from 'pc/components/route_manager/router';
 import { useCatalogTreeRequest, useRequest, useResponsive } from 'pc/hooks';
+import { useAppSelector } from 'pc/store/react-redux';
 import { getContextTypeByNodeType, shouldOpenInNewTab } from 'pc/utils';
 import EmptyFavoritePng from 'static/icon/workbench/catalogue/favorite.png';
 import { WorkbenchSideContext } from '../workbench_side_context';
@@ -35,8 +36,8 @@ import styles from './style.module.less';
 
 const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
   const dispatch = useDispatch();
-  const spaceId = useSelector((state: IReduxState) => state.space.activeId);
-  const activeNodeId = useSelector((state: IReduxState) => Selectors.getNodeId(state));
+  const spaceId = useAppSelector((state: IReduxState) => state.space.activeId);
+  const activeNodeId = useAppSelector((state: IReduxState) => Selectors.getNodeId(state));
   const {
     favoriteTreeNodeIds: _favoriteTreeNodeIds,
     favoriteDelNodeId,
@@ -44,7 +45,7 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
     favoriteLoading,
     favoriteExpandedKeys,
     treeNodesMap,
-  } = useSelector(
+  } = useAppSelector(
     (state: IReduxState) => ({
       favoriteTreeNodeIds: state.catalogTree.favoriteTreeNodeIds,
       favoriteDelNodeId: state.catalogTree.favoriteDelNodeId,
@@ -68,6 +69,16 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
     dispatch(StoreActions.setExpandedKeys(nodeIds, ConfigConstant.Modules.FAVORITE));
   };
 
+  const { getFavoriteNodeListReq } = useCatalogTreeRequest();
+  const { run: getFavoriteNodeList } = useRequest(getFavoriteNodeListReq, { manual: true });
+
+  useEffect(() => {
+    if (spaceId) {
+      getFavoriteNodeList();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spaceId]);
+
   const onContextMenu = (e: React.SyntheticEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -76,10 +87,12 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
   const renderTreeItem = (children: string[], parentNode: any = null, level = '0') => {
     const leafNodes = new Set([
       ConfigConstant.NodeType.DATASHEET,
+      ConfigConstant.NodeType.AUTOMATION,
       ConfigConstant.NodeType.FORM,
       ConfigConstant.NodeType.DASHBOARD,
       ConfigConstant.NodeType.MIRROR,
       ConfigConstant.NodeType.AI,
+      ConfigConstant.NodeType.EMBED_PAGE,
     ]);
     return children.map((nodeId, index) => {
       const nodeInfo = treeNodesMap[nodeId];
@@ -165,6 +178,15 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
     }
     return dispatch(StoreActions.getChildNode(nodeId));
   };
+
+  useEffect(() => {
+    if (favoriteExpandedKeys.length) {
+      favoriteExpandedKeys.forEach((nodeId) => {
+        loadData(nodeId);
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [favoriteExpandedKeys]);
 
   const rightClickHandler = (e: React.MouseEvent<Element, MouseEvent>, data: any) => {
     e.preventDefault();

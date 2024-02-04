@@ -20,16 +20,17 @@ import classNames from 'classnames';
 import isEmpty from 'lodash/isEmpty';
 import * as React from 'react';
 import { useContext, useState } from 'react';
-import { shallowEqual, useSelector } from 'react-redux';
+import { shallowEqual } from 'react-redux';
 import { useThemeColors } from '@apitable/components';
 import { Field, ILinkField, IOneWayLinkField, LinkField, RowHeightLevel, Selectors, StatusCode, Strings, t } from '@apitable/core';
 import { AddOutlined, CloseOutlined } from '@apitable/icons';
 // eslint-disable-next-line no-restricted-imports
 import { ButtonPlus, Message, Tooltip } from 'pc/components/common';
-import { expandRecord } from 'pc/components/expand_record';
 import { ExpandLinkContext } from 'pc/components/expand_record/expand_link/expand_link_context';
+import { expandRecord } from 'pc/components/expand_record/expand_record.utils';
 import { useGetViewByIdWithDefault } from 'pc/hooks';
 import { store } from 'pc/store';
+import { useAppSelector } from 'pc/store/react-redux';
 import { stopPropagation } from 'pc/utils';
 import { getDatasheetOrLoad } from 'pc/utils/get_datasheet_or_load';
 import { loadRecords } from 'pc/utils/load_records';
@@ -70,11 +71,10 @@ export const CellLink: React.FC<React.PropsWithChildren<ICellLink>> = (props) =>
 
   const foreignView = useGetViewByIdWithDefault(propsField.property.foreignDatasheetId, propsField.property.limitToView);
   const hasLimitToView = Boolean(propsField.property.limitToView && foreignView?.id === propsField.property.limitToView);
-
   /**
    * In order for the cell to listen to changes in the foreignDatasheet record value, update the view
    */
-  const cellStringList = useSelector((state) => {
+  const cellStringList = useAppSelector((state) => {
     const emptyRecords: string[] = [];
     if (linkRecordIds && field) {
       const datasheet = getDatasheetOrLoad(state, field.property.foreignDatasheetId, baseDatasheetId, undefined, undefined, ignoreMirror);
