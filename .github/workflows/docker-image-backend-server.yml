@@ -2,9 +2,9 @@ name: Docker Image backend-server CI
 
 on:
   push:
-    branches: [ "feat/lmkj" ]
+    branches: [ "feat/lmkj-merge" ]
   pull_request:
-    branches: [ "feat/lmkj" ]
+    branches: [ "feat/lmkj-merge" ]
 
 jobs:
   build:
