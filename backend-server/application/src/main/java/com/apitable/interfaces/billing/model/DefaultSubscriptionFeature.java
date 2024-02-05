@@ -62,32 +62,32 @@ public class DefaultSubscriptionFeature implements SubscriptionFeature {
 
     @Override
     public Seat getSeat() {
-        return new Seat(2L);
+        return new Seat(10000L);
     }
 
     @Override
     public CapacitySize getCapacitySize() {
-        return new CapacitySize(1024 * 1024 * 1024L);
+        return new CapacitySize(10 * 1024 * 1024 * 1024L);
     }
 
     @Override
     public FileNodeNums getFileNodeNums() {
-        return new FileNodeNums(5L);
+        return new FileNodeNums(10000L);
     }
 
     @Override
     public RowsPerSheet getRowsPerSheet() {
-        return new RowsPerSheet(100L);
+        return new RowsPerSheet(1000000L);
     }
 
     @Override
     public ArchivedRowsPerSheet getArchivedRowsPerSheet() {
-        return new ArchivedRowsPerSheet(250L);
+        return new ArchivedRowsPerSheet(1000000L);
     }
 
     @Override
     public TotalRows getTotalRows() {
-        return new TotalRows(250L);
+        return new TotalRows(10000000L);
     }
 
     @Override
@@ -148,72 +148,72 @@ public class DefaultSubscriptionFeature implements SubscriptionFeature {
 
     @Override
     public SocialConnect getSocialConnect() {
-        return new SocialConnect(false);
+        return new SocialConnect(true);
     }
 
     @Override
     public RainbowLabel getRainbowLabel() {
-        return new RainbowLabel(false);
+        return new RainbowLabel(true);
     }
 
     @Override
     public Watermark getWatermark() {
-        return new Watermark(false);
+        return new Watermark(true);
     }
 
     @Override
     public AllowInvitation getAllowInvitation() {
-        return new AllowInvitation(false);
+        return new AllowInvitation(true);
     }
 
     @Override
     public AllowApplyJoin getAllowApplyJoin() {
-        return new AllowApplyJoin(false);
+        return new AllowApplyJoin(true);
     }
 
     @Override
     public AllowShare getAllowShare() {
-        return new AllowShare(false);
+        return new AllowShare(true);
     }
 
     @Override
     public AllowExport getAllowExport() {
-        return new AllowExport(false);
+        return new AllowExport(true);
     }
 
     @Override
     public AllowDownload getAllowDownload() {
-        return new AllowDownload(false);
+        return new AllowDownload(true);
     }
 
     @Override
     public AllowCopyData getAllowCopyData() {
-        return new AllowCopyData(false);
+        return new AllowCopyData(true);
     }
 
     @Override
     public AllowEmbed getAllowEmbed() {
-        return new AllowEmbed(false);
+        return new AllowEmbed(true);
     }
 
     @Override
     public ControlFormBrandLogo getControlFormBrandLogo() {
-        return new ControlFormBrandLogo(false);
+        return new ControlFormBrandLogo(true);
     }
 
     @Override
     public ShowMobileNumber getShowMobileNumber() {
-        return new ShowMobileNumber(false);
+        return new ShowMobileNumber(true);
     }
 
     @Override
     public ContactIsolation getContactIsolation() {
-        return new ContactIsolation(false);
+        return new ContactIsolation(true);
     }
 
     @Override
     public ForbidCreateOnCatalog getForbidCreateOnCatalog() {
-        return new ForbidCreateOnCatalog(false);
+        return new ForbidCreateOnCatalog(true);
     }
 
     @Override
@@ -223,21 +223,21 @@ public class DefaultSubscriptionFeature implements SubscriptionFeature {
 
     @Override
     public RemainTimeMachineDays getRemainTimeMachineDays() {
-        return new RemainTimeMachineDays(-1L);
+        return new RemainTimeMachineDays(365L);
     }
 
     @Override
     public RemainRecordActivityDays getRemainRecordActivityDays() {
-        return new RemainRecordActivityDays(-1L);
+        return new RemainRecordActivityDays(365L);
     }
 
     @Override
     public AuditQueryDays getAuditQueryDays() {
-        return new AuditQueryDays(0L);
+        return new AuditQueryDays(365L);
     }
 
     @Override
     public AllowOrgApi getAllowOrgApi() {
-        return new AllowOrgApi(false);
+        return new AllowOrgApi(true);
     }
 }

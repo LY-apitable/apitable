@@ -32,7 +32,7 @@ public class DefaultSubscriptionInfo implements SubscriptionInfo {
     private final SubscriptionFeature feature;
 
     public DefaultSubscriptionInfo() {
-        this("CE", "ce_unlimited", new DefaultSubscriptionFeature());
+        this("enterprise", "ce_unlimited", new DefaultSubscriptionFeature());
     }
 
     /**
@@ -55,7 +55,7 @@ public class DefaultSubscriptionInfo implements SubscriptionInfo {
 
     @Override
     public boolean isFree() {
-        return true;
+        return false;
     }
 
     @Override
