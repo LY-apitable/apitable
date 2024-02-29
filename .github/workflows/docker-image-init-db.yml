@@ -2,9 +2,9 @@ name: Docker Image init-db CI
 
 on:
   push:
-    branches: [ "feat/lmkj-merge" ]
+    branches: [ "feat/lmkj" ]
   pull_request:
-    branches: [ "feat/lmkj-merge" ]
+    branches: [ "feat/lmkj" ]
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
     - name: Build the Docker image
       env:
         ALIYUN_REGISTRY_URL: registry.cn-hangzhou.aliyuncs.com
-        ALIYUN_NAMESPACE: lmkj-test
+        ALIYUN_NAMESPACE: limch
         ALIYUN_REPO_NAME: apitable-init-db
         ALIYUN_USERNAME: tb921193_33
         ALIYUN_PASSWORD: lmlmlmlm8
