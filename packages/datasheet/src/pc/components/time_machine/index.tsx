@@ -297,12 +297,12 @@ export const TimeMachine: React.FC<React.PropsWithChildren<{ onClose: (visible: 
             ) : (
               changesetList.map((item, index) => {
                 const memberInfo = uuidMap && uuidMap[item.userId!];
-                const title =
-                  getSocialWecomUnitName?.({
-                    name: memberInfo?.memberName,
-                    isModified: memberInfo?.isMemberNameModified,
-                    spaceInfo,
-                  }) || '';
+                const title = memberInfo?.memberName;
+                  // getSocialWecomUnitName?.({
+                  //   name: memberInfo?.memberName,
+                  //   isModified: memberInfo?.isMemberNameModified,
+                  //   spaceInfo,
+                  // }) || '';
                 const ops = item.operations.filter((op) => !op.cmd.startsWith('System'));
                 return (
                   <section
@@ -331,7 +331,7 @@ export const TimeMachine: React.FC<React.PropsWithChildren<{ onClose: (visible: 
             {!isEmpty && <div className={styles.bottomTip}>{noMore ? t(Strings.no_more) : t(Strings.data_loading)}</div>}
           </div>
         </TabPane>
-        {Boolean(Backup) && (
+        {(
           <TabPane tab={t(Strings.backup_title)} key={TabPaneKeys.BACKUP}>
             <Backup datasheetId={datasheetId} setCurPreview={setCurPreview} curPreview={curPreview!} />
           </TabPane>
