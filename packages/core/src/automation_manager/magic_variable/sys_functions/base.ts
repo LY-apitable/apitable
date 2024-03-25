@@ -53,7 +53,7 @@ export const getObjectProperty = (_context: any, obj: object, paths: string[]) =
   if (Array.isArray(obj)) {
     const items = obj.map((item) => getValue(item, paths));
     if (items.every((item) => item == null || ['string', 'number', 'boolean'].includes(typeof item))) {
-      return items.join(', ');
+      return items.map(item => `"${item}"`).join(', ');
     }
     return items;
   }
