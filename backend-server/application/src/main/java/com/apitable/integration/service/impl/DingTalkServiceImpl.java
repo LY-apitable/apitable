@@ -302,7 +302,9 @@ public class DingTalkServiceImpl implements IDingTalkService {
         }
     }
 
-    private String getAccessToken(AppConfig appConfig) throws Exception {
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String getAccessToken(AppConfig appConfig) {
         String clientId = appConfig.getClientId();
         String key = REDIS_KEY + clientId;
         String accessToken = (String) redisTemplate.opsForValue().get(key);
@@ -314,19 +316,24 @@ public class DingTalkServiceImpl implements IDingTalkService {
         Config config = new Config();
         config.protocol = "https";
         config.regionId = "central";
-        Client client = new Client(config);
-        GetAccessTokenRequest request = new GetAccessTokenRequest();
-        request.setAppKey(clientId);
-        request.setAppSecret(appConfig.getClientSecret());
-        GetAccessTokenResponse response = client.getAccessToken(request);
-        if (response.getStatusCode() == 200) {
-            accessToken = response.getBody().getAccessToken();
-            Long expireIn = response.getBody().getExpireIn();
-            redisTemplate.opsForValue().set(key, accessToken, expireIn - 120, TimeUnit.SECONDS);
-            log.info("Dingtalk应用AccessToken获取：" + accessToken);
-            return accessToken;
-        } else {
-            throw new BusinessException("DingTalk获取AccessToken失败 状态码" + response.getStatusCode());
+        try {
+            Client client = new Client(config);
+            GetAccessTokenRequest request = new GetAccessTokenRequest();
+            request.setAppKey(clientId);
+            request.setAppSecret(appConfig.getClientSecret());
+            GetAccessTokenResponse response = client.getAccessToken(request);
+            if (response.getStatusCode() == 200) {
+                accessToken = response.getBody().getAccessToken();
+                Long expireIn = response.getBody().getExpireIn();
+                redisTemplate.opsForValue().set(key, accessToken, expireIn - 120, TimeUnit.SECONDS);
+                log.info("Dingtalk应用AccessToken获取：" + accessToken);
+                return accessToken;
+            } else {
+                throw new BusinessException("DingTalk获取AccessToken失败 状态码" + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw new BusinessException(e.getMessage(), e);
         }
     }
 

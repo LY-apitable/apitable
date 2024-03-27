@@ -74,6 +74,7 @@ public class AppConfigServiceImpl implements IAppConfigService {
                 appConfig.setClientSecret(data.getStr("clientSecret"));
                 appConfig.setAesKey(data.getStr("aesKey"));
                 appConfig.setToken(data.getStr("token"));
+                appConfig.setAgentId(data.getLong("agentId"));
                 redisTemplate.opsForValue().set(key, appConfig, 1800, TimeUnit.SECONDS);
 
                 return appConfig;

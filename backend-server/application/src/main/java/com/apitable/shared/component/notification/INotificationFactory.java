@@ -24,6 +24,7 @@ import com.apitable.player.ro.NotificationCreateRo;
 import com.apitable.player.vo.NotificationDetailVo;
 import com.apitable.player.vo.PlayerBaseVo;
 import com.apitable.shared.sysconfig.notification.NotificationTemplate;
+import com.apitable.shared.sysconfig.notification.SocialTemplate;
 import com.apitable.space.dto.BaseSpaceInfoDTO;
 import com.apitable.workspace.dto.NodeBaseInfoDTO;
 import java.util.List;
@@ -33,6 +34,15 @@ import java.util.Map;
  * notification factory.
  */
 public interface INotificationFactory {
+
+    /**
+     * get by platform and template id.
+     *
+     * @param platform platform
+     * @param templateId template id
+     * @return SocialTemplate
+     */
+    SocialTemplate getSocialTemplateById(String platform, String templateId);
 
     /**
      * get by template id.

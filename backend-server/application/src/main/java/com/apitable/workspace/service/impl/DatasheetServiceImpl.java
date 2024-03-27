@@ -44,6 +44,7 @@ import com.apitable.interfaces.social.event.NotificationEvent;
 import com.apitable.interfaces.social.facade.SocialServiceFacade;
 import com.apitable.interfaces.social.model.SocialConnectInfo;
 import com.apitable.internal.dto.SimpleDatasheetMetaDTO;
+import com.apitable.organization.entity.MemberEntity;
 import com.apitable.organization.entity.TeamMemberRelEntity;
 import com.apitable.organization.entity.UnitEntity;
 import com.apitable.organization.enums.UnitType;
@@ -101,6 +102,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -886,6 +888,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
                 ParameterException.INCORRECT_ARG);
             unitIds.addAll(remindUnitRecRo.getUnitIds());
         });
+        BaseNodeInfo baseNodeInfo = nodeMapper.selectBaseNodeInfoByNodeId(ro.getNodeId());
         List<UnitEntity> units = unitMapper.selectBatchIds(unitIds);
         units.stream().filter(unit -> unit.getSpaceId().equals(spaceId)).findFirst()
             .orElseThrow(() -> new BusinessException("submit data across spaces"));
@@ -897,8 +900,8 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
         // split roles into members and teams
         Map<Long, List<Long>> roleUnitIdToRoleMemberUnitIds = getRoleMemberUnits(units);
         // self don't need to send notifications, filter
-        Long memberId =
-            userId == null ? -2L : iMemberService.getMemberIdByUserIdAndSpaceId(userId, spaceId);
+        MemberEntity member = iMemberService.getByUserIdAndSpaceId(userId, spaceId);
+        Long memberId = member.getId();
         // Gets the organizational unit of the member type, the corresponding member.
         Map<Long, Long> unitIdToMemberIdMap = units.stream()
             .filter(unit -> unit.getUnitType().equals(UnitType.MEMBER.getType())
@@ -968,11 +971,15 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
                 continue;
             }
             JSONObject body = JSONUtil.createObj();
+            String createAt = LocalDateTime.now(ZoneId.of("+8")).format(DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_MINUTE_PATTERN));
             JSONObject extras = JSONUtil.createObj()
                 .set("fieldName", remindUnitRecRo.getFieldName())
                 .set("recordTitle", recordTitle)
                 .set("viewId", ro.getViewId())
-                .set("recordIds", remindUnitRecRo.getRecordIds());
+                .set("recordIds", remindUnitRecRo.getRecordIds())
+                .set("nodeName", baseNodeInfo.getNodeName())
+                .set("memberName", member.getMemberName())
+                .set("createdAt", createAt);
             if (null != ro.getExtra() && null != ro.getExtra().getContent()) {
                 // comments
                 extras.set("commentContent",
@@ -1009,8 +1016,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
                 .setViewId(ro.getViewId())
                 .setRecordId(remindUnitRecRo.getRecordIds().get(0))
                 .setFieldName(remindUnitRecRo.getFieldName())
-                .setCreatedAt(LocalDateTime.now().format(
-                    DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_MINUTE_PATTERN)))
+                .setCreatedAt(createAt)
                 .setExtra(ro.getExtra())
                 .setFromMemberId(memberId)
                 .setToMemberIds(toMemberIds)

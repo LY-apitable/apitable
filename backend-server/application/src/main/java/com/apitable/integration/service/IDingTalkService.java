@@ -77,4 +77,12 @@ public interface IDingTalkService {
      * @param appConfig appConfig
      */
     void userLeaveOrg(String appKey, String spaceId, JSONArray userIdArr, AppConfig appConfig);
+
+    /**
+     * getAccessToken.
+     *
+     * @param appConfig appConfig
+     * @return accessToken
+     */
+    String getAccessToken(AppConfig appConfig);
 }

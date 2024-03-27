@@ -20,4 +20,6 @@ public class AppConfig implements Serializable {
     private String aesKey;
 
     private String token;
+
+    private Long agentId;
 }

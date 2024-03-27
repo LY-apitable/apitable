@@ -27,7 +27,6 @@ const App = () => {
     dd.ready(function () {
       const urlParams = getSearchParams();
       let appKey = urlParams.get('appkey');
-      let targetNodeId = urlParams.get('target');
       let corpId;
       Api.getDingTalkCorpId(appKey)
         .then((result) => {
@@ -42,11 +41,23 @@ const App = () => {
               Api.loginByDingTalk(appKey, result.code)
                 .then(response => {
                   let spaceId = response.data.data.spaceId;
+                  let params = {
+                    spaceId: spaceId,
+                  }
+                  let nodeId = urlParams.get('target');
+                  if (nodeId && nodeId != '') {
+                    params['nodeId'] = nodeId;
+                  }
+                  const viewId = urlParams.get('viewid');
+                  if (viewId && viewId != '') {
+                    params['viewId'] = viewId;
+                  }
+                  const recordId = urlParams.get('recordid');
+                  if (recordId && recordId != '') {
+                    params['recordId'] = recordId;
+                  }
                   Router.redirect(Navigation.WORKBENCH, {
-                    params: {
-                      spaceId: spaceId,
-                      nodeId: targetNodeId,
-                    },
+                    params,
                   });
                 })
                 .catch(error => {

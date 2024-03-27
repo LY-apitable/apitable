@@ -43,6 +43,7 @@ import com.apitable.player.vo.PlayerBaseVo;
 import com.apitable.shared.clock.spring.ClockManager;
 import com.apitable.shared.sysconfig.notification.NotificationConfigLoader;
 import com.apitable.shared.sysconfig.notification.NotificationTemplate;
+import com.apitable.shared.sysconfig.notification.SocialTemplate;
 import com.apitable.space.dto.BaseSpaceInfoDTO;
 import com.apitable.space.mapper.SpaceMapper;
 import com.apitable.user.entity.UserEntity;
@@ -94,6 +95,15 @@ public class NotificationFactory implements INotificationFactory {
 
     @Resource
     private NodeShareSettingMapper nodeShareSettingMapper;
+
+    @Override
+    public SocialTemplate getSocialTemplateById(String platform, String templateId) {
+        return NotificationConfigLoader.getConfig().getSocialTemplates().values().stream()
+            .filter(template -> platform.equals(template.getPlatform()))
+            .filter(template -> templateId.equals(template.getNotificationTemplateId()))
+            .findFirst()
+            .orElse(null);
+    }
 
     @Override
     public NotificationTemplate getTemplateById(String templateId) {
