@@ -439,4 +439,12 @@ public interface ITeamService extends IService<TeamEntity> {
      * @return list of team id
      */
     List<Long> getTeamIdsByDeptIds(String spaceId, List<Long> deptIds);
+
+    /**
+     * get member's team name.
+     *
+     * @param memberIds member and team rel map
+     * @return map
+     */
+    Map<Long, List<String>> getMembersTeamName(List<Long> memberIds);
 }

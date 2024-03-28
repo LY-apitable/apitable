@@ -202,4 +202,12 @@ public interface SpaceMapper extends BaseMapper<SpaceEntity> {
      * @return space Id
      */
     String selectSpaceIdByAppKey(@Param("appKey") String appKey);
+
+    /**
+     * query space ids by created_by.
+     *
+     * @param userId user id
+     * @return space ids
+     */
+    List<String> selectSpaceIdsByUserId(@Param("userId") Long userId);
 }

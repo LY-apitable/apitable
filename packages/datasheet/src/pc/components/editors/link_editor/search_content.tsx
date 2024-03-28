@@ -52,13 +52,12 @@ import { expandPreviewModalClose } from 'pc/components/preview_file';
 import { useDispatch, useGetViewByIdWithDefault } from 'pc/hooks';
 import { resourceService } from 'pc/resource_service';
 import { store } from 'pc/store';
+import { useAppSelector } from 'pc/store/react-redux';
 import EmptyPngDark from 'static/icon/datasheet/empty_state_dark.png';
 import EmptyPngLight from 'static/icon/datasheet/empty_state_light.png';
 
 import { RecordList } from './record_list';
 import style from './style.module.less';
-
-import {useAppSelector} from "pc/store/react-redux";
 
 interface ISearchContentProps {
   field: ILinkField | IOneWayLinkField
@@ -198,7 +197,7 @@ const SearchContentBase: React.ForwardRefRenderFunction<{ getFilteredRows(): { [
   }, [filteredRecordIdMap, recordMap]);
 
   useEffect(() => {
-    if (cellValue?.length) {
+    if (cellValue?.length && Array.isArray(cellValue)) {
       const currentSelectedRecordIds: IViewRow[] = cellValue.map((recordId) => ({ recordId }));
       return setSelectedRecordIds(currentSelectedRecordIds);
     }
@@ -312,12 +311,12 @@ const SearchContentBase: React.ForwardRefRenderFunction<{ getFilteredRows(): { [
     }
     // Theoretically fuse will not be null, but here is a compatibility
     if (!searchValue || fuse == null) {
-      return rows;
+      return rows.filter(row => !archivedRecordIds.includes(row.recordId));
     }
 
     return fuse.search(searchValue).map((result) => {
       return { recordId: (result as any).item.recordId }; // FIXME:TYPE
-    });
+    }).filter(row => !archivedRecordIds.includes(row.recordId));
 
     // If the records of the associated table are not added or subtracted, the query results are only updated when the searchValue changes
     // eslint-disable-next-line

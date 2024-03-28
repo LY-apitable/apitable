@@ -295,6 +295,7 @@ export interface INodeMeta {
   nodeShared: boolean;
   nodePermitSet: boolean;
   nodeFavorite?: boolean;
+  nodePrivate?: boolean;
   spaceId: string;
   role: Role;
   permissions: IPermissions;
@@ -820,7 +821,7 @@ export interface IPageParams {
   mirrorId?: string;
   embedId?: string;
   aiId?: string;
-  embedPageId?: string;
+  customPageId?: string;
 }
 
 export interface ICollaboratorParams {

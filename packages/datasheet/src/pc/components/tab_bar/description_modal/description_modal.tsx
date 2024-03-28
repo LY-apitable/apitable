@@ -19,16 +19,16 @@
 import { Modal } from 'antd';
 import classNames from 'classnames';
 import { useAtom } from 'jotai';
-import { debounce } from 'lodash';
-import { ContextName, ShortcutContext } from 'modules/shared/shortcut_key';
+import { debounce, isEmpty } from 'lodash';
 import * as React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider, shallowEqual, useDispatch } from 'react-redux';
 import { Api, INodeDescription, IReduxState, Selectors, StoreActions, Strings, t } from '@apitable/core';
 import { CloseCircleOutlined, CloseOutlined } from '@apitable/icons';
-import { useGetDesc } from 'pc/components/embed_page/hooks/use_get_desc';
-import { embedPageAtom } from 'pc/components/embed_page/store/embed_page_desc_atom';
+import { ContextName, ShortcutContext } from 'modules/shared/shortcut_key';
+import { useGetDesc } from 'pc/components/custom_page/hooks/use_get_desc';
+import { CustomPageAtom } from 'pc/components/custom_page/store/custon_page_desc_atom';
 import { Deserializer, IEditorData, Serializer, SlateEditor } from 'pc/components/slate_editor';
 import { useImageUpload } from 'pc/hooks';
 import { store } from 'pc/store';
@@ -52,7 +52,7 @@ interface IRenderModalBase {
 }
 
 const getDefaultValue = (desc: INodeDescription | null) => {
-  if (!desc) return '';
+  if (isEmpty(desc)) return '';
   if (desc.type === SLATE_EDITOR_TYPE) return desc.data;
   return Deserializer.html(desc.render);
 };
@@ -69,13 +69,13 @@ const getJsonValue = (value?: string) => {
 const useGetPermission = (nodeId: string) => {
   const permissionsOrigin = useAppSelector((state) => Selectors.getPermissions(state));
   const permissionAutomations = useAutomationResourcePermission();
-  const [embedPage] = useAtom(embedPageAtom);
+  const [embedPage] = useAtom(CustomPageAtom);
 
   if (nodeId.startsWith('aut')) {
     return permissionAutomations;
   }
 
-  if (nodeId.startsWith('emp') && embedPage?.permission) {
+  if (nodeId.startsWith('cup') && embedPage?.permission) {
     return embedPage.permission;
   }
 
@@ -87,13 +87,13 @@ const useGetNodeDesc = (nodeId: string) => {
     return Selectors.getNodeDesc(state);
   }, shallowEqual);
   const [automationState] = useAtom(automationStateAtom);
-  const [embedPage] = useAtom(embedPageAtom);
+  const [embedPage] = useAtom(CustomPageAtom);
 
   if (nodeId.startsWith('aut')) {
     return getJsonValue(automationState?.robot?.description);
   }
 
-  if (nodeId.startsWith('emp') && embedPage?.desc) {
+  if (nodeId.startsWith('cup') && embedPage?.desc) {
     return getJsonValue(embedPage.desc);
   }
 
@@ -288,10 +288,6 @@ function polyfillData(oldData: string[] | { [key: string]: string[] } | null) {
   }
   return [];
 }
-
-const checkIfAutomationNode = (node: string) => {
-  return node.startsWith('aut');
-};
 
 /**
  * share description modal for datasheet and automation

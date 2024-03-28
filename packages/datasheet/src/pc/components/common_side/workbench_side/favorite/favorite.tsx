@@ -45,6 +45,7 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
     favoriteLoading,
     favoriteExpandedKeys,
     treeNodesMap,
+    privateTreeNodesMap,
   } = useAppSelector(
     (state: IReduxState) => ({
       favoriteTreeNodeIds: state.catalogTree.favoriteTreeNodeIds,
@@ -53,6 +54,7 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
       favoriteLoading: state.catalogTree.favoriteLoading,
       favoriteExpandedKeys: state.catalogTree.favoriteExpandedKeys,
       treeNodesMap: state.catalogTree.treeNodesMap,
+      privateTreeNodesMap: state.catalogTree.privateTreeNodesMap,
     }),
     shallowEqual,
   );
@@ -92,10 +94,10 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
       ConfigConstant.NodeType.DASHBOARD,
       ConfigConstant.NodeType.MIRROR,
       ConfigConstant.NodeType.AI,
-      ConfigConstant.NodeType.EMBED_PAGE,
+      ConfigConstant.NodeType.CUSTOM_PAGE,
     ]);
     return children.map((nodeId, index) => {
-      const nodeInfo = treeNodesMap[nodeId];
+      const nodeInfo = treeNodesMap[nodeId] || privateTreeNodesMap[nodeId];
       if (nodeInfo == null) return null;
       const { type, children, hasChildren, errType } = nodeInfo;
       const pos = `${level}-${index}`;
@@ -171,12 +173,13 @@ const FavoriteBase: FC<React.PropsWithChildren<unknown>> = () => {
   };
 
   const loadData = (nodeId: string) => {
-    if (!treeNodesMap[nodeId]?.hasChildren) {
+    const nodeInfo = treeNodesMap[nodeId] || privateTreeNodesMap[nodeId];
+    if (!nodeInfo?.hasChildren) {
       return new Promise((resolve) => {
         resolve(false);
       });
     }
-    return dispatch(StoreActions.getChildNode(nodeId));
+    return dispatch(StoreActions.getChildNode(nodeId, nodeInfo.nodePrivate ? ConfigConstant.Modules.PRIVATE : undefined));
   };
 
   useEffect(() => {
