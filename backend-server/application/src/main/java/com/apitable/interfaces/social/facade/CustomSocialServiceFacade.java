@@ -330,7 +330,7 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
         } catch (UnsupportedEncodingException e) {
             log.error("redirectUrl Encode Error", e);
         }
-        
+        log.info("发送工作通知url" + url);
         msg.getActionCard().setSingleUrl(url);
         msg.setMsgtype(socialTemplate.getMessageType());
         request.setMsg(msg);
