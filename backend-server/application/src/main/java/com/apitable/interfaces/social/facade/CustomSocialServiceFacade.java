@@ -310,7 +310,7 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
 
         OapiMessageCorpconversationAsyncsendV2Request request = new OapiMessageCorpconversationAsyncsendV2Request();
         request.setAgentId(agentId);
-        request.setUseridList("manager5867");
+        request.setUseridList(dingUnionIds);
         request.setToAllUser(false);
         OapiMessageCorpconversationAsyncsendV2Request.Msg msg = new OapiMessageCorpconversationAsyncsendV2Request.Msg();
         JSONObject extra = ro.getBody().getJSONObject("extras");
