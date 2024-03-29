@@ -520,24 +520,7 @@ export class DateTimeEditorBase extends React.PureComponent<IDateTimeEditorProps
                     showAlarm &&
                     getEnvVariables().RECORD_TASK_REMINDER_VISIBLE &&
                     DateTimeAlarm &&
-                    dateValue && (
-                      <DateTimeAlarm
-                        datasheetId={datasheetId}
-                        recordId={recordId || ''}
-                        fieldId={field.id}
-                        includeTime={field.property.includeTime}
-                        timeZone={timeZone}
-                        dateValue={dateValue}
-                        timeValue={timeValue}
-                        curAlarm={this.props.curAlarm}
-                        handleDateTimeChange={(value: dayjs.Dayjs, isSetTime?: boolean) =>
-                          this.onDateValueChange(value, value && value.format(DateFormat[1]), value && value.format(dateFormat), isSetTime)
-                        }
-                        handleDateAlarm={(curAlarm?: WithOptional<IRecordAlarmClient, 'id'>) => {
-                          this.props.setCurAlarm?.(curAlarm);
-                        }}
-                      />
-                    )
+                    dateValue
                   }
                 />
               </React.Suspense>
