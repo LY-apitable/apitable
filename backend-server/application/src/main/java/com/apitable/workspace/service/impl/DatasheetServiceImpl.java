@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.toList;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.BooleanUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -94,6 +95,9 @@ import com.apitable.workspace.vo.DatasheetRecordMapVo;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.baomidou.mybatisplus.extension.toolkit.SqlHelper;
 import jakarta.annotation.Resource;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -114,7 +118,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Datasheet service implements.
- */
+*/
 @Service
 @Slf4j
 public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, DatasheetEntity>
@@ -240,7 +244,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void create(Long userId, String spaceId, String nodeId, String name, MetaMapRo metaMapRo,
-                       JSONObject recordMap) {
+                    JSONObject recordMap) {
         DatasheetEntity datasheet = DatasheetEntity.builder()
             .dstName(name)
             .dstId(nodeId)
@@ -319,8 +323,8 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
     @Override
     @Transactional(rollbackFor = Exception.class)
     public List<String> copy(Long userId, String spaceId, String sourceDstId, String destDstId,
-                             String destDstName, NodeCopyOptions options,
-                             Map<String, String> newNodeMap) {
+                            String destDstName, NodeCopyOptions options,
+                            Map<String, String> newNodeMap) {
         log.info("Copy datasheet");
         // Copy the datasheet, meta, and record.
         DatasheetEntity datasheet = DatasheetEntity.builder()
@@ -539,7 +543,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
 
     /**
      * Deletes the view that contains the attribute information of the specified field id.
-     */
+    */
     private void delViewFieldId(MetaMapRo metaMapRo, List<String> delFieldIds,
                                 List<String> delFieldIdsInFilter) {
         if (CollUtil.isNotEmpty(delFieldIds) || CollUtil.isNotEmpty(delFieldIdsInFilter)) {
@@ -604,7 +608,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
 
     /**
      * Deletes the object containing the specified field id from the object array.
-     */
+    */
     private JSONArray delInfoIfExistFieldId(List<String> delFieldIds, JSONArray filterInfo) {
         if (!JSONUtil.isNull(filterInfo)) {
             JSONArray array = JSONUtil.createArray();
@@ -621,9 +625,9 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
 
     /**
      * copy panel.
-     */
+    */
     private void copyWidgetPanels(Long userId, String spaceId, String destDstId,
-                                  MetaMapRo metaMapRo, Map<String, String> newNodeMap) {
+                                MetaMapRo metaMapRo, Map<String, String> newNodeMap) {
         // construct a new component panel
         Map<String, String> newWidgetIdMap = new HashMap<>(8);
         JSONArray newWidgetPanels =
@@ -644,7 +648,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
 
     @Override
     public JSONArray generateWidgetPanels(JSONArray widgetPanels,
-                                          Map<String, String> newWidgetIdMap) {
+                                        Map<String, String> newWidgetIdMap) {
         // construct a new component panel
         JSONArray newWidgetPanels = JSONUtil.createArray();
         if (widgetPanels == null || widgetPanels.isEmpty()) {
@@ -727,7 +731,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SnapshotMapRo delFieldIfLinkDstId(Long userId, String dstId, List<String> linkDstIds,
-                                             boolean saveDb) {
+                                            boolean saveDb) {
         log.info("Delete the field of the specified association datasheet ");
         if (CollUtil.isNotEmpty(linkDstIds)) {
             // get datasheet information
@@ -767,7 +771,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
 
     @Override
     public Map<String, SnapshotMapRo> findSnapshotMapByDstIds(List<String> dstIds,
-                                                              boolean hasRecordMap) {
+                                                            boolean hasRecordMap) {
         log.info("Get multiple datasheets and corresponding snapshot ");
         List<SnapshotDTO> dtoList = new ArrayList<>();
         List<DatasheetMetaDTO> metaList = iDatasheetMetaService.findMetaDtoByDstIds(dstIds);
@@ -800,7 +804,7 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
 
     @Override
     public List<String> replaceFieldDstId(Long userId, boolean sameSpace, MetaMapRo metaMapRo,
-                                          Map<String, String> newNodeIdMap) {
+                                        Map<String, String> newNodeIdMap) {
         log.info("Replace the datasheet ID in the field attribute ");
         JSONObject fieldMap = JSONUtil.createObj();
         List<String> delFieldIds = new ArrayList<>();
@@ -891,8 +895,8 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
         // split roles into members and teams
         Map<Long, List<Long>> roleUnitIdToRoleMemberUnitIds = getRoleMemberUnits(units);
         // self don't need to send notifications, filter
-        Long memberId =
-            null == userId ? null : iMemberService.getMemberIdByUserIdAndSpaceId(userId, spaceId);
+        MemberEntity member = iMemberService.getByUserIdAndSpaceId(userId, spaceId);
+        Long memberId = member.getId();
         // Gets the organizational unit of the member type, the corresponding member.
         Map<Long, Long> unitIdToMemberIdMap = units.stream()
             .filter(unit -> unit.getUnitType().equals(UnitType.MEMBER.getType())
@@ -998,8 +1002,8 @@ public class DatasheetServiceImpl extends ServiceImpl<DatasheetMapper, Datasheet
     }
 
     private void getRoleMemberIds(Map<Long, List<Long>> roleUnitIdToRoleMemberUnitIds,
-                                  Map<Long, Long> unitIdToMemberIdMap,
-                                  Map<Long, List<Long>> unitIdToMemberIdsMap) {
+                                Map<Long, Long> unitIdToMemberIdMap,
+                                Map<Long, List<Long>> unitIdToMemberIdsMap) {
         roleUnitIdToRoleMemberUnitIds.forEach((key, value) -> {
             HashSet<Long> readyAddMemberIds = CollUtil.newHashSet();
             value.forEach((unitId) -> {
