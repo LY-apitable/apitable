@@ -160,10 +160,10 @@ export const RobotTriggerCreateForm = ({ robotId, triggerTypes, preTriggerId }: 
   }
 
   const handleCreateFormChange = (triggerTypeId: string) => {
-    if (triggerTypeId === timeScheduleTriggerType?.triggerTypeId && !IS_ENTERPRISE) {
-      window.open('https://aitable.ai/pricing/');
-      return;
-    }
+    // if (triggerTypeId === timeScheduleTriggerType?.triggerTypeId && !IS_ENTERPRISE) {
+    //   window.open('https://aitable.ai/pricing/');
+    //   return;
+    // }
 
     if (triggerTypeId) {
       debouncedCreateTrigger(triggerTypeId);
