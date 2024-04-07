@@ -95,9 +95,16 @@
     </select>
 
     <select id="selectByTriggerId" resultType="com.apitable.automation.entity.AutomationTriggerEntity">
-        SELECT id, trigger_type_id, trigger_id, robot_id, prev_trigger_id, resource_id, `input`
+        SELECT id, trigger_type_id, trigger_id, robot_id, prev_trigger_id, resource_id, job_id,`input`
         FROM ${tablePrefix}automation_trigger
         WHERE trigger_id = #{triggerId}
         AND is_deleted = 0
     </select>
+
+    <update id="updateJobIdByTriggerId">
+        UPDATE ${tablePrefix}automation_trigger
+        SET `job_id` = #{jobId}
+        WHERE trigger_id = #{triggerId}
+        AND is_deleted = 0
+    </update>
 </mapper>

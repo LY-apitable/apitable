@@ -202,3 +202,20 @@ system:
 databus:
   client:
     host: ${DATABUS_SERVER_BASE_URL:http://127.0.0.1:8625}
+
+xxl:
+  job:
+    admin:
+      addresses: http://${XXL_JOB_ADMIN_HOST:127.0.0.1}:${XXL_JOB_ADMIN_PORT:8084}${XXL_JOB_ADMIN_CONTEXT_PATH:/xxl-job-admin}
+    accessToken: ${XXL_JOB_ADMIN_TOKEN:default_token}
+    executor:
+      appname: ${XXL_JOB_EXECUTOR_NAME:xxl-job-executor}
+      port: ${XXL_JOB_EXECUTOR_PORT:9999}
+    client:
+      userName: admin
+      password: 123456
+      loginUrl: ${xxl.job.admin.addresses}/login?userName=${xxl.job.client.userName}&password=${xxl.job.client.password}
+      addUrl: ${xxl.job.admin.addresses}/jobinfo/addJob
+      deleteUrl: ${xxl.job.admin.addresses}/jobinfo/removeJob?id=%s
+      startJobUrl: ${xxl.job.admin.addresses}/jobinfo/startJob?id=%s
+      stopJobUrl: ${xxl.job.admin.addresses}/jobinfo/stopJob?id=%s

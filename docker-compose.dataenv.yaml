@@ -23,3 +23,7 @@ services:
   databus-server:
     ports:
       - "8625:8625"
+
+  xxl-job-admin:
+    ports:
+      - "8084:8084"

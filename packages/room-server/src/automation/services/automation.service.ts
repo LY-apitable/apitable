@@ -17,6 +17,7 @@
  */
 
 import {
+  ApiTipConstant,
   AutomationRobotRunner,
   ConfigConstant,
   generateRandomString,
@@ -37,12 +38,12 @@ import { isEmpty } from 'class-validator';
 import { I18nService } from 'nestjs-i18n';
 import fetch from 'node-fetch';
 import { NodeService } from 'node/services/node.service';
-import { InjectLogger, SPACE_AUTOMATION_RUN_COUNT_KEY } from 'shared/common';
+import { InjectLogger, JavaApiPath, SPACE_AUTOMATION_RUN_COUNT_KEY } from 'shared/common';
 import { RunHistoryStatusEnum } from 'shared/enums/automation.enum';
 import { UnreachableCaseError } from 'shared/errors';
-import { CommonException, PermissionException, ServerException } from 'shared/exception';
+import { ApiException, CommonException, PermissionException, ServerException } from 'shared/exception';
 import { IdWorker } from 'shared/helpers/snowflake';
-import { IUserBaseInfo } from 'shared/interfaces';
+import { IAuthHeader, IUserBaseInfo } from 'shared/interfaces';
 import {
   automationExchangeName,
   automationRunning,
@@ -63,6 +64,9 @@ import { AutomationRobotRepository } from '../repositories/automation.robot.repo
 import { AutomationRunHistoryRepository } from '../repositories/automation.run.history.repository';
 import { AutomationTriggerRepository } from '../repositories/automation.trigger.repository';
 import { RobotRobotService } from './robot.robot.service';
+import { JavaService } from 'shared/services/java/java.service';
+import { sprintf } from 'sprintf-js';
+import FormData from 'form-data';
 
 /**
  * handle robot execution scheduling
@@ -77,6 +81,7 @@ export class AutomationService {
   constructor(
     // @ts-ignore
     @InjectLogger() private readonly logger: Logger,
+    private readonly javaService: JavaService,
     private readonly automationRobotRepository: AutomationRobotRepository,
     private readonly automationRunHistoryRepository: AutomationRunHistoryRepository,
     private readonly automationActionRepository: AutomationActionRepository,
@@ -287,6 +292,7 @@ export class AutomationService {
   })
   async handleTaskByTaskIdAndTriggerId(message: { taskId: string; triggerId: string }) {
     const { taskId, triggerId } = message;
+    console.log("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy message" + message + " taskId:" + taskId + " triggerId" + triggerId);
     this.logger.log('RobotRunning', { ...message });
     try {
       const task: IRobotTask | undefined = await this.automationRunHistoryRepository.selectContextByTaskIdAndTriggerId(taskId, triggerId);
@@ -309,7 +315,7 @@ export class AutomationService {
     return new Nack();
   }
 
-  async activeRobot(robotId: string, user: IUserBaseInfo) {
+  async activeRobot(robotId: string, user: IUserBaseInfo, auth: IAuthHeader) {
     const errorsByNodeId: any = {};
     try {
       // todo validate resource ?
@@ -344,6 +350,14 @@ export class AutomationService {
           return !hasError;
         });
       this.logger.debug(`no errors: ${noErrors},${actions}`);
+
+      try {
+        await this.javaService.setHeaders(auth).post(sprintf(JavaApiPath.ACTIVE_ROBOT, { robotId }), new FormData());
+      } catch (e) {
+        this.logger.error('Active robot failed',  e );
+        throw ApiException.tipError(ApiTipConstant.api_server_error, { value: 1 });
+      }
+      
       if (isTriggerValid && noErrors) {
         await this.automationRobotRepository.activeRobot(robotId, user.userId);
         return {
@@ -358,6 +372,16 @@ export class AutomationService {
       ok: false,
       errorsByNodeId,
     };
+  }
+
+  async deActiveRobot(robotId: string, user: IUserBaseInfo, auth: IAuthHeader) {
+    try {
+      await this.javaService.setHeaders(auth).post(sprintf(JavaApiPath.DEACTIVE_ROBOT, { robotId }), new FormData());
+    } catch (e) {
+      this.logger.error('DeActive robot failed',  e );
+      throw ApiException.tipError(ApiTipConstant.api_server_error, { value: 1 });
+    }
+    return this.automationRobotRepository.deActiveRobot(robotId, user.userId);
   }
 
   async isResourcesHasRobots(resourceIds: string[]) {

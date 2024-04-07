@@ -19,6 +19,7 @@
 package com.apitable.automation.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.apitable.automation.entity.AutomationTriggerEntity;
 import com.apitable.automation.model.ActionVO;
 import com.apitable.automation.model.AutomationSimpleVO;
 import com.apitable.automation.model.AutomationTaskSimpleVO;
@@ -36,6 +37,7 @@ import com.apitable.automation.service.IAutomationTriggerService;
 import com.apitable.control.infrastructure.permission.NodePermission;
 import com.apitable.core.support.ResponseData;
 import com.apitable.core.util.ExceptionUtil;
+import com.apitable.interfaces.automation.facede.AutomationServiceFacade;
 import com.apitable.internal.service.IPermissionService;
 import com.apitable.shared.component.scanner.annotation.ApiResource;
 import com.apitable.shared.component.scanner.annotation.GetResource;
@@ -59,7 +61,9 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -96,6 +100,9 @@ public class AutomationRobotController {
 
     @Resource
     private NodeDescMapper nodeDescMapper;
+
+    @Resource
+    private AutomationServiceFacade automationServiceFacade;
 
     /**
      * Get automation robots.
@@ -414,6 +421,50 @@ public class AutomationRobotController {
             NodePermission.EDIT_NODE,
             status -> ExceptionUtil.isTrue(status, PermissionException.NODE_OPERATION_DENIED));
         iAutomationActionService.deleteByDatabus(robotId, actionId, userId);
+        return ResponseData.success();
+    }
+
+    /**
+     * Active automation action.
+     *
+     * @param robotId robot id
+     * @return {@link ResponseData}
+     */
+    @PostResource(path = "/robots/{robotId}/active", requiredPermission = false, requiredLogin = false, method = RequestMethod.POST)
+    @Parameters({
+        @Parameter(name = "robotId", description = "robot id", required = true, schema = @Schema(type = "string"), in = ParameterIn.PATH, example = "arb****"),
+    })
+    @Operation(summary = "Active automation action")
+    @ApiResponses(@ApiResponse(responseCode = "200", useReturnTypeSchema = true))
+    public ResponseData<Void> activeAction(@PathVariable String robotId) {
+        SessionContext.getUserId();
+        List<String> robotIdList = new ArrayList<>();
+        robotIdList.add(robotId);
+        List<AutomationTriggerEntity> triggerList = iAutomationTriggerService.selectByRobotIds(robotIdList);
+        List<Integer> jobIdList = triggerList.stream().map(AutomationTriggerEntity::getJobId).collect(Collectors.toList());
+        automationServiceFacade.startSchedule(jobIdList);
+        return ResponseData.success();
+    }
+
+    /**
+     * DeActive automation action.
+     *
+     * @param robotId robot id
+     * @return {@link ResponseData}
+     */
+    @PostResource(path = "/robots/{robotId}/deActive", requiredPermission = false, requiredLogin = false, method = RequestMethod.POST)
+    @Parameters({
+        @Parameter(name = "robotId", description = "robot id", required = true, schema = @Schema(type = "string"), in = ParameterIn.PATH, example = "arb****"),
+    })
+    @Operation(summary = "DeActive automation action")
+    @ApiResponses(@ApiResponse(responseCode = "200", useReturnTypeSchema = true))
+    public ResponseData<Void> deActiveAction(@PathVariable String robotId) {
+        SessionContext.getUserId();
+        List<String> robotIdList = new ArrayList<>();
+        robotIdList.add(robotId);
+        List<AutomationTriggerEntity> triggerList = iAutomationTriggerService.selectByRobotIds(robotIdList);
+        List<Integer> jobIdList = triggerList.stream().filter(trigger -> trigger.getJobId() > 0).map(AutomationTriggerEntity::getJobId).collect(Collectors.toList());
+        automationServiceFacade.stopSchedule(jobIdList);
         return ResponseData.success();
     }
 }

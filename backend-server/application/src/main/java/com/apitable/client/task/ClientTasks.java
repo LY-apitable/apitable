@@ -56,8 +56,8 @@ public class ClientTasks {
      * cron: 0 0 0 * * ?
      * preview execute desc: ****-03-07 00:00:00, ****-03-08 00:00:00, ****-03-09 00:00:00
      */
-    @Scheduled(cron = "${HEARTBEAT_CRON:0 0 0 * * ?}")
-    @SchedulerLock(name = "heartbeat", lockAtMostFor = "1h", lockAtLeastFor = "30m")
+    // @Scheduled(cron = "${HEARTBEAT_CRON:0 0 0 * * ?}")
+    // @SchedulerLock(name = "heartbeat", lockAtMostFor = "1h", lockAtLeastFor = "30m")
     public void heartbeat() {
         assertLocked();
         log.info("Execute Heartbeat Cron");

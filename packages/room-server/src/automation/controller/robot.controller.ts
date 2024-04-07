@@ -104,12 +104,12 @@ export class RobotController {
   @Post(['/:robotId/active'])
   async activeRobot(@Param('robotId') robotId: string, @Headers('cookie') cookie: string) {
     const user = await this.userService.getMe({ cookie });
-    return this.automationService.activeRobot(robotId, user);
+    return this.automationService.activeRobot(robotId, user, { cookie });
   }
 
   @Post(['/:robotId/deactive'])
   async deActiveRobot(@Param('robotId') robotId: string, @Headers('cookie') cookie: string) {
     const user = await this.userService.getMe({ cookie });
-    return this.automationRobotRepository.deActiveRobot(robotId, user.userId);
+    return this.automationService.deActiveRobot(robotId, user, { cookie });
   }
 }

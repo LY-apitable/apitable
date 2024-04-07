@@ -18,6 +18,7 @@
 
 package com.apitable.interfaces.automation.facede;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,6 +29,16 @@ public class DefaultAutomationServiceFacadeImpl implements AutomationServiceFaca
     @Override
     public void publishSchedule(Long scheduleId) {
         // do nothing
+    }
+
+    @Override
+    public void startSchedule(List<Integer> jobIdList) {
+
+    }
+
+    @Override
+    public void stopSchedule(List<Integer> jobIdList) {
+        
     }
 
     @Override

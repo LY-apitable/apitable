@@ -107,6 +107,8 @@ dependencies {
     implementation libs.wx.open
     implementation libs.sensors
     implementation libs.posthog
+    // xxl-job
+    implementation libs.xxl.job.core
 
     // test framework dependencies
     testCompileOnly libs.lombok

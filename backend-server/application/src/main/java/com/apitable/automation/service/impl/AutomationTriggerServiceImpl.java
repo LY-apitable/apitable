@@ -94,6 +94,11 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
     }
 
     @Override
+    public List<AutomationTriggerEntity> selectByRobotIds(List<String> robotIds) {
+        return triggerMapper.selectByRobotIds(robotIds);
+    }
+
+    @Override
     public void create(AutomationTriggerEntity entity) {
         triggerMapper.insert(entity);
     }
@@ -264,6 +269,16 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
     public void updateInputByRobotIdsAndTriggerTypeIds(List<String> robotIds, String triggerTypeId,
                                                        String input) {
         triggerMapper.updateTriggerInputByRobotIdsAndTriggerType(robotIds, triggerTypeId, input);
+    }
+
+    @Override
+    public AutomationTriggerEntity selectByTriggerId(String triggerId) {
+        return triggerMapper.selectByTriggerId(triggerId);
+    }
+
+    @Override
+    public void updateJobIdByTriggerId(String triggerId, Integer jobId) {
+        triggerMapper.updateJobIdByTriggerId(triggerId, jobId);
     }
 
     private List<TriggerVO> handleTriggerResponse(List<AutomationTriggerSO> data) {

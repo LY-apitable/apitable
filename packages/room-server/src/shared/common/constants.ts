@@ -77,6 +77,8 @@ export class JavaApiPath {
   public static readonly SPACE_CAPACITY = 'space/capacity';
   // attachments of datasheet reference calculation
   public static readonly DST_ATTACH_CITE = 'base/attach/cite';
+  public static readonly ACTIVE_ROBOT = 'automation/robots/%(robotId)s/active';
+  public static readonly DEACTIVE_ROBOT = 'automation/robots/%(robotId)s/deActive';
 }
 
 export const NODE_PERMISSION_REFLECTOR_KEY = 'node_permission';

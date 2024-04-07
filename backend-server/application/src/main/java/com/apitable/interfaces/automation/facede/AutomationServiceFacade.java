@@ -18,6 +18,7 @@
 
 package com.apitable.interfaces.automation.facede;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +31,20 @@ public interface AutomationServiceFacade {
      * @param scheduleId schedule id
      */
     void publishSchedule(Long scheduleId);
+
+    /**
+     * start schedule.
+     *
+     * @param jobIdList job id list
+     */
+    void startSchedule(List<Integer> jobIdList);
+
+    /**
+     * stop schedule.
+     *
+     * @param jobIdList job id list
+     */
+    void stopSchedule(List<Integer> jobIdList);
 
     /**
      * copy trigger schedule.

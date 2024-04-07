@@ -42,6 +42,14 @@ public interface IAutomationTriggerService {
     List<AutomationTriggerDto> getTriggersByRobotIds(List<String> robotIds);
 
     /**
+     * select by robot id.
+     *
+     * @param robotIds robot id list
+     * @return list of trigger
+     */
+    List<AutomationTriggerEntity> selectByRobotIds(List<String> robotIds);
+
+    /**
      * create trigger.
      *
      * @param entity entity
@@ -117,4 +125,19 @@ public interface IAutomationTriggerService {
      */
     void updateInputByRobotIdsAndTriggerTypeIds(List<String> robotIds, String triggerTypeId,
                                                 String input);
+
+    /**
+     * select trigger by trigger id.
+     *
+     * @param triggerId     trigger id
+     */
+    AutomationTriggerEntity selectByTriggerId(String triggerId);
+
+    /**
+     * update job id by trigger id.
+     *
+     * @param triggerId     trigger id
+     * @param jobId         job id
+     */
+    void updateJobIdByTriggerId(String triggerId, Integer jobId);
 }

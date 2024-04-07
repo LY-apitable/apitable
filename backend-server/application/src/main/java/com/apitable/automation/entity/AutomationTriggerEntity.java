@@ -84,6 +84,11 @@ public class AutomationTriggerEntity implements Serializable {
     private String resourceId;
 
     /**
+     * Job ID(link#xxl-job id).
+     */
+    private Integer jobId;
+
+    /**
      * Trigger Input data of the instance.
      */
     private String input;

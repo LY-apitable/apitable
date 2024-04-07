@@ -2,6 +2,7 @@ package com.apitable.shared.component.notification.queue;
 
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,21 @@ public class QueueConfig {
     public static final String NOTIFICATION_EXCHANGE = "apitable.notification.exchange";
 
     /**
+     * automation queue.
+     */
+    public static final String AUTOMATION_QUEUE = "apitable.automation.running";
+
+    /**
+     * automation route key.
+     */
+    public static final String AUTOMATION_ROUTING_KEY = "automation.running";
+
+    /**
+     * automation exchange.
+     */
+    public static final String AUTOMATION_EXCHANGE = "apitable.automation.exchange";
+
+    /**
      * notification queue.
      */
     @Bean("notificationQueue")
@@ -53,6 +69,34 @@ public class QueueConfig {
         return BindingBuilder.bind(notificationQueue)
             .to(notificationExchange)
             .with(NOTIFICATION_ROUTING_KEY);
+
+    }
+
+    /**
+     * automation queue.
+     */
+    @Bean("automationQueue")
+    public Queue automationQueue() {
+        return new Queue(AUTOMATION_QUEUE);
+    }
+
+    /**
+     * define automation exchange.
+     */
+    @Bean("automationExchange")
+    DirectExchange automationExchange() {
+        return new DirectExchange(AUTOMATION_EXCHANGE);
+    }
+
+    /**
+     * bind automation exchange and queue.
+     */
+    @Bean
+    public Binding bindAutomationExchange(Queue automationQueue,
+                                            DirectExchange automationExchange) {
+        return BindingBuilder.bind(automationQueue)
+            .to(automationExchange)
+            .with(AUTOMATION_ROUTING_KEY);
 
     }
 }

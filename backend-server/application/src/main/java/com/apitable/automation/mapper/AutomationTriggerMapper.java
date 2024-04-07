@@ -95,4 +95,11 @@ public interface AutomationTriggerMapper extends BaseMapper<AutomationTriggerEnt
     AutomationTriggerEntity selectByTriggerId(
         @Param("triggerId") String triggerId);
 
+    /**
+     * update job id by trigger id.
+     *
+     * @param triggerId trigger id
+     * @param jobId job id
+     */
+    void updateJobIdByTriggerId(@Param("triggerId") String triggerId, @Param("jobId") Integer jobId);
 }

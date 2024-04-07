@@ -52,6 +52,7 @@ checkstyle = "10.12.5"
 sentry-plugin = "4.0.0"
 dingtalk = "2.0.70"
 dingtalk-service = "2.0.0"
+xxl-job-core = "2.4.0"
 
 [libraries]
 # spring dependencies
@@ -198,6 +199,7 @@ annotation-api = { module = "javax.annotation:javax.annotation-api", version.ref
 json = { module = "org.json:json", version.ref = "json" }
 commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commons-compress" }
 xstream = { module = "com.thoughtworks.xstream:xstream", version.ref = "xstream" }
+xxl-job-core = { module = "com.xuxueli:xxl-job-core", version.ref = "xxl-job-core" }
 
 [bundles]
 # group libraries
