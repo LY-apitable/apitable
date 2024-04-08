@@ -60,7 +60,7 @@ public interface AutomationServiceFacade {
      * @param triggerId      trigger id
      * @param scheduleConfig config
      */
-    void createSchedule(String spaceId, String triggerId, String scheduleConfig);
+    int createSchedule(String spaceId, String triggerId, String scheduleConfig);
 
     /**
      * update schedule.

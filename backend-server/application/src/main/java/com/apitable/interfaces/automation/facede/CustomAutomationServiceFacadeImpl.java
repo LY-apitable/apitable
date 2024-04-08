@@ -75,7 +75,7 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
     }
 
     @Override
-    public void createSchedule(String spaceId, String triggerId, String scheduleConfig) {
+    public int createSchedule(String spaceId, String triggerId, String scheduleConfig) {
         log.info("createSchedule spaceId:{}, triggerId:{}, scheduleConfig:{}", spaceId, triggerId, scheduleConfig);
         XxlJobInfoBO info = new XxlJobInfoBO();
         info.setJobDesc("APITABLE triggerId:" + triggerId);
@@ -94,6 +94,7 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
         log.info("createSchedule result:{}", creatResult.toString());
         int jobId = creatResult.getInt("content");
         iAutomationTriggerService.updateJobIdByTriggerId(triggerId, jobId);
+        return jobId;
     }
 
     @Override
@@ -103,6 +104,12 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
         JSONObject result = xxlJobClient.loadById(jobId);
         String jobInfoStr = result.getStr("content");
         JSONObject jobInfo = JSONUtil.parseObj(jobInfoStr);
+        
+        if ("{}".equals(scheduleConfig)) {
+            xxlJobClient.deleteJob(jobId);
+            log.info("updateSchedule triggerId:{}, scheduleConfig:{} empty scheduleConfig, delete job", triggerId, scheduleConfig);
+            return;
+        }
         JSONObject configObj = JSONUtil.parseObj(scheduleConfig);
         String minute = configObj.getStr("minute");
         String hour = configObj.getStr("hour");

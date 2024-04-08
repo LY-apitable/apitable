@@ -140,16 +140,18 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
             AutomationTriggerType.SCHEDULED_TIME_ARRIVE.getType());
         if (StrUtil.isNotBlank(data.getTriggerTypeId())) {
             // change trigger type to schedule should create schedule
-            if (!trigger.getTriggerId().equals(scheduleTriggerTypeId)
+            if (!trigger.getTriggerTypeId().equals(scheduleTriggerTypeId)
                 && data.getTriggerTypeId().equals(scheduleTriggerTypeId)) {
-                automationServiceFacade.createSchedule(spaceId, triggerId,
+                int jobId = automationServiceFacade.createSchedule(spaceId, triggerId,
                     JSONUtil.toJsonStr(JSONUtil.createObj()));
+                trigger.setJobId(jobId);
             }
             // change schedule to another type
-            if (trigger.getTriggerId().equals(scheduleTriggerTypeId)
+            if (trigger.getTriggerTypeId().equals(scheduleTriggerTypeId)
                 && !data.getTriggerTypeId().equals(scheduleTriggerTypeId)) {
                 automationServiceFacade.updateSchedule(triggerId,
                     JSONUtil.toJsonStr(JSONUtil.createObj()));
+                trigger.setJobId(0);
             }
             trigger.setTriggerTypeId(data.getTriggerTypeId());
         }

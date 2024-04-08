@@ -47,7 +47,8 @@ public class DefaultAutomationServiceFacadeImpl implements AutomationServiceFaca
     }
 
     @Override
-    public void createSchedule(String spaceId, String triggerId, String scheduleConfig) {
+    public int createSchedule(String spaceId, String triggerId, String scheduleConfig) {
+        return 0;
     }
 
     @Override
