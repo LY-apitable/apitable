@@ -84,6 +84,7 @@ export class UserService {
       users.forEach((user) => {
         userMap.set(user.id, {
           id: Number(user.id),
+          userId: user.id,
           uuid: user.uuid || '',
           avatar: user.avatar || '',
           nikeName: user.nikeName || '',

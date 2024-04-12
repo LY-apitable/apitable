@@ -23,6 +23,7 @@
  */
 export interface INamedUser {
   id: number;
+  userId: string;
   uuid: string;
   avatar: string;
   nikeName: string;

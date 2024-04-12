@@ -128,7 +128,7 @@ export class UnitService {
           type: cur.unitType,
           unitId: cur.id,
           userId: tmp.userId,
-          uuid: tmp.userId,
+          uuid: tmp.uuid!,
         });
       }
       return pre;

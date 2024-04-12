@@ -17,16 +17,13 @@
  */
 
 import { BaseEntity } from 'shared/entities/base.entity';
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity } from 'typeorm';
 
 /**
  * Workbench-Datasheet Record Subscription
  */
 @Entity('datasheet_record_subscription')
 export class DatasheetRecordSubscriptionEntity extends BaseEntity {
-  @PrimaryColumn('bigint')
-  override id!: string;
-
   @Column({
     name: 'dst_id',
     nullable: false,
@@ -50,18 +47,4 @@ export class DatasheetRecordSubscriptionEntity extends BaseEntity {
     length: 50,
   })
   recordId!: string;
-
-  @Column('bigint', {
-    name: 'created_by',
-    nullable: true,
-    comment: 'creator ID(subscriber)',
-  })
-  override createdBy!: string;
-
-  @Column('timestamp', {
-    name: 'created_at',
-    comment: 'created time',
-    default: () => 'CURRENT_TIMESTAMP',
-  })
-  override createdAt!: Date;
 }

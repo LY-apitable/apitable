@@ -51,7 +51,7 @@ export class UnitMemberService {
         const user = users.get(cur.userId);
         pre[cur.id] = {
           uuid: user?.uuid,
-          userId: user?.uuid,
+          userId: user?.userId,
           name: cur.memberName,
           type: MemberType.Member,
           avatar: user?.avatar,
