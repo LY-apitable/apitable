@@ -207,7 +207,7 @@
       "platform": "dingtalk",
       "template_string": "social_dingtalk_subscribed_record_commented",
       "title": "social_dingtalk_subscribed_record_commented_title",
-      "url": "workbench/{nodeId}/{viewId}/{recordId}",
+      "url": "/user/dingtalk/social_login?appkey={appKey}&target={nodeId}&viewid={viewId}&recordid={recordId}",
       "url_title": "social_notification_url_title"
     },
     "dingtalk_task_reminder": {

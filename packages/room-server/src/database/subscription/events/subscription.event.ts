@@ -47,17 +47,17 @@ export class SubscriptionEvent implements IEventExecutor {
   }
 
   execute(events: IEventInstance<IOPEvent>[], context?: IOtEventContext): void {
+    const spaceId = context?.spaceId!;
+    const fromUserId = context?.operatorUserId!;
     events.forEach((event) => {
+      const eventContext = event.context;
+      const recordId = eventContext.recordId;
+      const datasheetId = eventContext.datasheetId;
       switch (event.eventName) {
         case OPEventNameEnums.CellUpdated:
-          const eventContext = event.context;
-          const recordId = eventContext.recordId;
           const fieldId = eventContext.fieldId;
-          const datasheetId = eventContext.datasheetId;
           const change = eventContext.change;
-          const spaceId = context?.spaceId!;
-          const fromUserId = context?.operatorUserId!;
-          this.sendMessage(spaceId, datasheetId, recordId, fieldId, fromUserId, change);
+          this.sendCellUpdateMessage(spaceId, datasheetId, recordId, fieldId, fromUserId, change);
           break;
         case OPEventNameEnums.RecordCreated:
           break;
@@ -65,7 +65,29 @@ export class SubscriptionEvent implements IEventExecutor {
           break;
         case OPEventNameEnums.RecordUpdated:
           break;
-        case OPEventNameEnums.RecordCommentUpdated:
+        case OPEventNameEnums.RecordCommentUpdated: 
+          const action = eventContext.action;
+          if (action['n'] == 'LI') {
+            const commentInfo = action['li'];
+            const commentMsg = commentInfo['commentMsg'];
+            // const reply = commentMsg['reply'];
+            // const replyCommentId = reply.commentId;
+            const contents = commentMsg['content'];
+            const comment: string[] = [];
+            contents.forEach((content: { children: any[]; }) => {
+              let rowText = "";
+              content.children.forEach(child => {
+                if (child.type == 'mention') {
+                  rowText += "@" + child.data.name;
+                } else {
+                  rowText += child.text;
+                }
+              })
+              comment.push(rowText);
+            });
+            const commmentStr = comment.join("\n\n");
+            this.sendCommentMessage(spaceId, datasheetId, recordId, fromUserId, commmentStr);
+          }
           break;
         case OPEventNameEnums.RecordArchived:
           break;
@@ -75,7 +97,52 @@ export class SubscriptionEvent implements IEventExecutor {
     });
   }
 
-  async sendMessage(spaceId: string, dstId: string, recordId: string, fieldId: string, fromUserId: string, change: any): Promise<void> {
+  async sendCommentMessage(spaceId: string, dstId: string, recordId: string, fromUserId: string, comment: string): Promise<void> {
+    const subscriptions = await this.datasheetRecordSubscriptionBaseService.getSubscriptionsByRecordId(dstId, recordId);
+    const toUserIds = subscriptions.filter(subscription => fromUserId != subscription.createdBy).map(subscription => subscription.createdBy);
+    if (toUserIds.length == 0) {
+      return;
+    }
+    const memberInfos = await this.unitMemberService.getMembersBaseInfoBySpaceIdAndUserIds(spaceId, toUserIds, false);
+    const memberName = await this.userService.getUserMemberName(fromUserId, spaceId);
+    const nodeName = await this.nodeService.getNameByNodeId(dstId);
+    const meta = await this.datasheetMetaService.getMetaDataByDstId(dstId);
+    const primaryFieldId = meta.views[0]!.columns[0]!.fieldId;
+    const records = await this.datasheetRecordService.getRecordsByDstIdAndRecordIds(dstId, [recordId]);
+    const record = records[recordId];
+    const recordTitle = record?.data[primaryFieldId]![0]['text'];
+    const viewId = meta.views[0]?.id;
+
+    const toMemberIds: string[] = [];
+    toUserIds.forEach(toUserId => {
+      const memberId = memberInfos[toUserId]?.memberId;
+      if  (memberId != undefined) {
+        toMemberIds.push(memberId);
+      }
+    })
+    const message = {
+      nodeId: dstId,
+      recordId,
+      spaceId: spaceId,
+      body: {
+        extras: {
+          recordTitle: recordTitle,
+          content: comment,
+          viewId: viewId,
+          recordIds: [recordId],
+          memberName: memberName,
+          nodeName: nodeName,
+          endAt: Date.now(),
+        },
+      },
+      templateId: NoticeTemplatesConstant.subscribed_record_commented,
+      toMemberId: toMemberIds,
+      fromUserId: fromUserId
+    };
+    this.queueSenderService.sendMessage(notificationQueueExchangeName, 'notification.message', message);
+  }
+
+  async sendCellUpdateMessage(spaceId: string, dstId: string, recordId: string, fieldId: string, fromUserId: string, change: any): Promise<void> {
     const subscriptions = await this.datasheetRecordSubscriptionBaseService.getSubscriptionsByRecordId(dstId, recordId);
     const toUserIds = subscriptions.filter(subscription => fromUserId != subscription.createdBy).map(subscription => subscription.createdBy);
     if (toUserIds.length == 0) {
