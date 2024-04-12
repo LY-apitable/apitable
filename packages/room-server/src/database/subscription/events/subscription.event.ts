@@ -78,6 +78,9 @@ export class SubscriptionEvent implements IEventExecutor {
   async sendMessage(spaceId: string, dstId: string, recordId: string, fieldId: string, fromUserId: string, change: any): Promise<void> {
     const subscriptions = await this.datasheetRecordSubscriptionBaseService.getSubscriptionsByRecordId(dstId, recordId);
     const toUserIds = subscriptions.filter(subscription => fromUserId != subscription.createdBy).map(subscription => subscription.createdBy);
+    if (toUserIds.length == 0) {
+      return;
+    }
     const memberInfos = await this.unitMemberService.getMembersBaseInfoBySpaceIdAndUserIds(spaceId, toUserIds, false);
     const memberName = await this.userService.getUserMemberName(fromUserId, spaceId);
     const nodeName = await this.nodeService.getNameByNodeId(dstId);
