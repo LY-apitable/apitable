@@ -61,6 +61,7 @@ export type EnumTriggerEndpoint =
   | 'record_matches_conditions'
   | 'record_created'
   | 'scheduled_time_arrive'
+  | 'record_time_arrive'
   | 'sendLarkMsg'
   | 'sendRequest'
   | 'sendMail';

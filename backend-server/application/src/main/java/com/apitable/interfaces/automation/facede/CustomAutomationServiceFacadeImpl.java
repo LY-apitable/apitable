@@ -21,11 +21,14 @@ package com.apitable.interfaces.automation.facede;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.apitable.automation.entity.AutomationTriggerEntity;
+import com.apitable.automation.enums.AutomationTriggerType;
 import com.apitable.automation.model.AutomationVO;
 import com.apitable.automation.service.IAutomationRobotService;
 import com.apitable.automation.service.IAutomationTriggerService;
 import com.apitable.shared.client.XxlJobClient;
+import com.apitable.shared.context.SessionContext;
 import com.apitable.shared.util.xxljob.XxlJobInfoBO;
+import com.apitable.user.service.IDeveloperService;
 import jakarta.annotation.Resource;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +50,9 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
 
     @Resource
     private IAutomationRobotService iAutomationRobotService;
+
+    @Resource
+    private IDeveloperService iDeveloperService;
 
     @Override
     public void publishSchedule(Long scheduleId) {
@@ -75,7 +81,7 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
     }
 
     @Override
-    public int createSchedule(String spaceId, String triggerId, String scheduleConfig) {
+    public int createSchedule(String spaceId, String triggerId, AutomationTriggerType triggerType, String scheduleConfig) {
         log.info("createSchedule spaceId:{}, triggerId:{}, scheduleConfig:{}", spaceId, triggerId, scheduleConfig);
         XxlJobInfoBO info = new XxlJobInfoBO();
         info.setJobDesc("APITABLE triggerId:" + triggerId);
@@ -87,7 +93,18 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
         executorParams.set("robotId", robotId);
         executorParams.set("spaceId", spaceId);
         info.setExecutorParam(executorParams.toString()); //任务参数
-        info.setScheduleConf("0/3 * * * * ?"); //Cron
+        if (triggerType == AutomationTriggerType.SCHEDULED_TIME_ARRIVE) {
+            info.setScheduleConf("0/3 * * * * ?"); //Cron
+        } else {
+            info.setScheduleConf("0 30 9 * * ?"); //Cron
+            info.setExecutorHandler("apitableRecordTimeArriveJobHandler");
+            long userId = SessionContext.getUserId();
+            if (iDeveloperService.checkHasCreate(userId)) {
+                iDeveloperService.getApiKeyByUserId(userId);
+            } else {
+                iDeveloperService.createApiKey(userId);
+            }
+        }
         // 省略其他参数
         JSONObject jobInfo = JSONUtil.parseObj(info);
         JSONObject creatResult = xxlJobClient.createJob(jobInfo);
@@ -98,8 +115,9 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
     }
 
     @Override
-    public void updateSchedule(String triggerId, String scheduleConfig) {
+    public void updateSchedule(String triggerId, AutomationTriggerType triggerType, String scheduleConfig) {
         AutomationTriggerEntity trigger = iAutomationTriggerService.selectByTriggerId(triggerId);
+        log.info("AutomationTriggerEntity:{}", trigger);
         Integer jobId = trigger.getJobId();
         JSONObject result = xxlJobClient.loadById(jobId);
         String jobInfoStr = result.getStr("content");
@@ -110,14 +128,35 @@ public class CustomAutomationServiceFacadeImpl implements AutomationServiceFacad
             log.info("updateSchedule triggerId:{}, scheduleConfig:{} empty scheduleConfig, delete job", triggerId, scheduleConfig);
             return;
         }
-        JSONObject configObj = JSONUtil.parseObj(scheduleConfig);
-        String minute = configObj.getStr("minute");
-        String hour = configObj.getStr("hour");
-        String dayOfMonth = configObj.getStr("dayOfMonth").equals("1L") ? "L" : configObj.getStr("dayOfMonth");
-        String month = configObj.getStr("month");
-        String dayOfWeek = configObj.getStr("dayOfWeek").equals("*") ? "?" : "*";
-        String cronString = "0 " + minute + " " + hour + " " + dayOfMonth + " " + month + " " + dayOfWeek;
+        String cronString = "";
+        if (triggerType == AutomationTriggerType.SCHEDULED_TIME_ARRIVE) {
+            JSONObject configObj = JSONUtil.parseObj(scheduleConfig);
+            String minute = configObj.getStr("minute");
+            String hour = configObj.getStr("hour");
+            String dayOfMonth = configObj.getStr("dayOfMonth").equals("1L") ? "L" : configObj.getStr("dayOfMonth");
+            String month = configObj.getStr("month");
+            String dayOfWeek = configObj.getStr("dayOfWeek").equals("*") ? "?" : "*";
+            cronString = "0 " + minute + " " + hour + " " + dayOfMonth + " " + month + " " + dayOfWeek;
+        } else {
+            JSONObject configObj = JSONUtil.parseObj(scheduleConfig);
+            String minute = configObj.getStr("minute");
+            String hour = configObj.getStr("hour");
+            String dayOfMonth = configObj.getStr("dayOfMonth").equals("1L") ? "L" : configObj.getStr("dayOfMonth");
+            String month = configObj.getStr("month");
+            String dayOfWeek = configObj.getStr("dayOfWeek").equals("*") ? "?" : "*";
+            cronString = "0 " + minute + " " + hour + " " + dayOfMonth + " " + month + " " + dayOfWeek;
+
+            long userId = SessionContext.getUserId();
+            if (iDeveloperService.checkHasCreate(userId)) {
+                iDeveloperService.getApiKeyByUserId(userId);
+            } else {
+                iDeveloperService.createApiKey(userId);
+            }
+        }
         jobInfo.set("scheduleConf", cronString);
+        JSONObject executorParam = jobInfo.getJSONObject("executorParam");
+        executorParam.set("dstId", trigger.getResourceId());
+        jobInfo.set("executorParam", executorParam.toString());
         jobInfo.remove("addTime");
         jobInfo.remove("updateTime");
         jobInfo.remove("glueUpdatetime");

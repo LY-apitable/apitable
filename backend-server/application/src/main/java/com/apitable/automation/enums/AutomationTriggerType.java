@@ -38,6 +38,7 @@ public enum AutomationTriggerType {
 
     SCHEDULED_TIME_ARRIVE("scheduled_time_arrive"),
 
+    RECORD_TIME_ARRIVE("record_time_arrive"),
     ;
 
 

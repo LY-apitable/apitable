@@ -292,7 +292,6 @@ export class AutomationService {
   })
   async handleTaskByTaskIdAndTriggerId(message: { taskId: string; triggerId: string }) {
     const { taskId, triggerId } = message;
-    console.log("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy message" + message + " taskId:" + taskId + " triggerId" + triggerId);
     this.logger.log('RobotRunning', { ...message });
     try {
       const task: IRobotTask | undefined = await this.automationRunHistoryRepository.selectContextByTaskIdAndTriggerId(taskId, triggerId);

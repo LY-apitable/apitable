@@ -18,6 +18,7 @@
 
 package com.apitable.interfaces.automation.facede;
 
+import com.apitable.automation.enums.AutomationTriggerType;
 import java.util.List;
 import java.util.Map;
 
@@ -58,17 +59,19 @@ public interface AutomationServiceFacade {
      *
      * @param spaceId        space id
      * @param triggerId      trigger id
+     * @param triggerType    trigger type
      * @param scheduleConfig config
      */
-    int createSchedule(String spaceId, String triggerId, String scheduleConfig);
+    int createSchedule(String spaceId, String triggerId, AutomationTriggerType triggerType, String scheduleConfig);
 
     /**
      * update schedule.
      *
      * @param triggerId      trigger id
+     * @param triggerType    trigger type
      * @param scheduleConfig config
      */
-    void updateSchedule(String triggerId, String scheduleConfig);
+    void updateSchedule(String triggerId, AutomationTriggerType triggerType, String scheduleConfig);
 
     /**
      * delete schedule.

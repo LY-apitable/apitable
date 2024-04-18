@@ -679,7 +679,7 @@ public class FusionApiApi {
         String[] localVarAuthNames = new String[] {  };
 
         ParameterizedTypeReference<ApiResponseRecordDTOs> localReturnType = new ParameterizedTypeReference<ApiResponseRecordDTOs>() {};
-        return apiClient.invokeAPI("/fusion/v3/datasheets/{dst_id}/records", HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);
+        return apiClient.invokeAPI("/fusion/v1/datasheets/{dst_id}/records", HttpMethod.GET, uriVariables, localVarQueryParams, localVarPostBody, localVarHeaderParams, localVarCookieParams, localVarFormParams, localVarAccept, localVarContentType, localVarAuthNames, localReturnType);
     }
     /**
      * get_spaces

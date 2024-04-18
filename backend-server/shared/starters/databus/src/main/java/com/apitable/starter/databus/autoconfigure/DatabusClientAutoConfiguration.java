@@ -19,9 +19,12 @@
 package com.apitable.starter.databus.autoconfigure;
 
 import com.apitable.starter.databus.client.api.AutomationDaoApiApi;
+import com.apitable.starter.databus.client.api.FusionApiApi;
 import com.apitable.starter.databus.client.ApiClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +40,9 @@ public class DatabusClientAutoConfiguration {
 
     private final DatabusClientProperties databusClientProperties;
 
+    @Value("${SERVER_DOMAIN}")
+    private String serverDomain;
+    
     public DatabusClientAutoConfiguration(DatabusClientProperties databusClientProperties) {
         this.databusClientProperties = databusClientProperties;
     }
@@ -55,14 +61,37 @@ public class DatabusClientAutoConfiguration {
     }
 
     /**
+     * Api client for fusion api v1.
+     *
+     * @return {@link ApiClient}
+     */
+    @Bean
+    public ApiClient apiClientV1() {
+        LOGGER.info("Register Databus Client Bean");
+        ApiClient client = new ApiClient();
+        client.setBasePath(serverDomain);
+        return client;
+    }
+
+    /**
      * Common databus automation client.
      *
      * @return {@link AutomationDaoApiApi}
      */
     @Bean
-    public AutomationDaoApiApi automationDaoApiApi(ApiClient apiClient) {
+    public AutomationDaoApiApi automationDaoApiApi(@Qualifier("apiClient")ApiClient apiClient) {
         LOGGER.info("Register Databus AutomationDaoApiApi Bean");
         return new AutomationDaoApiApi(apiClient);
     }
 
+    /**
+     * Fusion api client.
+     *
+     * @return {@link FusionApiApi}
+     */
+    @Bean
+    public FusionApiApi fusionApiApi(@Qualifier("apiClientV1")ApiClient apiClient) {
+        LOGGER.info("Register Databus FusionApiApi Bean");
+        return new FusionApiApi(apiClient);
+    }
 }

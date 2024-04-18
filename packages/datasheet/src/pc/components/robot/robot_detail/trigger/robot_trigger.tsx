@@ -36,9 +36,11 @@ import {
   getUtcOptionList,
   IButtonField,
   IExpression,
+  ILiteralOperand,
   integrateCdnHost,
   IReduxState,
   IServerFormPack,
+  OperandTypeEnums,
   OperatorEnums,
   Player,
   ResourceType,
@@ -93,6 +95,8 @@ import { literal2Operand } from '../node_form/ui/utils';
 import { RecordMatchesConditionsFilter } from './record_matches_conditions_filter';
 import { RobotTriggerCreateForm } from './robot_trigger_create';
 import itemStyle from './select_styles.module.less';
+import { DateFieldSelect } from './date_field_select';
+import { DateTimeSelect } from './date_time_select';
 
 interface IRobotTriggerProps {
   robotId: string;
@@ -334,6 +338,7 @@ export const RobotTriggerBase = memo((props: IRobotTriggerBase) => {
               properties!.formId.enum = formList.map((f: IFormNodeItem) => f.nodeId);
               properties!.formId.enumNames = formList.map((f: IFormNodeItem) => f.nodeName);
               break;
+            case 'record_time_arrive':
             case 'button_clicked':
             case 'button_field':
             case 'record_matches_conditions':
@@ -464,6 +469,44 @@ export const RobotTriggerBase = memo((props: IRobotTriggerBase) => {
 
     if (automationState?.scenario === AutomationScenario.datasheet) {
       switch (triggerType?.endpoint) {
+        case 'record_time_arrive': {
+          return {
+            ...uiSchemaWithRule,
+            dateFieldId: {
+              'ui:widget': ({ value, onChange }: any) => {
+                return (
+                  <>
+                    {datasheetId && (
+                      <DateFieldSelect filter={value as ILiteralOperand} 
+                        datasheetId={datasheetId}
+                        readonly={false}
+                        onChange={(value) => {
+                          onChange(value);
+                        }} 
+                      />
+                    )}
+                  </>
+                );
+              },
+            },
+            dateTime: {
+              'ui:widget': ({ value, onChange }: any) => {
+                return (
+                  <>
+                    <DateTimeSelect value={value}
+                      onChange={(value) => {
+                        onChange(value);
+                      }}
+                    />
+                  </>
+                );
+              },
+            },
+            datasheetId: {
+              'ui:disabled': true,
+            },
+          };
+        }
         case 'record_matches_conditions': {
           return {
             ...uiSchemaWithRule,
@@ -653,9 +696,26 @@ export const RobotTriggerBase = memo((props: IRobotTriggerBase) => {
         const relatedResourceId = getDstIdItem() || getFormIdItem() || '';
 
         const scheduleConfigInput = getDataSlot<any>(formData, 'scheduleRule');
-        const scheduleConfig = scheduleConfigInput
+        let scheduleConfig = scheduleConfigInput
           ? { ...TimeScheduleManager.getCronWithTimeZone(scheduleConfigInput), ['timeZone']: getDataParameter<string>(formData, 'timeZone')! }
           : undefined;
+        if (!scheduleConfig) {
+          const recoreTimeArriveConfigInput = getDataSlot<any>(formData, 'dateTime');
+          if (recoreTimeArriveConfigInput) {
+            const time = getDataParameter<string>(recoreTimeArriveConfigInput, 'time');
+            const recordTimeArriveHour = time?.split(':')[0]!;
+            const recordTimeArriveMinute = time?.split(':')[1]!;
+            scheduleConfig = {
+              dayOfMonth: '*',
+              dayOfWeek: '*',
+              hour: recordTimeArriveHour,
+              minute: recordTimeArriveMinute,
+              month: '*',
+              second: '0',
+              timeZone: 'Asia/Shanghai'
+            };
+          }
+        }
         updateTriggerInput(automationState?.resourceId, trigger.triggerId, formData, automationState?.robot?.robotId, {
           relatedResourceId,
           scheduleConfig,
@@ -753,7 +813,7 @@ export const RobotTriggerBase = memo((props: IRobotTriggerBase) => {
   );
 
   const { shareInfo } = useContext(ShareContext);
-
+  
   return (
     <NodeItem
       disabled={!permissions.editable}

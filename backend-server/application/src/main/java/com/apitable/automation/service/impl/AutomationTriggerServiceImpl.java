@@ -29,7 +29,6 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.apitable.automation.entity.AutomationRobotEntity;
 import com.apitable.automation.entity.AutomationTriggerEntity;
 import com.apitable.automation.enums.AutomationTriggerType;
 import com.apitable.automation.mapper.AutomationTriggerMapper;
@@ -108,8 +107,6 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
     public List<TriggerVO> create(Long userId, String spaceId, CreateTriggerRO data) {
         iAutomationRobotService.checkRobotExists(data.getRobotId());
         checkTriggerLimitation(data.getRobotId());
-        String scheduleTriggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
-            AutomationTriggerType.SCHEDULED_TIME_ARRIVE.getType());
         AutomationTriggerEntity entity = AutomationTriggerEntity.builder()
             .robotId(data.getRobotId())
             .triggerTypeId(data.getTriggerTypeId())
@@ -120,8 +117,19 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
             .build();
         create(entity);
         iAutomationRobotService.updateUpdaterByRobotId(data.getRobotId(), userId);
+        String scheduleTriggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
+            AutomationTriggerType.SCHEDULED_TIME_ARRIVE.getType());
         if (StrUtil.equals(scheduleTriggerTypeId, data.getTriggerTypeId())) {
             automationServiceFacade.createSchedule(spaceId, entity.getTriggerId(),
+                AutomationTriggerType.SCHEDULED_TIME_ARRIVE,
+                JSONUtil.toJsonStr(
+                    ObjectUtil.defaultIfNull(data.getScheduleConfig(), JSONUtil.createObj())));
+        }
+        String recordTimeArriveTriggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
+            AutomationTriggerType.RECORD_TIME_ARRIVE.getType());
+        if (StrUtil.equals(recordTimeArriveTriggerTypeId, data.getTriggerTypeId())) {
+            automationServiceFacade.createSchedule(spaceId, entity.getTriggerId(),
+                AutomationTriggerType.RECORD_TIME_ARRIVE,
                 JSONUtil.toJsonStr(
                     ObjectUtil.defaultIfNull(data.getScheduleConfig(), JSONUtil.createObj())));
         }
@@ -138,11 +146,14 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
         ExceptionUtil.isNotNull(trigger, AUTOMATION_TRIGGER_NOT_EXIST);
         String scheduleTriggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
             AutomationTriggerType.SCHEDULED_TIME_ARRIVE.getType());
+        String recordTimeArriveTriggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
+            AutomationTriggerType.RECORD_TIME_ARRIVE.getType());
         if (StrUtil.isNotBlank(data.getTriggerTypeId())) {
             // change trigger type to schedule should create schedule
             if (!trigger.getTriggerTypeId().equals(scheduleTriggerTypeId)
                 && data.getTriggerTypeId().equals(scheduleTriggerTypeId)) {
                 int jobId = automationServiceFacade.createSchedule(spaceId, triggerId,
+                    AutomationTriggerType.SCHEDULED_TIME_ARRIVE,
                     JSONUtil.toJsonStr(JSONUtil.createObj()));
                 trigger.setJobId(jobId);
             }
@@ -150,6 +161,23 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
             if (trigger.getTriggerTypeId().equals(scheduleTriggerTypeId)
                 && !data.getTriggerTypeId().equals(scheduleTriggerTypeId)) {
                 automationServiceFacade.updateSchedule(triggerId,
+                    AutomationTriggerType.SCHEDULED_TIME_ARRIVE,
+                    JSONUtil.toJsonStr(JSONUtil.createObj()));
+                trigger.setJobId(0);
+            }
+            // change trigger type to record_time_arrive should create schedule
+            if (!trigger.getTriggerTypeId().equals(recordTimeArriveTriggerTypeId)
+                && data.getTriggerTypeId().equals(recordTimeArriveTriggerTypeId)) {
+                int jobId = automationServiceFacade.createSchedule(spaceId, triggerId,
+                    AutomationTriggerType.RECORD_TIME_ARRIVE,
+                    JSONUtil.toJsonStr(JSONUtil.createObj()));
+                trigger.setJobId(jobId);
+            }
+            // change record_time_arrive to another type
+            if (trigger.getTriggerTypeId().equals(recordTimeArriveTriggerTypeId)
+                && !data.getTriggerTypeId().equals(recordTimeArriveTriggerTypeId)) {
+                automationServiceFacade.updateSchedule(triggerId,
+                    AutomationTriggerType.RECORD_TIME_ARRIVE,
                     JSONUtil.toJsonStr(JSONUtil.createObj()));
                 trigger.setJobId(0);
             }
@@ -165,8 +193,16 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
             trigger.setResourceId(data.getRelatedResourceId());
         }
         if (ObjectUtil.isNotNull(data.getScheduleConfig())) {
-            automationServiceFacade.updateSchedule(triggerId,
-                JSONUtil.toJsonStr(data.getScheduleConfig()));
+            if (StrUtil.equals(scheduleTriggerTypeId, trigger.getTriggerTypeId())) {
+                automationServiceFacade.updateSchedule(triggerId,
+                    AutomationTriggerType.SCHEDULED_TIME_ARRIVE,
+                    JSONUtil.toJsonStr(data.getScheduleConfig()));
+            }
+            if (StrUtil.equals(recordTimeArriveTriggerTypeId, trigger.getTriggerTypeId())) {
+                automationServiceFacade.updateSchedule(triggerId,
+                    AutomationTriggerType.RECORD_TIME_ARRIVE,
+                    JSONUtil.toJsonStr(data.getScheduleConfig()));
+            }
         }
         iAutomationRobotService.updateUpdaterByRobotId(data.getRobotId(), userId);
         triggerMapper.updateById(trigger);
@@ -197,7 +233,9 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
         ExceptionUtil.isNotNull(trigger, AUTOMATION_TRIGGER_NOT_EXIST);
         String scheduleTriggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
             AutomationTriggerType.SCHEDULED_TIME_ARRIVE.getType());
-        if (trigger.getTriggerTypeId().equals(scheduleTriggerTypeId)) {
+        String recordTimeArriveTriggerTypeId = iAutomationTriggerTypeService.getTriggerTypeByEndpoint(
+            AutomationTriggerType.RECORD_TIME_ARRIVE.getType());
+        if (trigger.getTriggerTypeId().equals(scheduleTriggerTypeId) || trigger.getTriggerTypeId().equals(recordTimeArriveTriggerTypeId)) {
             automationServiceFacade.deleteSchedule(triggerId, userId);
         }
         triggerMapper.deleteById(trigger.getId());

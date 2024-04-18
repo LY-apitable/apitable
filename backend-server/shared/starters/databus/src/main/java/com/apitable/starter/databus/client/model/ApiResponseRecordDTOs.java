@@ -14,18 +14,9 @@
 package com.apitable.starter.databus.client.model;
 
 import java.util.Objects;
-import java.util.Arrays;
-import com.apitable.starter.databus.client.model.RecordDTO;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * ApiResponseRecordDTOs
@@ -42,7 +33,7 @@ public class ApiResponseRecordDTOs {
   private Integer code;
 
   public static final String JSON_PROPERTY_DATA = "data";
-  private List<RecordDTO> data;
+  private ApiResponseRecordDataDTOs data;
 
   public static final String JSON_PROPERTY_MESSAGE = "message";
   private String message;
@@ -80,17 +71,9 @@ public class ApiResponseRecordDTOs {
   }
 
 
-  public ApiResponseRecordDTOs data(List<RecordDTO> data) {
+  public ApiResponseRecordDTOs data(ApiResponseRecordDataDTOs data) {
     
     this.data = data;
-    return this;
-  }
-
-  public ApiResponseRecordDTOs addDataItem(RecordDTO dataItem) {
-    if (this.data == null) {
-      this.data = new ArrayList<>();
-    }
-    this.data.add(dataItem);
     return this;
   }
 
@@ -102,14 +85,14 @@ public class ApiResponseRecordDTOs {
   @JsonProperty(JSON_PROPERTY_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<RecordDTO> getData() {
+  public ApiResponseRecordDataDTOs getData() {
     return data;
   }
 
 
   @JsonProperty(JSON_PROPERTY_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setData(List<RecordDTO> data) {
+  public void setData(ApiResponseRecordDataDTOs data) {
     this.data = data;
   }
 

@@ -18,6 +18,7 @@
 
 package com.apitable.interfaces.automation.facede;
 
+import com.apitable.automation.enums.AutomationTriggerType;
 import java.util.List;
 import java.util.Map;
 
@@ -47,12 +48,12 @@ public class DefaultAutomationServiceFacadeImpl implements AutomationServiceFaca
     }
 
     @Override
-    public int createSchedule(String spaceId, String triggerId, String scheduleConfig) {
+    public int createSchedule(String spaceId, String triggerId, AutomationTriggerType triggerType, String scheduleConfig) {
         return 0;
     }
 
     @Override
-    public void updateSchedule(String triggerId, String scheduleConfig) {
+    public void updateSchedule(String triggerId, AutomationTriggerType triggerType, String scheduleConfig) {
         
     }
 

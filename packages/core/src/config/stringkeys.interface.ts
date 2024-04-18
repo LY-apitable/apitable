@@ -1,5 +1,8 @@
 /* eslint-disable max-len */
 export type StringKeysMapType = {
+  'AdvanceByDay': 'AdvanceByDay',
+  'AdvanceByWeek': 'AdvanceByWeek',
+  'AdvanceByMonth': 'AdvanceByMonth',
   'ANNUAL': 'ANNUAL',
   'ArchiveRecords': 'ArchiveRecords',
   'BIANNUAL': 'BIANNUAL',
@@ -10,8 +13,12 @@ export type StringKeysMapType = {
   'MONTHLY': 'MONTHLY',
   'NO_BILLING_PERIOD': 'NO_BILLING_PERIOD',
   'No_open_functionality': 'No_open_functionality',
+  'PostponeByDay': 'PostponeByDay',
+  'PostponeByWeek': 'PostponeByWeek',
+  'PostponeByMonth': 'PostponeByMonth',
   'Public_Beta_Period': 'Public_Beta_Period',
   'QR_code_invalid': 'QR_code_invalid',
+  'SameDay': 'SameDay',
   'Standalone_Capacity': 'Standalone_Capacity',
   'UnarchiveRecords': 'UnarchiveRecords',
   'WEEKS': 'WEEKS',

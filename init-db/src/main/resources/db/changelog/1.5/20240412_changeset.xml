@@ -1,0 +1,33 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+ APITable <https://github.com/apitable/apitable>
+ Copyright (C) 2022 APITable Ltd. <https://apitable.com>
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+	  http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="V1.5-20240412-001" author="limch" labels="audit">
+        <comment>insert record time arrive trigger type</comment>
+        <sql>
+            INSERT INTO `${table.prefix}automation_trigger_type` 
+            (`id`, `service_id`, `trigger_type_id`, `name`, `description`, `input_json_schema`, `output_json_schema`, `endpoint`, `i18n`, `is_deleted`, `created_by`, `updated_by`) 
+            VALUES (1778684219166375936, 'asvTsTRCNct0KiIrKQ', 'atta2fZvCITexK5DbX', '$robot_record_time_arrive_title', NULL, '{\"schema\": {\"type\": \"object\", \"required\": [\"timeZone\", \"scheduleType\", \"scheduleRule\"], \"properties\": {\"timeZone\": {\"type\": \"string\", \"title\": \"时区\"}, \"scheduleRule\": {\"type\": \"string\", \"title\": \"定时规则\", \"required\": [\"minute\", \"hour\", \"month\", \"dayOfWeek\", \"dayOfMonth\"], \"properties\": {\"hour\": {\"type\": \"string\", \"comment\": \"hour (0 - 23)\"}, \"month\": {\"type\": \"string\", \"comment\": \"month (1 - 12)\"}, \"minute\": {\"type\": \"string\", \"comment\": \"minute (0 - 59)\"}, \"second\": {\"type\": \"string\", \"comment\": \"second (0 - 59)\", \"default\": \"0\"}, \"dayOfWeek\": {\"type\": \"string\", \"comment\": \"day of week (0 - 7, 1L - 7L) (0 or 7 is Sun)\"}, \"dayOfMonth\": {\"type\": \"string\", \"comment\": \"day of month (1 - 31, L)\"}}}, \"scheduleType\": {\"enum\": [\"hour\", \"day\", \"week\", \"month\"], \"type\": \"string\", \"title\": \"定时类型\", \"enumNames\": [\"按小时\", \"按天\", \"按周\", \"按月\"]}}, \"additionalProperties\": false}, \"uiSchema\": {\"ui:order\": [\"timeZone\", \"scheduleType\", \"scheduleRule\"]}}', '{}', 'record_time_arrive', '{\"en\": {\"$robot_record_time_arrive_title\": \"Record time arrives\"}, \"zh\": {\"$robot_record_time_arrive_title\": \"到达记录中的时间时\"}}', 0, 1, 1);
+        </sql>
+    </changeSet>
+</databaseChangeLog>
