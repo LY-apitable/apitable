@@ -23,5 +23,5 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <include file="/db/changelog/1.5/20240329_changeset.xml"/>
-    <include file="/db/changelog/1.5/20230412_changeset.xml"/>
+    <include file="/db/changelog/1.5/20240412_changeset.xml"/>
 </databaseChangeLog>
