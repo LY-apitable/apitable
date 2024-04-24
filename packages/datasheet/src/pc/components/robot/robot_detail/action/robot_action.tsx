@@ -29,7 +29,6 @@ import { Box, SearchSelect, useThemeColors } from '@apitable/components';
 import { integrateCdnHost, IReduxState, Selectors, StoreActions, Strings, t } from '@apitable/core';
 import { setSideBarVisible } from '@apitable/core/dist/modules/space/store/actions/space';
 import { ChevronDownOutlined } from '@apitable/icons';
-import { IFetchDatasheet } from '@apitable/widget-sdk/dist/message/interface';
 import { automationLocalMap, automationPanelAtom, automationStateAtom, PanelName, getResourceAutomationDetailIntegrated, useAutomationController } from 'pc/components/automation/controller';
 import { getTriggerDatasheetId, IFetchedDatasheet } from 'pc/components/automation/controller/hooks/use_robot_fields';
 import { Message, Modal } from 'pc/components/common';
@@ -43,13 +42,14 @@ import styles from '../../../slate_editor/components/select/style.module.less';
 import { changeActionTypeId, updateActionInput } from '../../api';
 import { getFilterActionTypes, getNodeOutputSchemaList, getNodeTypeOptions, operand2PureValue } from '../../helper';
 import { useActionTypes, useRobotTriggerTypes, useTriggerTypes } from '../../hooks';
-import { AutomationScenario, IRobotAction } from '../../interface';
+import { AutomationScenario, INodeOutputSchema, IRobotAction } from '../../interface';
 import { MagicTextField } from '../magic_variable_container';
 import { NodeForm, NodeFormInfo } from '../node_form';
 import { IChangeEvent } from '../node_form/core/interface';
 import { EditType } from '../trigger/robot_trigger';
 import itemStyle from '../trigger/select_styles.module.less';
 import { getActionList, getTriggerList } from '../utils';
+import { MagicTextDateField } from '../magic_variable_container/magic_text_date_field';
 
 export interface IRobotActionProps {
   index: number;
@@ -322,6 +322,19 @@ export const RobotAction = memo((props: IRobotActionProps) => {
           return (
             <Box maxWidth={'100%'} maxHeight={'300px'} overflowY={'auto'} overflowX={'auto'}>
               <MagicTextField {...props} nodeOutputSchemaList={prevActionSchemaList} triggerType={triggerType} triggerDataSheetMap={triggerDataSheetMap} />
+            </Box>
+          );
+        }, 
+        TextDateWidget: (props: any) => {
+          let schemaList: INodeOutputSchema[] = [];
+          prevActionSchemaList.forEach((prevActionSchema) => {
+            if (prevActionSchema.id.startsWith("dst")) {
+              schemaList.push(prevActionSchema);
+            }
+          })
+          return (
+            <Box maxWidth={'100%'} maxHeight={'300px'} overflowY={'auto'} overflowX={'auto'}>
+              <MagicTextDateField {...props} nodeOutputSchemaList={schemaList} triggerType={triggerType} triggerDataSheetMap={triggerDataSheetMap} />
             </Box>
           );
         },

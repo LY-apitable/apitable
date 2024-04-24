@@ -21,6 +21,7 @@ import { NestFactory } from '@nestjs/core';
 import { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { environment } from 'app.environment';
 import { AppModule } from 'app.module';
+import { setAppInstance } from 'app_instance';
 import { useContainer } from 'class-validator';
 import * as immer from 'immer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -88,6 +89,8 @@ async function bootstrap() {
   logger.log(`Application[${APPLICATION_NAME}]-Env[${environment}]`, 'Bootstrap');
   // print server info
   logger.log(`The service is running, please visit it: [ ${await app.getUrl()} ]`, 'Bootstrap');
+
+  setAppInstance(app);
 }
 
 void bootstrap();

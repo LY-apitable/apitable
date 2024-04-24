@@ -58,18 +58,25 @@ public class NotificationConsumer {
         throws IOException {
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-        log.info("notification received message:{}; deliveryTag:{}", event.getTemplateId(),
-            deliveryTag);
-        if (SINGLE_RECORD_MEMBER_MENTION.equals(
-            NotificationTemplateId.getValue(event.getTemplateId()))) {
-            event.setNotifyId(IdUtil.simpleUUID());
-        }
-        try {
-            NotificationManager.me().centerNotify(event);
-            socialServiceFacade.eventCall(new NotificationEvent(event));
-        } catch (Exception e) {
-            log.warn("Failed to send notification: {}:{}", event.getSpaceId(),
-                event.getTemplateId(), e);
+        log.info("notification received message:{}; deliveryTag:{}; type:{}", event.getTemplateId(), deliveryTag, event.getType());
+        if (event.getType() == 0) {
+            if (SINGLE_RECORD_MEMBER_MENTION.equals(
+                NotificationTemplateId.getValue(event.getTemplateId()))) {
+                event.setNotifyId(IdUtil.simpleUUID());
+            }
+            try {
+                NotificationManager.me().centerNotify(event);
+                socialServiceFacade.eventCall(new NotificationEvent(event));
+            } catch (Exception e) {
+                log.warn("Failed to send notification: {}:{}", event.getSpaceId(),
+                    event.getTemplateId(), e);
+            }
+        } else if (event.getType() == 1) {
+            try {
+                socialServiceFacade.eventCall(new NotificationEvent(event));
+            } catch (Exception e) {
+                log.warn("Failed to send notification: {}", event.getSpaceId(), e);
+            }
         }
         channel.basicAck(deliveryTag, false);
     }

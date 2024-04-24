@@ -73,4 +73,13 @@ public class NotificationCreateRo {
 
     @Schema(description = "Notification ID (optional)", example = "1614587900000")
     private String notifyId = null;
+
+    @Schema(description = "Notification Type (optional)", example = "0")
+    private Integer type = 0;
+
+    @Schema(description = "Notification Title (optional)", example = "Title")
+    private String title = "";
+
+    @Schema(description = "Notification Content (optional)", example = "Content")
+    private String content = "";
 }

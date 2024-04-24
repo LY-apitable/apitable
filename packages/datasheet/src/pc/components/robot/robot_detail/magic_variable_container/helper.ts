@@ -37,7 +37,7 @@ import {
   t,
 } from '@apitable/core';
 import { getFieldTypeIcon } from '../../../multi_grid/field_setting';
-import { fields2Schema } from '../../helper';
+import { dateFields2Schema, fields2Schema } from '../../helper';
 import { IJsonSchema, INodeOutputSchema, IUISchemaLayoutGroup } from '../../interface';
 
 const parser = new MagicVariableParser<any>(ACTION_INPUT_PARSER_BASE_FUNCTIONS);
@@ -602,6 +602,33 @@ export const enrichDatasheetTriggerOutputSchema = (
           title: t(Strings.robot_variables_select_basics),
           items: ['recordId', 'recordUrl', 'datasheetId', 'datasheetName'],
         },
+      ],
+    };
+    return nodeOutputSchema;
+  });
+};
+
+export const enrichDatasheetTriggerOutputSchemaForDate = (
+  nodeOutputSchema: INodeOutputSchema,
+  fields: IField[],
+  fieldPermissionMap: IFieldPermissionMap,
+) => {
+  return produce(nodeOutputSchema, (nodeOutputSchema) => {
+    const dateFields = fields.filter(field => {
+      return field.type == 13;
+    })
+    const enrichedFieldsSchema = dateFields2Schema(dateFields, fieldPermissionMap);
+    // trigger must have outputJsonSchema
+    nodeOutputSchema.schema!.properties = {
+      ...nodeOutputSchema.schema!.properties, // The original self-contained schema properties
+      ...enrichedFieldsSchema.properties, // Dynamically expand field-related schema properties
+    };
+    nodeOutputSchema.uiSchema = {
+      layout: [
+        {
+          title: t(Strings.field),
+          items: Object.keys(enrichedFieldsSchema.properties!),
+        }
       ],
     };
     return nodeOutputSchema;

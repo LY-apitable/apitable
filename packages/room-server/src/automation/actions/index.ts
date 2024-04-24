@@ -20,6 +20,7 @@ import { Module } from '@nestjs/common';
 import path from 'path';
 import fs from 'fs';
 import process from 'process';
+import { DingTalkPushAction } from './dingtalk/dingtalk.push.action';
 
 export * as webhook from './webhook';
 export * as ruliu from './ruliu';
@@ -42,6 +43,6 @@ if (isEnterpriseLevel) {
 }
 
 @Module({
-  imports: [],
+  imports: [DingTalkPushAction],
 })
 export class AutomationActionModule {}

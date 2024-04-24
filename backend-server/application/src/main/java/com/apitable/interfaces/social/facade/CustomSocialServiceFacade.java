@@ -197,24 +197,31 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
         switch (event.getEventType()) {
             case NOTIFICATION:
                 NotificationCreateRo ro = ((NotificationEvent) event).getNotificationMeta();
-                NotificationTemplate template = notificationFactory.getTemplateById(ro.getTemplateId());
-                if (null == template) {
-                    log.error("SocialNotificationTemplateError {}", ro.getTemplateId());
-                    return;
-                }
-                NotificationToTag toTag = NotificationToTag.getValue(template.getToTag());
-                if (toTag == null) {
-                    log.error("fail to get tag:{}", template.getToTag());
-                    return;
-                }
-                ExceptionUtil.isNotNull(toTag, NotificationException.TMPL_TO_TAG_ERROR);
-                if (NotificationToTag.toUserTag(toTag)) {
-                    createUserNotify(template, ro);
-                    return;
-                }
-                if (NotificationToTag.toMemberTag(toTag)) {
-                    createMemberNotify(template, ro, toTag);
-                    return;
+                if (ro.getType() == 0) {
+                    NotificationTemplate template = notificationFactory.getTemplateById(ro.getTemplateId());
+                    if (null == template) {
+                        log.error("SocialNotificationTemplateError {}", ro.getTemplateId());
+                        return;
+                    }
+                    NotificationToTag toTag = NotificationToTag.getValue(template.getToTag());
+                    if (toTag == null) {
+                        log.error("fail to get tag:{}", template.getToTag());
+                        return;
+                    }
+                    ExceptionUtil.isNotNull(toTag, NotificationException.TMPL_TO_TAG_ERROR);
+                    if (NotificationToTag.toUserTag(toTag)) {
+                        createUserNotify(template, ro);
+                        return;
+                    }
+                    if (NotificationToTag.toMemberTag(toTag)) {
+                        createMemberNotify(template, ro, toTag);
+                        return;
+                    }
+                } else if (ro.getType() == 1) {
+                    List<Long> userIds = getUserIdListByRo(ro, NotificationToTag.MEMBERS);
+                    List<UserEntity> userList = iUserService.listByIds(userIds);
+                    String dingUnionIds = userList.stream().map(UserEntity::getDingUnionId).collect(Collectors.joining(","));
+                    sendCustomDingtalkActionCard(ro, dingUnionIds);
                 }
                 break;
             case TEMPLATE_QUOTE:
@@ -234,6 +241,26 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
 
     private void createMemberNotify(NotificationTemplate template, NotificationCreateRo ro,
                                    NotificationToTag toTag) {
+        List<Long> userIds = getUserIdListByRo(ro, toTag);
+        
+        SocialTemplate socialTemplate = notificationFactory.getSocialTemplateById("dingtalk", ro.getTemplateId());
+        if (null == socialTemplate) {
+            return;
+        }
+
+        List<UserEntity> userList = iUserService.listByIds(userIds);
+        String dingUnionIds = userList.stream().map(UserEntity::getDingUnionId).collect(Collectors.joining(","));
+
+        switch (socialTemplate.getMessageType()) {
+            case "action_card":
+                sendDingtalkActionCard(socialTemplate, ro, dingUnionIds);
+                break;
+            default:
+                break;
+        }
+    }
+
+    private List<Long> getUserIdListByRo(NotificationCreateRo ro, NotificationToTag toTag) {
         List<Long> userIds;
         if (NotificationTemplateId.spaceDeleteNotify(
             NotificationTemplateId.getValue(ro.getTemplateId()))) {
@@ -256,22 +283,7 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
         if (CollUtil.isEmpty(userIds)) {
             throw new BusinessException(NotificationException.USER_EMPTY_ERROR);
         }
-        
-        SocialTemplate socialTemplate = notificationFactory.getSocialTemplateById("dingtalk", ro.getTemplateId());
-        if (null == socialTemplate) {
-            return;
-        }
-
-        List<UserEntity> userList = iUserService.listByIds(userIds);
-        String dingUnionIds = userList.stream().map(UserEntity::getDingUnionId).collect(Collectors.joining(","));
-
-        switch (socialTemplate.getMessageType()) {
-            case "action_card":
-                sendDingtalkActionCard(socialTemplate, ro, dingUnionIds);
-                break;
-            default:
-                break;
-        }
+        return userIds;
     }
 
     private List<Long> getSpaceUserIdByMemberIdAndToTag(String spaceId, List<Long> memberIds, NotificationToTag toTag) {
@@ -333,6 +345,40 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
         log.info("发送工作通知url" + url);
         msg.getActionCard().setSingleUrl(url);
         msg.setMsgtype(socialTemplate.getMessageType());
+        request.setMsg(msg);
+        try {
+            DingTalkClient client = new DefaultDingTalkClient(dingtalkSendMsgUrl);
+            String accessToken = iDingTalkService.getAccessToken(appConfig);
+            OapiMessageCorpconversationAsyncsendV2Response rsp = client.execute(request, accessToken);
+            log.info("发送工作通知结果：" + rsp.getBody());
+        } catch (ApiException e) {
+            log.error("发送工作通知失败", e);
+        }
+    }
+
+    private void sendCustomDingtalkActionCard(NotificationCreateRo ro, String dingUnionIds) {
+        SpaceEntity space = iSpaceService.getBySpaceId(ro.getSpaceId());
+        AppConfig appConfig = iAppConfigService.getAppConfigByAppKey(space.getAppKey());
+        Long agentId = appConfig.getAgentId();
+
+        OapiMessageCorpconversationAsyncsendV2Request request = new OapiMessageCorpconversationAsyncsendV2Request();
+        request.setAgentId(agentId);
+        request.setUseridList(dingUnionIds);
+        request.setToAllUser(false);
+        OapiMessageCorpconversationAsyncsendV2Request.Msg msg = new OapiMessageCorpconversationAsyncsendV2Request.Msg();
+        msg.setActionCard(new OapiMessageCorpconversationAsyncsendV2Request.ActionCard());
+        msg.getActionCard().setTitle(ro.getTitle());
+        msg.getActionCard().setMarkdown(ro.getContent());
+        msg.getActionCard().setSingleTitle(I18nStringsUtil.t("social_notification_url_title", new Locale("zh-CN")));
+        String redirectUrl = constProperties.getServerDomain() + "/user/dingtalk/social_login?appkey=" + space.getAppKey();;
+        String url = "dingtalk://dingtalkclient/action/openapp?corpid=" + appConfig.getCorpId() + "&container_type=work_platform&app_id=0_" + agentId + "&redirect_type=jump&redirect_url=";
+        try {
+            url += URLEncoder.encode(redirectUrl, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error("redirectUrl Encode Error", e);
+        }
+        msg.getActionCard().setSingleUrl(url);
+        msg.setMsgtype("action_card");
         request.setMsg(msg);
         try {
             DingTalkClient client = new DefaultDingTalkClient(dingtalkSendMsgUrl);

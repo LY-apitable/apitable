@@ -441,7 +441,7 @@ public class AutomationRobotController {
         List<String> robotIdList = new ArrayList<>();
         robotIdList.add(robotId);
         List<AutomationTriggerEntity> triggerList = iAutomationTriggerService.selectByRobotIds(robotIdList);
-        List<Integer> jobIdList = triggerList.stream().map(AutomationTriggerEntity::getJobId).collect(Collectors.toList());
+        List<Integer> jobIdList = triggerList.stream().filter(entity -> entity.getJobId() > 0).map(AutomationTriggerEntity::getJobId).collect(Collectors.toList());
         automationServiceFacade.startSchedule(jobIdList);
         return ResponseData.success();
     }

@@ -21,6 +21,7 @@
 import BaseInput from './BaseInput';
 import { CheckboxesWidget } from './CheckboxesWidget';
 import { CheckboxWidget } from './CheckboxWidget';
+import { FilterMemberWidget } from './FilterMemberWidget';
 import HiddenWidget from './HiddenWidget';
 import PasswordWidget from './PasswordWidget';
 import { RadioGroupWidget } from './RadioGroupWidget';
@@ -61,4 +62,5 @@ export default {
   SwitchWidget,
   CheckboxesWidget,
   RadioGroupWidget,
+  FilterMemberWidget,
 };

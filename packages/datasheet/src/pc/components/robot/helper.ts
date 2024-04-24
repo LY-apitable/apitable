@@ -195,6 +195,37 @@ export const fields2Schema = (fields: IField[], fieldPermissionMap: IFieldPermis
   return fieldsSchema;
 };
 
+export const dateFields2Schema = (fields: IField[], fieldPermissionMap: IFieldPermissionMap): IJsonSchema => {
+  // Extract all fields from fields and convert to json schema
+  const fieldsSchema = {
+    title: '列属性',
+    type: 'object',
+    icon: undefined,
+    properties: {},
+  };
+  const getFieldCommonSchema = (field: IField) => {
+    const isCryptoField = Selectors.getFieldRoleByFieldId(fieldPermissionMap, field.id) === ConfigConstant.Role.None;
+    return {
+      title: isCryptoField ? t(Strings.robot_variables_cant_view_field) : field.name,
+      icon: getFieldTypeIconOrNull(field.type) == null ? getFieldTypeIcon(FieldType.Number) : getFieldTypeIcon(field.type),
+      disabled: isCryptoField,
+    };
+  };
+  fields.forEach((field) => {
+    const fieldOpenValueJsonSchema = {
+      type: 'string',
+      title: field.name,
+    };
+    fieldsSchema.properties[field.id] = {
+      ...fieldOpenValueJsonSchema,
+      ...getFieldCommonSchema(field),
+    };
+    // @ts-ignore
+    fieldsSchema.icon = getFieldCommonSchema(field).icon;
+  });
+  return fieldsSchema;
+};
+
 // TODO(kailang): Currently it is to pass the enterprise micro acceptance, the follow-up to change back
 export const getFilterActionTypes = (actionTypes: IActionType[], ignoreActionId?: string) => {
   let tmpActionTypes = actionTypes;
