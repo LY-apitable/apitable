@@ -144,13 +144,32 @@ export class ViewFilterDerivate {
     if (!record) {
       return false;
     }
-
     if (filterInfo.conjunction === FilterConjunction.And) {
-      return conditions.every(condition => this.doFilterOperations(condition, record, undefined));
+      return conditions.every(condition => {
+        if (condition['conjunction'] == FilterConjunction.And) {
+          const result:any = this.checkConditions(record, condition as unknown as IFilterInfo, undefined);
+          return result as boolean;
+        } else if (condition['conjunction'] == FilterConjunction.Or) {
+          const result:any = this.checkConditions(record, condition as unknown as IFilterInfo, repeatRows);
+          return result as boolean;
+        } else {
+          return this.doFilterOperations(condition, record, undefined);
+        }
+      });
     }
 
     if (filterInfo.conjunction === FilterConjunction.Or) {
-      return conditions.some(condition => this.doFilterOperations(condition, record, repeatRows));
+      return conditions.some(condition => {
+        if (condition['conjunction'] == FilterConjunction.And) {
+          const result:any = this.checkConditions(record, condition as unknown as IFilterInfo, undefined);
+          return result as boolean;
+        } else if (condition['conjunction'] == FilterConjunction.Or) {
+          const result:any = this.checkConditions(record, condition as unknown as IFilterInfo, repeatRows);
+          return result as boolean;
+        } else {
+          return this.doFilterOperations(condition, record, repeatRows)
+        }
+      });
     }
 
     // never happen

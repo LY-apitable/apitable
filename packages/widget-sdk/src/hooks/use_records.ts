@@ -114,7 +114,7 @@ export function useRecords(param1: Datasheet | string | undefined, param2?: IRec
     }
     // secondary filter
     if (query?.filter) {
-      const { error } = validateOpenFilter(query.filter);
+      const { error } = validateOpenFilter(query.filter, true);
       if (error) {
         throw new Error(`filter query validate error: ${error.message}`);
       }

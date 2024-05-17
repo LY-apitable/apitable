@@ -64,7 +64,7 @@ const WarningTip = (props: any) => {
  *   + or / and concatenated expressions. It can be a base expression or a grouping expression
  */
 export const FilterBase = (props: IFilterProps) => {
-  const supportsGrouping = false;
+  const supportsGrouping = true;
   const { datasheetId, hasParent = false, onChange, depth = 0 } = props;
   // Null expressions converted to null
   const [filter, setFilter] = useState(transformNullFilter(props.filter));
@@ -256,7 +256,7 @@ export const FilterBase = (props: IFilterProps) => {
                 addNewFilter(FilterTypeEnums.FilterGroup);
               }}
             >
-              Add filter criteria group
+              添加筛选条件组
             </Button>
           )}
         </FilterButtonWrap>
