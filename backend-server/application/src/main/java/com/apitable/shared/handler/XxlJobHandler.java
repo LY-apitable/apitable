@@ -120,6 +120,7 @@ public class XxlJobHandler {
         if (!date.equals("SameDay")) {
             String type = date.substring(0, date.length() - 1);
             int value = (int) date.charAt(date.length() - 1);
+            XxlJobHelper.log("date:" + date + " type:" + type + " value:" + value);
             switch (type) {
                 case "AdvanceByDay":
                     queryDateDiff = -value;
@@ -152,6 +153,7 @@ public class XxlJobHandler {
         String formula = "IS_SAME(DATESTR(DATEADD({" + dateFieldId + "}, " + queryDateDiff + ", '" + queryDateType + "')), DATESTR(TODAY()))";
         long userId = triggerEntity.getUpdatedBy();
         String apiKey = "Bearer " + iDeveloperService.getApiKeyByUserId(userId);
+        XxlJobHelper.log("formula:" + formula);
         ApiResponseRecordDTOs response = fusionApiApi.getRecordByDatasheetId(dstId, apiKey, 1000, null, null, null, 
             null, null, null, formula, null, FieldKeyEnum.ID);
         log.info("ApiResponseRecordDTOs:{}", response);
