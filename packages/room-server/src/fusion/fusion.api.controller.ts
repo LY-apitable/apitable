@@ -59,7 +59,7 @@ import { NodePermissionGuard } from 'fusion/middleware/guard/node.permission.gua
 import { AttachmentParamRo, AttachmentUploadRo } from 'fusion/ros/attachment.upload.ro';
 import { FusionApiService } from 'fusion/services/fusion.api.service';
 import { RecordDeleteVo } from 'fusion/vos/record.delete.vo';
-import { API_MAX_MODIFY_RECORD_COUNTS, DATASHEET_HTTP_DECORATE, NodePermissions, SwaggerConstants } from 'shared/common';
+import { API_MAX_MODIFY_RECORD_COUNTS, DATASHEET_HTTP_DECORATE, InjectLogger, NodePermissions, SwaggerConstants } from 'shared/common';
 import { NodePermissionEnum } from 'shared/enums/node.permission.enum';
 import { ApiException, CommonException, ServerException } from 'shared/exception';
 import { ApiCacheInterceptor, apiCacheTTLFactory } from 'shared/interceptor/api.cache.interceptor';
@@ -92,6 +92,7 @@ import { FieldListVo } from './vos/field.list.vo';
 import { RecordIdListVo, RecordListVo } from './vos/record.list.vo';
 import { RecordPageVo } from './vos/record.page.vo';
 import { ViewListVo } from './vos/view.list.vo';
+import { Logger } from 'winston';
 
 /**
  * TODO: cache response data, send notification while member changed, should maintain the data in the same server and cache them
@@ -107,7 +108,8 @@ export class FusionApiController {
     private readonly fusionApiService: FusionApiService,
     private readonly attachService: AttachmentService,
     private readonly restService: RestService,
-    private readonly datasheetMetaService: DatasheetMetaService
+    private readonly datasheetMetaService: DatasheetMetaService,
+    @InjectLogger() private readonly logger: Logger,
   ) {
   }
 
@@ -127,6 +129,7 @@ export class FusionApiController {
     @Query(QueryPipe) query: RecordQueryRo,
     @Req() request: FastifyRequest,
   ): Promise<RecordPageVo> {
+    this.logger.info("qqqqqqqqqqqqqqqqqqqqqqquery", query);
     const pageVo = await this.fusionApiService.getRecords(param.dstId, query, { token: request.headers.authorization });
     return ApiResponse.success(pageVo);
   }
