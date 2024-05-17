@@ -119,7 +119,8 @@ public class XxlJobHandler {
         String queryDateType = "days";
         if (!date.equals("SameDay")) {
             String type = date.substring(0, date.length() - 1);
-            int value = (int) date.charAt(date.length() - 1);
+            char lastChar = date.charAt(date.length() - 1);
+            int value = lastChar - '0';
             log.info("date:" + date + " type:" + type + " value:" + value);
             switch (type) {
                 case "AdvanceByDay":
