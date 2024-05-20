@@ -10039,7 +10039,7 @@ packages:
       '@sentry/utils': 7.92.0
     dev: false
 
-  /@sentry/cli@1.77.1:
+  /@sentry/cli@1.77.2:
     resolution: {integrity: sha512-OtJ7U9LeuPUAY/xow9wwcjM9w42IJIpDtClTKI/RliE685vd/OJUIpiAvebHNthDYpQynvwb/0iuF4fonh+CKw==}
     engines: {node: '>= 8'}
     hasBin: true
@@ -10248,7 +10248,7 @@ packages:
     resolution: {integrity: sha512-x0PYIMWcsTauqxgl7vWUY6sANl+XGKtx7DCVnnY7aOIIlIna0jChTAPANTfA2QrK+VK+4I/4JxatCEZBnXh3Og==}
     engines: {node: '>= 8'}
     dependencies:
-      '@sentry/cli': 1.77.1
+      '@sentry/cli': 1.77.2
       webpack-sources: 3.2.3
     transitivePeerDependencies:
       - encoding
