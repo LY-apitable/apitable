@@ -2,9 +2,9 @@ name: Docker Image web-server CI
 
 on:
   push:
-    branches: [ "feat/lmkj-build-test" ]
+    branches: [ "featlmkj-build-test" ]
   pull_request:
-    branches: [ "feat/lmkj-build-test" ]
+    branches: [ "featlmkj-build-test" ]
 
 jobs:
   build:
