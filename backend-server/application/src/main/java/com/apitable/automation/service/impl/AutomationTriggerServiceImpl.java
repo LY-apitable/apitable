@@ -320,6 +320,10 @@ public class AutomationTriggerServiceImpl implements IAutomationTriggerService {
     public void updateJobIdByTriggerId(String triggerId, Integer jobId) {
         triggerMapper.updateJobIdByTriggerId(triggerId, jobId);
     }
+    
+    public List<String> getRobotIdsByResourceIds(List<String> nodeIds) {
+        return triggerMapper.selectRobotIdByResourceIds(nodeIds);
+    }
 
     private List<TriggerVO> handleTriggerResponse(List<AutomationTriggerSO> data) {
         if (null != data) {

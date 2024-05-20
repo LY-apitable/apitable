@@ -140,4 +140,13 @@ public interface IAutomationTriggerService {
      * @param jobId         job id
      */
     void updateJobIdByTriggerId(String triggerId, Integer jobId);
+
+    /**
+     * get node linked robot id list.
+     *
+     * @param nodeIds node id
+     * @return robot id list
+     */
+    List<String> getRobotIdsByResourceIds(List<String> nodeIds);
+
 }

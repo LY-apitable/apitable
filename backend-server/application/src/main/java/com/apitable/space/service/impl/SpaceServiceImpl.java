@@ -1377,4 +1377,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, SpaceEntity>
     public String getSocialSuiteKeyByAppId(String appId) {
         return socialServiceFacade.getSuiteKeyByDingtalkSuiteId(appId);
     }
+
+    @Override
+    public boolean checkSocialBind(String spaceId) {
+        return socialServiceFacade.checkSocialBind(spaceId);
+    }
 }
