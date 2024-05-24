@@ -45,6 +45,21 @@ public class QueueConfig {
     public static final String AUTOMATION_EXCHANGE = "apitable.automation.exchange";
 
     /**
+     * integration queue.
+     */
+    public static final String INTEGRATION_QUEUE = "apitable.integration.queue";
+
+    /**
+     * integration route key.
+     */
+    public static final String INTEGRATION_ROUTING_KEY = "integration.#";
+
+    /**
+     * integration exchange.
+     */
+    public static final String INTEGRATION_EXCHANGE = "apitable.integration.exchange";
+
+    /**
      * notification queue.
      */
     @Bean("notificationQueue")
@@ -97,6 +112,34 @@ public class QueueConfig {
         return BindingBuilder.bind(automationQueue)
             .to(automationExchange)
             .with(AUTOMATION_ROUTING_KEY);
+
+    }
+
+    /**
+     * integration queue.
+     */
+    @Bean("integrationQueue")
+    public Queue integrationQueue() {
+        return new Queue(INTEGRATION_QUEUE);
+    }
+
+    /**
+     * define integration exchange.
+     */
+    @Bean("integrationExchange")
+    TopicExchange integrationExchange() {
+        return new TopicExchange(INTEGRATION_EXCHANGE);
+    }
+
+    /**
+     * bind integration exchange and queue.
+     */
+    @Bean
+    public Binding bindIntegrationExchange(Queue integrationQueue,
+                                            TopicExchange integrationExchange) {
+        return BindingBuilder.bind(integrationQueue)
+            .to(integrationExchange)
+            .with(INTEGRATION_ROUTING_KEY);
 
     }
 }

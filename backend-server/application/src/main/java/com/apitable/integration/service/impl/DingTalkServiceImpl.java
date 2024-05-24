@@ -3,9 +3,17 @@ package com.apitable.integration.service.impl;
 import static java.util.stream.Collectors.toList;
 
 import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.aliyun.dingtalkoauth2_1_0.Client;
 import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenRequest;
 import com.aliyun.dingtalkoauth2_1_0.models.GetAccessTokenResponse;
+import com.aliyun.dingtalkworkflow_1_0.models.GetManageProcessByStaffIdHeaders;
+import com.aliyun.dingtalkworkflow_1_0.models.GetManageProcessByStaffIdRequest;
+import com.aliyun.dingtalkworkflow_1_0.models.GetManageProcessByStaffIdResponse;
+import com.aliyun.dingtalkworkflow_1_0.models.QuerySchemaByProcessCodeHeaders;
+import com.aliyun.dingtalkworkflow_1_0.models.QuerySchemaByProcessCodeRequest;
+import com.aliyun.dingtalkworkflow_1_0.models.QuerySchemaByProcessCodeResponse;
 import com.aliyun.teaopenapi.models.Config;
 import com.apitable.auth.service.IAuthService;
 import com.apitable.core.exception.BusinessException;
@@ -20,6 +28,7 @@ import com.apitable.organization.service.ITeamService;
 import com.apitable.organization.vo.MemberInfoVo;
 import com.apitable.organization.vo.MemberPageVo;
 import com.apitable.organization.vo.MemberTeamPathInfo;
+import com.apitable.shared.context.LoginContext;
 import com.apitable.space.entity.SpaceEntity;
 import com.apitable.space.service.ISpaceService;
 import com.apitable.user.entity.UserEntity;
@@ -106,6 +115,10 @@ public class DingTalkServiceImpl implements IDingTalkService {
     private String getDepartmentDetailUrl;
 
     private static final String REDIS_KEY = "INTEGRATION:DINGTALK:ACCESS_TOKEN:";
+
+    private static final String REDIS_KEY_PROCESS_LIST = "INTEGRATION:DINGTALK:PROCESS:";
+
+    private static final String REDIS_KEY_PROCESS_COMPONENT = "INTEGRATION:DINGTALK:PROCESS:COMPONENT:";
 
     @Override
     public Long getUserInfo(DingTalkLoginRo dingTalkLoginRo) {
@@ -464,5 +477,89 @@ public class DingTalkServiceImpl implements IDingTalkService {
             iMemberService.removeByMemberIds(Collections.singletonList(memberId));
             iUserService.closeAccount(userEntity);
         }
+    }
+
+    @Override
+    public JSONArray loadProcessList() {
+        String spaceId = LoginContext.me().getSpaceId();
+        String key = REDIS_KEY_PROCESS_LIST + spaceId;
+        JSONArray processArray = (JSONArray) redisTemplate.opsForValue().get(key);
+        
+        if (processArray != null && processArray.size() > 0) {
+            log.info("Dingtalk表单列表缓存已存在：" + processArray);
+            return processArray;
+        }
+        Long userId = LoginContext.me().getLoginUser().getUserId();
+        UserEntity userEntity = iUserService.getById(userId);
+        SpaceEntity space = iSpaceService.getBySpaceId(spaceId);
+        AppConfig appConfig = iAppConfigService.getAppConfigByAppKey(space.getAppKey());
+        String accessToken = getAccessToken(appConfig);
+
+        JSONArray newProcessArray = JSONUtil.createArray();
+        try {
+            GetManageProcessByStaffIdHeaders getManageProcessByStaffIdHeaders = new GetManageProcessByStaffIdHeaders();
+            getManageProcessByStaffIdHeaders.setXAcsDingtalkAccessToken(accessToken);
+            GetManageProcessByStaffIdRequest getManageProcessByStaffIdRequest = new GetManageProcessByStaffIdRequest();
+            getManageProcessByStaffIdRequest.setUserId(userEntity.getDingUnionId());
+            
+            Config config = new Config();
+            config.protocol = "https";
+            config.regionId = "central";
+            com.aliyun.dingtalkworkflow_1_0.Client client = new com.aliyun.dingtalkworkflow_1_0.Client(config);
+            GetManageProcessByStaffIdResponse response = client.getManageProcessByStaffIdWithOptions(getManageProcessByStaffIdRequest, getManageProcessByStaffIdHeaders, new com.aliyun.teautil.models.RuntimeOptions());
+            response.getBody().getResult().forEach(process -> {
+                JSONObject obj = new JSONObject();
+                obj.set("processCode", process.getProcessCode());
+                obj.set("flowTitle", process.getFlowTitle());
+                newProcessArray.add(obj);
+            });
+            redisTemplate.opsForValue().set(key, newProcessArray, 120, TimeUnit.MINUTES);
+        } catch (Exception err) {
+            log.error("DingTalk获取审批表单列表失败！", err);
+            throw new BusinessException("DingTalk获取审批表单列表失败！");
+        }
+
+        return newProcessArray;
+    }
+
+    @Override
+    public JSONArray loadProcessComponents(String processCode) {
+        String key = REDIS_KEY_PROCESS_COMPONENT + processCode;
+        JSONArray processComponentArray = (JSONArray) redisTemplate.opsForValue().get(key);
+        
+        if (processComponentArray != null && processComponentArray.size() > 0) {
+            log.info("Dingtalk表单控件列表缓存已存在：" + processComponentArray);
+            return processComponentArray;
+        }
+        String spaceId = LoginContext.me().getSpaceId();
+        SpaceEntity space = iSpaceService.getBySpaceId(spaceId);
+        AppConfig appConfig = iAppConfigService.getAppConfigByAppKey(space.getAppKey());
+        String accessToken = getAccessToken(appConfig);
+
+        JSONArray newProcessComponentArray = JSONUtil.createArray();
+        try {
+            QuerySchemaByProcessCodeHeaders querySchemaByProcessCodeHeaders = new QuerySchemaByProcessCodeHeaders();
+            querySchemaByProcessCodeHeaders.setXAcsDingtalkAccessToken(accessToken);
+            QuerySchemaByProcessCodeRequest querySchemaByProcessCodeRequest = new QuerySchemaByProcessCodeRequest();
+            querySchemaByProcessCodeRequest.setProcessCode(processCode);
+            
+            Config config = new Config();
+            config.protocol = "https";
+            config.regionId = "central";
+            com.aliyun.dingtalkworkflow_1_0.Client client = new com.aliyun.dingtalkworkflow_1_0.Client(config);
+            QuerySchemaByProcessCodeResponse response = client.querySchemaByProcessCodeWithOptions(querySchemaByProcessCodeRequest, querySchemaByProcessCodeHeaders, new com.aliyun.teautil.models.RuntimeOptions());
+            response.getBody().getResult().getSchemaContent().getItems().forEach(component -> {
+                JSONObject obj = new JSONObject();
+                obj.set("componentName", component.getComponentName());
+                obj.set("label", component.getProps().getLabel());
+                newProcessComponentArray.add(obj);
+            });
+            redisTemplate.opsForValue().set(key, newProcessComponentArray, 120, TimeUnit.MINUTES);
+        } catch (Exception err) {
+            log.error("DingTalk获取审批表单组件列表失败！", err);
+            throw new BusinessException("DingTalk获取审批表单组件列表失败！");
+        }
+
+        return newProcessComponentArray;
     }
 }

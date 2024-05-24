@@ -50,6 +50,8 @@ import { EditType } from '../trigger/robot_trigger';
 import itemStyle from '../trigger/select_styles.module.less';
 import { getActionList, getTriggerList } from '../utils';
 import { MagicTextDateField } from '../magic_variable_container/magic_text_date_field';
+import { FilterProcessComponentWidget } from '../node_form/core/components/widgets/FilterProcessComponentWidget';
+import { getDataSlot } from 'pc/components/automation/controller/hooks/get_data_parameter';
 
 export interface IRobotActionProps {
   index: number;
@@ -352,6 +354,17 @@ export const RobotAction = memo((props: IRobotActionProps) => {
             </Box>
           );
         },
+        FilterProcessComponentWidget: (props: any) => {
+          const process = getDataSlot<any>(formData, 'process');
+          let processCode = "";
+          if (process) {
+            processCode = process.value;
+          }
+          return (
+            <FilterProcessComponentWidget {...props} processCode={processCode} />
+          );
+        }
+
       }}
     >
       <>

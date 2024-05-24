@@ -21,18 +21,31 @@ package com.apitable.interfaces.social.facade;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.convert.Convert;
+import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.vika.core.utils.StringUtil;
+import com.aliyun.dingtalkworkflow_1_0.Client;
+import com.aliyun.dingtalkworkflow_1_0.models.StartProcessInstanceHeaders;
+import com.aliyun.dingtalkworkflow_1_0.models.StartProcessInstanceRequest;
+import com.aliyun.dingtalkworkflow_1_0.models.StartProcessInstanceRequest.StartProcessInstanceRequestFormComponentValues;
+import com.aliyun.tea.TeaException;
+import com.aliyun.teaopenapi.models.Config;
+import com.aliyun.teautil.models.RuntimeOptions;
 import com.apitable.core.exception.BusinessException;
 import com.apitable.core.util.ExceptionUtil;
 import com.apitable.integration.dto.AppConfig;
+import com.apitable.integration.ro.IntegrationCreateRo;
 import com.apitable.integration.service.IAppConfigService;
 import com.apitable.integration.service.IDingTalkService;
+import com.apitable.interfaces.social.event.IntegrationEvent;
 import com.apitable.interfaces.social.event.NotificationEvent;
 import com.apitable.interfaces.social.event.SocialEvent;
 import com.apitable.interfaces.social.model.CustomSocialConnectInfo;
 import com.apitable.interfaces.social.model.SocialConnectInfo;
 import com.apitable.interfaces.social.model.SocialUserBind;
+import com.apitable.organization.entity.TeamEntity;
+import com.apitable.organization.service.ITeamMemberRelService;
+import com.apitable.organization.service.ITeamService;
 import com.apitable.organization.service.IUnitService;
 import com.apitable.player.enums.NotificationException;
 import com.apitable.player.ro.NotificationCreateRo;
@@ -59,6 +72,8 @@ import com.dingtalk.api.response.OapiMessageCorpconversationAsyncsendV2Response;
 import com.taobao.api.ApiException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -104,6 +119,12 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
 
     @Resource
     private IUserService iUserService;
+
+    @Resource
+    private ITeamService iTeamService;
+
+    @Resource
+    private ITeamMemberRelService iTeamMemberRelService;
 
     @Resource
     private ConstProperties constProperties;
@@ -225,6 +246,12 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
                 }
                 break;
             case TEMPLATE_QUOTE:
+                break;
+            case INTEGRATION:
+                IntegrationCreateRo integrationCreateRo = ((IntegrationEvent) event).getIntegrationMeta();
+                if (integrationCreateRo.getType() == 0) {
+                    startProcessInstance(integrationCreateRo.getSpaceId(), integrationCreateRo.getProcessCode(), integrationCreateRo.getOriginator(), integrationCreateRo.getComponent());
+                }
                 break;
             default:
                 break;
@@ -388,5 +415,50 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
         } catch (ApiException e) {
             log.error("发送工作通知失败", e);
         }
+    }
+
+    private void startProcessInstance(String spaceId, String processCode, String originator, JSONArray body) {
+        SpaceEntity space = iSpaceService.getBySpaceId(spaceId);
+        AppConfig appConfig = iAppConfigService.getAppConfigByAppKey(space.getAppKey());
+        String accessToken = iDingTalkService.getAccessToken(appConfig);
+
+        StartProcessInstanceHeaders startProcessInstanceHeaders = new StartProcessInstanceHeaders();
+        startProcessInstanceHeaders.setXAcsDingtalkAccessToken(accessToken);
+        
+        List<StartProcessInstanceRequestFormComponentValues> componentList = new ArrayList<>();
+        for (int i = 0; i < body.size(); i++) {
+            JSONObject obj = body.getJSONObject(i);
+            String name = obj.getStr("key");
+            String value = obj.getStr("value");
+            componentList.add(new StartProcessInstanceRequestFormComponentValues().setName(name).setValue(value));
+        }
+
+        List<Long> userIds = iUnitService.getRelUserIdsByUnitIds(Arrays.asList(Long.parseLong(originator)));
+        UserEntity user = iUserService.getById(userIds.get(0));
+        List<Long> memberIds = iUnitService.getMembersIdByUnitIds(Arrays.asList(Long.parseLong(originator)));
+        List<Long> teamIds = iTeamMemberRelService.getTeamByMemberId(memberIds.get(0));
+        TeamEntity team = iTeamService.getById(teamIds.get(0));
+        StartProcessInstanceRequest startProcessInstanceRequest = new StartProcessInstanceRequest()
+                .setOriginatorUserId(user.getDingUnionId())
+                .setProcessCode(processCode)
+                .setDeptId(team.getDeptId())
+                .setFormComponentValues(componentList);
+        log.info("originator:{}, processCode:{}, accessToken:{}", user.getDingUnionId(), processCode, accessToken);
+        try {
+            Config config = new Config();
+            config.protocol = "https";
+            config.regionId = "central";
+            Client client = new Client(config);
+            client.startProcessInstanceWithOptions(startProcessInstanceRequest, startProcessInstanceHeaders, new RuntimeOptions());
+        } catch (Exception e) {
+            TeaException err = new TeaException(e.getMessage(), e);
+            if (!com.aliyun.teautil.Common.empty(err.code) && !com.aliyun.teautil.Common.empty(err.message)) {
+                // err 中含有 code 和 message 属性，可帮助开发定位问题
+                log.error("DingTalk发起审批失败！errCode:" + err.code + " errMsg:" + err.message, err);
+            } else {
+                log.error("DingTalk发起审批失败！", err);
+            }
+            throw new BusinessException("DingTalk发起审批失败！");
+        }        
     }
 }

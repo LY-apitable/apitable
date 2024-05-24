@@ -61,10 +61,10 @@ export const usePaymentReminder = () => {
       return;
     }
 
-    usageWarnModal({
-      title: t(Strings.payment_reminder_modal_title),
-      alertContent: t(Strings.payment_reminder_modal_content),
-    });
+    // usageWarnModal({
+    //   title: t(Strings.payment_reminder_modal_title),
+    //   alertContent: t(Strings.payment_reminder_modal_content),
+    // });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscription]);

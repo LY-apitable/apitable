@@ -21,6 +21,7 @@ import path from 'path';
 import fs from 'fs';
 import process from 'process';
 import { DingTalkPushAction } from './dingtalk/dingtalk.push.action';
+import { DingTalkProcessAction } from './dingtalk/dingtalk.process.action';
 
 export * as webhook from './webhook';
 export * as ruliu from './ruliu';
@@ -43,6 +44,6 @@ if (isEnterpriseLevel) {
 }
 
 @Module({
-  imports: [DingTalkPushAction],
+  imports: [DingTalkPushAction, DingTalkProcessAction],
 })
 export class AutomationActionModule {}

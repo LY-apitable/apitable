@@ -965,3 +965,23 @@ export const initRoles = () => {
 export const getRecentlyBrowsedFolder = () => {
   return axios.get<IApiWrapper & { data: IRecentlyBrowsedFolder[] }>(Url.NODE_RECENTLY_BROWSED);
 };
+
+/**
+ * load dingtalk oa process.
+ * load dingtalk oa process list
+ * @param param0
+ * @returns
+ */
+export function loadDingtalkProcess(): Promise<IAxiosResponse<any>> {
+  return axios.get(Url.LOAD_DINGTALK_PROCESS);
+}
+
+/**
+ * load dingtalk oa process components.
+ * load dingtalk oa process components
+ * @param param0
+ * @returns
+ */
+export const loadDingtalkProcessComponents = (processCode: string) => {
+  return axios.get(urlcat(Url.LOAD_DINGTALK_PROCESS_COMPONENTS, { processCode }));
+}

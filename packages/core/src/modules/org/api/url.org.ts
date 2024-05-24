@@ -88,3 +88,8 @@ export const DELETE_ROLE_MEMBER = '/org/roles/:roleId/members';
 export const INIT_ROLE = '/org/roles/init';
 export const TEAM_LIST_LAYERED = 'org/team/tree';
 export const COLLABORATOR_LIST_PAGE = '/node/collaborator/page';
+
+// =================== dingtalk related start =================//
+export const LOAD_DINGTALK_PROCESS = "/dingtalk/process/list";
+export const LOAD_DINGTALK_PROCESS_COMPONENTS = "/dingtalk/process/:processCode/components";
+// =================== dingtalk related =======================//

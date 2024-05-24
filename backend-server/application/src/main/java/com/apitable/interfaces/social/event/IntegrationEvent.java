@@ -18,12 +18,27 @@
 
 package com.apitable.interfaces.social.event;
 
-/**
- * call event type.
- */
-public enum CallEventType {
+import static com.apitable.interfaces.social.event.CallEventType.INTEGRATION;
 
-    TEMPLATE_QUOTE,
-    NOTIFICATION,
-    INTEGRATION
+import com.apitable.integration.ro.IntegrationCreateRo;
+
+/**
+ * integration event.
+ */
+public class IntegrationEvent implements SocialEvent {
+
+    private final IntegrationCreateRo integrationMeta;
+
+    public IntegrationEvent(IntegrationCreateRo integrationMeta) {
+        this.integrationMeta = integrationMeta;
+    }
+
+    @Override
+    public CallEventType getEventType() {
+        return INTEGRATION;
+    }
+
+    public IntegrationCreateRo getIntegrationMeta() {
+        return integrationMeta;
+    }
 }

@@ -22,6 +22,7 @@ import { QueueSenderBaseService } from 'shared/services/queue/queue.sender.base.
 import { QueueSenderService } from 'shared/services/queue/queue.sender.service';
 
 export const notificationQueueExchangeName = 'apitable.notification.exchange';
+export const integrationQueueExchangeName = 'apitable.integration.exchange';
 export const automationExchangeName = 'apitable.automation.exchange';
 export const automationRunning = 'automation.running';
 export const automationRunningQueueName = 'apitable.automation.running';
@@ -41,6 +42,10 @@ export const automationRunningQueueName = 'apitable.automation.running';
           exchanges: [
             {
               name: notificationQueueExchangeName,
+              type: 'topic',
+            },
+            {
+              name: integrationQueueExchangeName,
               type: 'topic',
             },
             {

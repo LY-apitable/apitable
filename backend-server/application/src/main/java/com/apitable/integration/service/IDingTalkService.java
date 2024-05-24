@@ -85,4 +85,18 @@ public interface IDingTalkService {
      * @return accessToken
      */
     String getAccessToken(AppConfig appConfig);
+
+    /**
+     * loadProcessList.
+     *
+     * @return processList
+     */
+    JSONArray loadProcessList();
+
+    /**
+     * loadProcessComponents.
+     *
+     * @return processComponents
+     */
+    JSONArray loadProcessComponents(String processCode);
 }

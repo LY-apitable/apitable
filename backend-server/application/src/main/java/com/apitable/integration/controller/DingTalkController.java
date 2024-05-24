@@ -215,4 +215,24 @@ public class DingTalkController  {
         Map<String, String> successMap = callbackCrypto.getEncryptedMap("success");
         return successMap;
     }
+
+    /**
+     * 获取钉钉表单列表.
+     */
+    @GetResource(path = "/process/list")
+    @Operation(summary = "获取钉钉表单列表", description = "获取钉钉表单列表")
+    public ResponseData<JSONArray> loadProcessList() {
+        JSONArray processList = dingTalkService.loadProcessList();        
+        return ResponseData.success(processList);
+    }
+
+    /**
+     * 获取钉钉表单组件列表.
+     */
+    @GetResource(path = "/process/{processCode}/components")
+    @Operation(summary = "获取钉钉表单组件列表", description = "获取钉钉表单组件列表")
+    public ResponseData<JSONArray> loadProcessComponents(@PathVariable("processCode") String processCode) {
+        JSONArray processComponents = dingTalkService.loadProcessComponents(processCode);        
+        return ResponseData.success(processComponents);
+    }
 }

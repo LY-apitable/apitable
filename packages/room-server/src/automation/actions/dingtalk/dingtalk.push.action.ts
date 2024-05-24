@@ -11,7 +11,7 @@ import { AutomationService } from "automation/services/automation.service";
 @AutomationAction("钉钉消息推送", {themeLogo:{light: "/space/2024/03/13/5a6d5ac8d1ae49879cbd7b65370894d6", dark: "/space/2024/03/13/5a6d5ac8d1ae49879cbd7b65370894d6"}, description: "向用户发送钉钉消息通知"})
 export class DingTalkPushAction implements IBaseAction {
   async endpoint(input: any): Promise<IActionResponse<any>> {
-    console.log(`Entry customer connector. the input is `, input)
+    console.log(`Entry DingTalkPushAction connector. the input is `, input)
     const toUnitId: string[] = [];
     input.users.forEach((user: any) => {
       if (user.type == 'field') {
