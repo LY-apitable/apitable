@@ -66,19 +66,19 @@ export const DeveloperConfiguration: FC<React.PropsWithChildren<IDeveloperConfig
   };
 
   const createToken = async () => {
-    if (!user!.email) {
-      Modal.confirm({
-        title: t(Strings.please_note),
-        content: t(Strings.create_token_tip),
-        cancelText: t(Strings.cancel),
-        okText: t(Strings.go_to),
-        type: 'warning',
-        onOk: () => {
-          setActiveItem(0);
-        },
-      });
-      return;
-    }
+    // if (!user!.email) {
+    //   Modal.confirm({
+    //     title: t(Strings.please_note),
+    //     content: t(Strings.create_token_tip),
+    //     cancelText: t(Strings.cancel),
+    //     okText: t(Strings.go_to),
+    //     type: 'warning',
+    //     onOk: () => {
+    //       setActiveItem(0);
+    //     },
+    //   });
+    //   return;
+    // }
     const result = await createApiKey();
     if (!result) {
       return;
