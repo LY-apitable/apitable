@@ -11,6 +11,11 @@ allprojects {
         mavenCentral()
         // for pingpp sdk
         maven { url = uri("https://jcenter.bintray.com") }
+        // other maven repositories
+        maven {url 'https://maven.aliyun.com/repository/public/'}
+        maven {url 'https://maven.aliyun.com/repository/spring/'}
+        maven {url 'https://maven.aliyun.com/repository/spring-plugin/'}
+        maven {url 'https://maven.aliyun.com/repository/gradle-plugin/'}
     }
 }
 
