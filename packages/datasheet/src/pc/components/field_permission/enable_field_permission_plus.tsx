@@ -108,12 +108,12 @@ export const EnableFieldPermissionPlus: React.FC<React.PropsWithChildren<IEnable
     if (enabledFieldPermission) {
       return true;
     }
-    if (spaceInfo) {
-      const result = triggerUsageAlert('fieldPermissionNums', { usage: spaceInfo.fieldRoleNums + 1, alwaysAlert: true }, SubscribeUsageTipType.Alert);
-      if (result) {
-        return false;
-      }
-    }
+    // if (spaceInfo) {
+    //   const result = triggerUsageAlert('fieldPermissionNums', { usage: spaceInfo.fieldRoleNums + 1, alwaysAlert: true }, SubscribeUsageTipType.Alert);
+    //   if (result) {
+    //     return false;
+    //   }
+    // }
 
     const res = await DatasheetApi.setFieldPermissionStatus(datasheetId, field.id, true, true);
     const { success, message } = res.data;

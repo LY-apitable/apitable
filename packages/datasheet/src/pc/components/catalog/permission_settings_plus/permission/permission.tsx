@@ -121,10 +121,10 @@ export const Permission: FC<React.PropsWithChildren<IPermissionSettingProps>> = 
       return true;
     }
 
-    const result = triggerUsageAlert('nodePermissionNums', { usage: spaceInfo!.nodeRoleNums + 1, alwaysAlert: true }, SubscribeUsageTipType.Alert);
-    if (result) {
-      return false;
-    }
+    // const result = triggerUsageAlert('nodePermissionNums', { usage: spaceInfo!.nodeRoleNums + 1, alwaysAlert: true }, SubscribeUsageTipType.Alert);
+    // if (result) {
+    //   return false;
+    // }
     const res = await Api.disableRoleExtend(data.nodeId, true);
     const { success, message } = res.data;
     if (!success) {
