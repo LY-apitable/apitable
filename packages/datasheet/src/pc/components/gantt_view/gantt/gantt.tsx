@@ -328,7 +328,7 @@ const Gantt: FC<React.PropsWithChildren<IGanttProps>> = memo((props) => {
           </>
         )}
 
-        {isExporting && (
+        {(
           <>
             {watermarkText}
             {brandDesc}

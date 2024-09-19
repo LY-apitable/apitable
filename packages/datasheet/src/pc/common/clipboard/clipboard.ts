@@ -424,7 +424,8 @@ export class Clipboard {
       isCopyCutCheckedRecords = true;
       selections = Range.selectRecord2Ranges(state, selectRecordRanges);
     }
-
+    const spacePermissions = Selectors.getSpacePermissionManageState(state).spaceResource?.permissions;
+    const isSpaceAdmin = spacePermissions && spacePermissions.includes('MANAGE_WORKBENCH');
     const stdValueTable = selections.reduce<IStandardValueTable>((pre, item) => {
       const stdValueTable = Selectors.getStdValueTableFromRange(state, item);
       if (!stdValueTable) {
@@ -434,11 +435,11 @@ export class Clipboard {
       const allowCopyDataToExternal = state.space.spaceFeatures?.allowCopyDataToExternal || state.share.allowCopyDataToExternal;
       const fieldPermissionMap = Selectors.getFieldPermissionMap(state);
       const noPermissionCopyFieldIndex: number[] = [];
-
       stdValueTable.header = stdValueTable.header.filter((field, index) => {
         const fieldRole = Selectors.getFieldRoleByFieldId(fieldPermissionMap, field.id);
 
-        if (!allowCopyDataToExternal && fieldRole && fieldRole !== ConfigConstant.Role.Editor) {
+        // if (!allowCopyDataToExternal && fieldRole && fieldRole !== ConfigConstant.Role.Editor) {
+        if (!allowCopyDataToExternal && !isSpaceAdmin) {
           noPermissionCopyFieldIndex.push(index);
           return false;
         }

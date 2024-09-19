@@ -16,12 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { IReduxState } from '../../../../exports/store/interfaces';
+export * from './security';
 
-export const activeSpaceId = (state: IReduxState) => {
-  return state.space.activeId;
-};
+import { Security } from './security';
 
-export function getSpacePermissionManageState(state: IReduxState) {
-  return state.spacePermissionManage;
-}
+export default Security;

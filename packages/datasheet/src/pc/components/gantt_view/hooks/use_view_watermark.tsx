@@ -38,14 +38,14 @@ export const useViewWatermark = (props: IUseViewWatermark) => {
   const colors = theme.color;
 
   return useMemo(() => {
-    if (!isExporting) return null;
+    // if (!isExporting) return null;
     const state = store.getState();
     const watermarkEnable = state.space.spaceFeatures?.watermarkEnable;
     if (!watermarkEnable) return null;
     const userInfo = state.user.info;
     if (!userInfo) return null;
 
-    const text = getWatermarkText ? getWatermarkText(userInfo) : '';
+    const text = getWatermarkText ? getWatermarkText(userInfo) : userInfo.memberName + "  " + userInfo.mobile;
     textSizer.current.setFont({ fontSize: 12 });
     const { width, height } = textSizer.current.measureText(text);
     const countX = Math.ceil(containerWidth / (width + DEFAULT_GAP));

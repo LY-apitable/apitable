@@ -220,7 +220,7 @@ export const SpaceMenuTree: React.FC<React.PropsWithChildren<unknown>> = () => {
       return null;
     }
     return data.map((item) => {
-      if (!IS_ENTERPRISE && ['upgrade', 'security'].includes(item.key)) {
+      if (!IS_ENTERPRISE && ['upgrade'].includes(item.key)) {
         return [];
       }
       if (userInfo && userInfo.isDelSpace && item.key !== SPACE_INFO_KEY) {

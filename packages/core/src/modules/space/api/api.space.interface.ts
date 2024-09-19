@@ -1,3 +1,5 @@
+import { ISpaceFeatures } from "exports/store";
+
 export interface IAddNodeParams {
   parentId: string;
   type: number;
@@ -11,4 +13,8 @@ export interface IAddNodeParams {
       viewId: string
     }[]
   }
+}
+
+export interface ISpaceFeatureResponse {
+  data: ISpaceFeatures
 }

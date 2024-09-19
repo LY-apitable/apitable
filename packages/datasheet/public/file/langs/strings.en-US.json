@@ -4713,6 +4713,8 @@
   "security_setting_copy_cell_data_describle": "After the function is disabled,users with \"read-Only\" permission cannot copy cell data, both on and off the Space",
   "security_setting_copy_cell_data_description": "Users with \"Read-only\" permission cannot copy data in cells",
   "security_setting_copy_cell_data_title": "Prevent \"Read-only\" users from copying data",
+  "security_setting_prohibit_copy_cell_data_description": "Users cannot copy data in cells.After toggling this on, only space admins can copy data.",
+  "security_setting_prohibit_copy_cell_data_title": "Prevent users from copying data",
   "security_setting_download_file": "You are experiencing the ${grade} space exclusive feature, which will be unlocked when you upgrade",
   "security_setting_download_file_describle": "Users with \"Read-only\" permission cannot download attachments in cells",
   "security_setting_download_file_description": "Users with \"Read-only\" permission cannot download attachments in cells",

@@ -22,7 +22,7 @@ import urlcat from 'urlcat';
 import { NodeType, ShowRecordHistory } from '../../../config/constant';
 import { IApiWrapper, INode, INodesMapItem, IParent, IUpdateRoleData } from '../../../exports/store/interfaces';
 import * as Url from '../../shared/api/url';
-import { IAddNodeParams } from './api.space.interface';
+import { IAddNodeParams, ISpaceFeatureResponse } from './api.space.interface';
 import { getBrowserDatabusApiEnabled } from '../../database/api/wasm';
 import { WasmApi } from '../../database/api';
 
@@ -555,6 +555,14 @@ export function deleteSubAdmin(memberId: string) {
 export function getSpaceFeatures() {
   return axios.get(Url.GET_SPACE_FEATURES);
 }
+
+/**
+ * get space features
+ */
+export function getSpaceFeaturesNew() {
+  return axios.get<IApiWrapper & ISpaceFeatureResponse>(Url.GET_SPACE_FEATURES);
+}
+
 
 /**
  * switch the status of the node role assignment

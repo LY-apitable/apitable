@@ -4721,6 +4721,8 @@
   "security_setting_copy_cell_data_describle": "在站内和站外，拥有「只可阅读」权限的用户也可以复制表格内的数据。关闭该功能后，将无法复制数据",
   "security_setting_copy_cell_data_description": "在站内和站外，拥有「只可阅读」权限的用户无法复制表格内的数据",
   "security_setting_copy_cell_data_title": "禁止「只可阅读」用户复制数据",
+  "security_setting_prohibit_copy_cell_data_description": "普通成员无法复制表格内的数据。开启后，仅空间站管理员可进行此操作",
+  "security_setting_prohibit_copy_cell_data_title": "禁止成员复制数据",
   "security_setting_download_file": "你正在使用${grade}空间站专属功能，升级后可以解锁该功能",
   "security_setting_download_file_describle": "在站内和站外，拥有「只可阅读」权限的用户无法下载单元格内的附件",
   "security_setting_download_file_description": "在站内和站外，拥有「只可阅读」权限的用户无法下载单元格内的附件",

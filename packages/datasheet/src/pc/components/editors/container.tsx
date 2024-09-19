@@ -139,6 +139,8 @@ const EditorContainerBase: React.ForwardRefRenderFunction<IContainerEdit, Editor
     const _allowCopyDataToExternal = state.space.spaceFeatures?.allowCopyDataToExternal || state.share.allowCopyDataToExternal;
     return Boolean(_allowCopyDataToExternal);
   });
+  const spacePermissions = useAppSelector((state) => state.spacePermissionManage.spaceResource?.permissions);
+  const isSpaceAdmin = spacePermissions && spacePermissions.includes('MANAGE_WORKBENCH');
   const role = useAppSelector((state) => Selectors.getDatasheet(state, datasheetId)!.role);
   const { groupInfo, groupBreakpoint, visibleRowsIndexMap } = useAppSelector(
     (state) => ({
@@ -599,14 +601,16 @@ const EditorContainerBase: React.ForwardRefRenderFunction<IContainerEdit, Editor
   };
 
   const handleCopy = (e: ClipboardEvent) => {
-    if (editing || (!allowCopyDataToExternal && ConfigConstant.Role.Reader === role)) {
+    // if (editing || (!allowCopyDataToExternal && !isSpaceAdmin)) {
+    if (!allowCopyDataToExternal && !isSpaceAdmin) {
       return;
     }
     resourceService.instance!.clipboard.copy(e.nativeEvent);
   };
 
   const handleCut = (e: ClipboardEvent) => {
-    if (editing || (!allowCopyDataToExternal && ConfigConstant.Role.Reader === role)) {
+    // if (editing || (!allowCopyDataToExternal && !isSpaceAdmin)) {
+    if (!allowCopyDataToExternal && !isSpaceAdmin) {
       return;
     }
     resourceService.instance!.clipboard.cut(e.nativeEvent);

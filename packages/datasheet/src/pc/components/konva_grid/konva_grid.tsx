@@ -222,7 +222,7 @@ export const KonvaGrid: FC<React.PropsWithChildren<IKonvaGridProps>> = memo((pro
         </Group>
       </Group>
 
-      {isExporting && (
+      {(
         <>
           {watermarkText}
           {brandDesc}
