@@ -23,19 +23,22 @@ import { IWidgetProps } from '../../interface';
 import { FilterMember } from 'pc/components/tool_bar/view_filter/filter_value/filter_member';
 import { op2fop } from 'pc/components/robot/robot_detail/trigger/helper';
 
-export const FilterMemberWidget = ({ value, onChange }: IWidgetProps) => {
+export const FilterMemberWidget = ({ value, uiSchema, onChange }: IWidgetProps) => {
   const _value = getLiteralOperandValue(value);
   const _onChange = (e: any) => {
     const newValue = literal2Operand(e);
     onChange(newValue);
   };
 
+  const isMulti: boolean = uiSchema['ui:options']?.isMulti as boolean ?? true;
+
+
   const field: IMemberField = {
     name: '',
     id: '',
     type: FieldType.Member,
     property: {
-      isMulti: true, // Optional single or multiple members.
+      isMulti: isMulti, // Optional single or multiple members.
       shouldSendMsg: false, // Whether to send a message notification after selecting a member
       subscription: false,
       unitIds: []

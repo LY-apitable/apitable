@@ -50,7 +50,7 @@ spring-dependency-management-plugin = "1.1.4"
 protobuf-plugin = "0.9.4"
 checkstyle = "10.12.5"
 sentry-plugin = "4.0.0"
-dingtalk = "2.0.70"
+dingtalk = "2.1.50"
 dingtalk-service = "2.0.0"
 xxl-job-core = "2.4.0"
 

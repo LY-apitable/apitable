@@ -24,6 +24,9 @@ import cn.hutool.core.convert.Convert;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.vika.core.utils.StringUtil;
+import com.aliyun.dingtalktodo_1_0.models.CreateTodoTaskHeaders;
+import com.aliyun.dingtalktodo_1_0.models.CreateTodoTaskRequest;
+import com.aliyun.dingtalktodo_1_0.models.CreateTodoTaskRequest.CreateTodoTaskRequestNotifyConfigs;
 import com.aliyun.dingtalkworkflow_1_0.Client;
 import com.aliyun.dingtalkworkflow_1_0.models.StartProcessInstanceHeaders;
 import com.aliyun.dingtalkworkflow_1_0.models.StartProcessInstanceRequest;
@@ -69,6 +72,7 @@ import com.dingtalk.api.DefaultDingTalkClient;
 import com.dingtalk.api.DingTalkClient;
 import com.dingtalk.api.request.OapiMessageCorpconversationAsyncsendV2Request;
 import com.dingtalk.api.response.OapiMessageCorpconversationAsyncsendV2Response;
+import com.dingtalk.api.response.OapiV2UserGetResponse.UserGetResponse;
 import com.taobao.api.ApiException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -251,6 +255,8 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
                 IntegrationCreateRo integrationCreateRo = ((IntegrationEvent) event).getIntegrationMeta();
                 if (integrationCreateRo.getType() == 0) {
                     startProcessInstance(integrationCreateRo.getSpaceId(), integrationCreateRo.getProcessCode(), integrationCreateRo.getOriginator(), integrationCreateRo.getComponent());
+                } else if (integrationCreateRo.getType() == 1) {
+                    createDingTalkTodo(integrationCreateRo.getSpaceId(), integrationCreateRo.getCreator(), integrationCreateRo.getSubject(), integrationCreateRo.getDescription(), integrationCreateRo.getExecutorIds(), integrationCreateRo.getParticipantIds());
                 }
                 break;
             default:
@@ -459,6 +465,72 @@ public class CustomSocialServiceFacade implements SocialServiceFacade {
                 log.error("DingTalk发起审批失败！", err);
             }
             throw new BusinessException("DingTalk发起审批失败！");
+        }        
+    }
+
+    private void createDingTalkTodo(String spaceId, String creator, String subject, String description, List<String> executorIdStrList, List<String> participantIdStrList) {
+        SpaceEntity space = iSpaceService.getBySpaceId(spaceId);
+        AppConfig appConfig = iAppConfigService.getAppConfigByAppKey(space.getAppKey());
+        String accessToken = iDingTalkService.getAccessToken(appConfig);
+
+        List<Long> creatorIds = iUnitService.getRelUserIdsByUnitIds(Arrays.asList(Long.parseLong(creator)));
+        List<UserEntity> creatorUserList = iUserService.listByIds(creatorIds);
+        String creatorDingId = creatorUserList.get(0).getDingUnionId();
+        UserGetResponse creatorInfo = iDingTalkService.getUserDetail(creatorDingId, appConfig);
+        String creatorId = creatorInfo.getUnionid();
+
+        List<Long> executorIds = executorIdStrList.stream().map(Long::parseLong).collect(Collectors.toList());
+        List<Long> executorUserIds = iUnitService.getRelUserIdsByUnitIds(executorIds);
+        List<UserEntity> executorUserList = iUserService.listByIds(executorUserIds);
+        List<String> executorDingUnionIds = new ArrayList<>();
+        for (UserEntity userEntity : executorUserList) {
+            UserGetResponse userInfo = iDingTalkService.getUserDetail(userEntity.getDingUnionId(), appConfig);
+            executorDingUnionIds.add(userInfo.getUnionid());
+        }
+
+        List<String> participantDingUnionIds = new ArrayList<>();
+        if (participantIdStrList.size() > 0) {
+            List<Long> participantIds = participantIdStrList.stream().map(Long::parseLong).collect(Collectors.toList());
+            List<Long> participantUserIds = iUnitService.getRelUserIdsByUnitIds(participantIds);
+            List<UserEntity> participantUserList = iUserService.listByIds(participantUserIds);
+            for (UserEntity userEntity : participantUserList) {
+                UserGetResponse userInfo = iDingTalkService.getUserDetail(userEntity.getDingUnionId(), appConfig);
+                participantDingUnionIds.add(userInfo.getUnionid());
+            }
+        }
+
+        CreateTodoTaskHeaders createTodoTaskHeaders = new CreateTodoTaskHeaders();
+        createTodoTaskHeaders.setXAcsDingtalkAccessToken(accessToken);
+        CreateTodoTaskRequestNotifyConfigs notifyConfigs = new CreateTodoTaskRequestNotifyConfigs()
+                .setDingNotify("1");
+
+        CreateTodoTaskRequest createTodoTaskRequest = new CreateTodoTaskRequest()
+                .setSubject(subject)
+                .setDescription(description)
+                .setExecutorIds(executorDingUnionIds)
+                .setIsOnlyShowExecutor(false)
+                .setPriority(20)
+                .setNotifyConfigs(notifyConfigs);
+        log.info("executorDingUnionIds:" + executorDingUnionIds.toString());
+        log.info("participantDingUnionIds:" + participantDingUnionIds.toString());
+        if (participantDingUnionIds.size() > 0) {
+            createTodoTaskRequest.setParticipantIds(participantDingUnionIds);
+        }
+        try {
+            Config config = new Config();
+            config.protocol = "https";
+            config.regionId = "central";
+            com.aliyun.dingtalktodo_1_0.Client client = new com.aliyun.dingtalktodo_1_0.Client(config);
+            client.createTodoTaskWithOptions(creatorId, createTodoTaskRequest, createTodoTaskHeaders, new RuntimeOptions());
+        } catch (Exception e) {
+            TeaException err = new TeaException(e.getMessage(), e);
+            if (!com.aliyun.teautil.Common.empty(err.code) && !com.aliyun.teautil.Common.empty(err.message)) {
+                // err 中含有 code 和 message 属性，可帮助开发定位问题
+                log.error("DingTalk创建待办失败！errCode:" + err.code + " errMsg:" + err.message, err);
+            } else {
+                log.error("DingTalk创建待办失败！", err);
+            }
+            throw new BusinessException("DingTalk创建待办失败！");
         }        
     }
 }

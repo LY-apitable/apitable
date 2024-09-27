@@ -55,7 +55,7 @@ public class IntegrationConsumer {
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
         log.info("Integration received deliveryTag:{}; type:{}", deliveryTag, event.getType());
-        if (event.getType() == 0) {
+        if (event.getType() == 0 || event.getType() == 1) {
             try {
                 socialServiceFacade.eventCall(new IntegrationEvent(event));
             } catch (Exception e) {

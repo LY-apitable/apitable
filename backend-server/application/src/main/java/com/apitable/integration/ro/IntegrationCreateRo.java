@@ -20,6 +20,7 @@ package com.apitable.integration.ro;
 
 import cn.hutool.json.JSONArray;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -45,4 +46,19 @@ public class IntegrationCreateRo {
 
     @Schema(description = "Start the process user ID (optional)", example = "1261273764218")
     private String originator;
+
+    @Schema(description = "Todo Creator (optional)", example = "1261273764218")
+    private String creator;
+
+    @Schema(description = "Todo Subject(optional)", example = "todo subject")
+    private String subject = null;
+
+    @Schema(description = "Todo Description", example = "todo description")
+    private String description;
+
+    @Schema(description = "Todo ExecutorIds (optional)")
+    private List<String> executorIds;
+
+    @Schema(description = "Todo ParticipantIds")
+    private List<String> participantIds;
 }
